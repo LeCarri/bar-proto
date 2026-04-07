@@ -1,0 +1,71 @@
+using System.Runtime.CompilerServices;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerMovement : MonoBehaviour
+{
+    [SerializeField]
+    private float speed = 1f;
+
+    [SerializeField]
+    private float maxSpeed = 5f;
+
+    [SerializeField]
+    private Transform cameraTransform;
+
+    private Rigidbody rb;
+    private Vector2 moveInput;
+
+    private void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        rb = GetComponent<Rigidbody>();
+    }
+
+    private void FixedUpdate()
+    {
+        if (moveInput.y == 0 && moveInput.x == 0) 
+        {
+            rb.linearVelocity = rb.linearVelocity / 2;
+        }
+        else
+            Move();
+    }
+
+    private void Move() 
+    {
+        CapXSpeed();
+        CapZSpeed();
+
+        Vector3 move =
+            cameraTransform.forward * moveInput.y + cameraTransform.right * moveInput.x;
+        move.y = 0;
+        rb.AddForce(move.normalized * speed * Time.deltaTime, ForceMode.VelocityChange);
+    }
+
+    private void CapXSpeed() 
+    {
+        rb.linearVelocity = new Vector3(
+        Mathf.Clamp(rb.linearVelocity.x, -maxSpeed, maxSpeed),
+        rb.linearVelocity.y,
+        rb.linearVelocity.z);
+        //Debug.Log(rb.linearVelocity);
+    }
+    private void CapZSpeed() 
+    {
+        rb.linearVelocity = new Vector3(
+                    rb.linearVelocity.x,
+                    rb.linearVelocity.y,
+                    Mathf.Clamp(rb.linearVelocity.z, -maxSpeed, maxSpeed));
+    }
+
+    public void OnMove(InputValue value) 
+    {
+        moveInput = value.Get<Vector2>(); // x = A/D && y = W/D
+        
+    }
+
+
+}
