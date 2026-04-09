@@ -1,8 +1,11 @@
 using UnityEngine;
-
+using UnityEngine.ProBuilder.Shapes;
+using UnityEngine.SceneManagement;
 public class player : MonoBehaviour
 {
     private Rigidbody rb;
+
+    public float interactDistance = 3f;
 
     [SerializeField] private int speed = 3;
     [SerializeField] private int sens = 3;
@@ -40,6 +43,28 @@ public class player : MonoBehaviour
         limitrotation = rotationY;
         limitrotation = Mathf.Clamp(rotationX, -90f, 90f);
 
-        
+
+        //raycast para puertas
+
+        Ray ray = new Ray(transform.position, transform.forward);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, interactDistance))
+        {
+            if (hit.collider.CompareTag("Door"))
+            {
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    Door door = hit.collider.GetComponent<Door>();
+
+                    if (door != null)
+                    {
+                        SceneManager.LoadScene(door.sotano);
+                    }
+                }
+            }
+        }
+
+
     }
 }
