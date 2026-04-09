@@ -21,6 +21,9 @@ public class Flashlight : MonoBehaviour
     public float damagePerSecond = 40f;
     public LayerMask enemyLayer;       // Asegurate de poner a los enemigos en esta Layer
 
+    [Header ("Puuntos De Origen")]
+    public Transform firePoint; //se colocca el objeto FirePoint
+
     private bool isFocused = false;
 
     void Start()
@@ -68,20 +71,29 @@ public class Flashlight : MonoBehaviour
 
     void HandleCombat()
     {
-        // Solo hacemos daño si estamos en modo enfoque
-        if (isFocused)
+        if (isFocused && firePoint != null)
         {
             RaycastHit hit;
-            // Lanzamos el rayo desde el centro de la cámara/linterna
-            if (Physics.Raycast(transform.position, transform.forward, out hit, range, enemyLayer))
+            Camera mainCam = Camera.main; 
+            if (mainCam == null) return;
+
+            // EL TRUCO:
+            // El origen es la punta de la linterna (firePoint)
+            // La dirección es hacia donde apunta el centro de la cámara
+            Vector3 rayOrigin = firePoint.position;
+            Vector3 rayDirection = mainCam.transform.forward; 
+
+            // Visualización del rayo
+            Debug.DrawRay(rayOrigin, rayDirection * range, Color.yellow);
+
+            if (Physics.Raycast(rayOrigin, rayDirection, out hit, range, enemyLayer))
             {
-                // Buscamos el componente EnemyCore (el script padre de tus enemigos)
+                Debug.DrawLine(rayOrigin, hit.point, Color.red);
+            
                 EnemyCore enemy = hit.collider.GetComponent<EnemyCore>();
                 if (enemy != null)
                 {
                     enemy.TakeDamage(damagePerSecond);
-                    // Feedback visual opcional: podrías poner chispas o luz aquí
-                    Debug.DrawLine(transform.position, hit.point, Color.red); 
                 }
             }
         }
