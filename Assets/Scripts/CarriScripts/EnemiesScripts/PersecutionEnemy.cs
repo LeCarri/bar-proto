@@ -17,7 +17,7 @@ public class PersecutionEnemy : EnemyCore
         if (health > 0)
         {
             // Si no lo estamos iluminando, camina hacia el jugador
-            // Si lo iluminamos, se queda quieto (opcional, para dar ventaja)
+            // Si lo iluminamos, se queda quieto (opcional, para dar ventaja (yo lo veo bien xd))
             agent.isStopped = isBeingIlluminated; 
             
             if (!agent.isStopped)

@@ -12,14 +12,14 @@ public class EnemyCore : MonoBehaviour
     public void TakeDamage(float amount)
     {
         health -= amount * Time.deltaTime;
-        isBeingIlluminated = true; // Flag para efectos visuales
+        isBeingIlluminated = true; // Flag para efectos visuales si usamos
 
         if (health <= 0) Die();
     }
 
     protected virtual void Die()
     {
-        // Aquí podés instanciar partículas de humo o simplemente destruir
+        // Aca podemos instanciar partículas de humo si usamos o simplemente destruir
         Destroy(gameObject);
     }
 

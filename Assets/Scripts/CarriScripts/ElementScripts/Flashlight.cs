@@ -4,7 +4,7 @@ using UnityEngine.UI; // Si vas a usar una barra de UI para la batería
 public class Flashlight : MonoBehaviour
 {
     [Header("Configuración de Luz")]
-    public Light flashlightLight;      // Arrastra aquí el componente Light
+    public Light flashlightLight;      // Arrastrar aca el componente Light
     public float explorationAngle = 50f;
     public float focusedAngle = 20f;
     public float explorationIntensity = 1.5f;
@@ -14,7 +14,7 @@ public class Flashlight : MonoBehaviour
     public float battery = 100f;
     public float maxBattery = 100f;
     public float consumptionRate = 10f; // Cuánto gasta por segundo en modo enfoque
-    public float rechargeRate = 2f;    // Opcional: si querés que recupere algo sola
+    public float rechargeRate = 2f;    // Opcional: si queremos que se recupere sola un poco
 
     [Header("Combate")]
     public float range = 10f;
@@ -77,13 +77,12 @@ public class Flashlight : MonoBehaviour
             Camera mainCam = Camera.main; 
             if (mainCam == null) return;
 
-            // EL TRUCO:
             // El origen es la punta de la linterna (firePoint)
             // La dirección es hacia donde apunta el centro de la cámara
             Vector3 rayOrigin = firePoint.position;
             Vector3 rayDirection = mainCam.transform.forward; 
 
-            // Visualización del rayo
+            // Visualización del gizmo del rayccacst
             Debug.DrawRay(rayOrigin, rayDirection * range, Color.yellow);
 
             if (Physics.Raycast(rayOrigin, rayDirection, out hit, range, enemyLayer))

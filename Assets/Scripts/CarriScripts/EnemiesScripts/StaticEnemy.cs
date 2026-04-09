@@ -19,7 +19,7 @@ public class StaticEnemy : EnemyCore
         float distance = Vector3.Distance(transform.position, player.position);
         if (distance < detectionRadius)
         {
-            // Aquí llamarías a la función de daño del jugador o subir paranoia
+            // Aca llamariamos a la función de daño del jugador o subir paranoia
             Debug.Log("El jugador está demasiado cerca de la aberración");
         }
 
