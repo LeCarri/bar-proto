@@ -10,7 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private float maxSpeed = 5f;
 
-    [SerializeField]
+    //[SerializeField]
     private Transform cameraTransform;
 
     private Rigidbody rb;
@@ -21,6 +21,7 @@ public class PlayerMovement : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
+        cameraTransform = GameObject.FindWithTag("MainCamera").transform;
         rb = GetComponent<Rigidbody>();
     }
 

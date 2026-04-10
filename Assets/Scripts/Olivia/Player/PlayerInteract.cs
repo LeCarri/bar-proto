@@ -31,7 +31,7 @@ public class PlayerInteract : MonoBehaviour
         inputPickupWithRightHand = InputSystem.actions.FindAction("PickupRHand");
 
         HandsCenterParent = R_HandObject.transform.parent;
-        Debug.Log(R_HandObject.transform.localPosition);
+        //Debug.Log(R_HandObject.transform.localPosition);
         //RH_initialPos = R_HandObject.transform.position; //hand spawn pos
     }
 
@@ -40,7 +40,7 @@ public class PlayerInteract : MonoBehaviour
 
         if (inputPickupWithRightHand.WasReleasedThisFrame() && currentPickup == null) 
         {
-            Debug.Log("Checking for pickups");
+            //Debug.Log("Checking for pickups");
             CheckPickup();
         }
     }
@@ -99,7 +99,7 @@ public class PlayerInteract : MonoBehaviour
                 break;
             }
 
-            Debug.Log(Vector3.Distance(hand.transform.position, targetObj.transform.position));
+            //Debug.Log(Vector3.Distance(hand.transform.position, targetObj.transform.position));
 
             yield return new WaitForSeconds(0.5f);
         }
@@ -129,12 +129,12 @@ public class PlayerInteract : MonoBehaviour
                 break;
             }
 
-            Debug.Log(Vector3.Distance(hand.transform.localPosition, initialPos));
+            //Debug.Log(Vector3.Distance(hand.transform.localPosition, initialPos));
     
             yield return new WaitForSeconds(0.2f);
         }
 
-        Debug.Log("End of couroutine 2");
+        //Debug.Log("End of couroutine 2");
         yield break;
     }
 
