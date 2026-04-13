@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteract : MonoBehaviour
 {
+    DialogueSystem dialogueSys;
     public static PlayerInteract Instance { get; private set; }
 
     public float playerReach = 3f;
@@ -28,6 +29,7 @@ public class PlayerInteract : MonoBehaviour
         else
             Destroy(this);
 
+        dialogueSys = DialogueSystem.Instance;
         inputPickupWithRightHand = InputSystem.actions.FindAction("PickupRHand");
 
         HandsCenterParent = R_HandObject.transform.parent;
@@ -38,7 +40,7 @@ public class PlayerInteract : MonoBehaviour
     private void Update()
     {
 
-        if (inputPickupWithRightHand.WasReleasedThisFrame() && currentPickup == null) 
+        if (inputPickupWithRightHand.WasReleasedThisFrame() && currentPickup == null && dialogueSys.inDialogue == false) 
         {
             //Debug.Log("Checking for pickups");
             CheckPickup();
@@ -55,7 +57,7 @@ public class PlayerInteract : MonoBehaviour
         {
             if (hit.collider.tag == "Pickup")
             {
-                Debug.Log("Recognized tag"); //SetNewPickup
+                //Debug.Log("Recognized tag"); //SetNewPickup
 
                 Pickup newPickup = hit.collider.GetComponent<Pickup>();
 
@@ -68,7 +70,7 @@ public class PlayerInteract : MonoBehaviour
                     //tell pickup is being held
                     //newPickup.OnPickup();
 
-                    Debug.Log(currentPickup);
+                    //Debug.Log(currentPickup);
                 }
 
             }
@@ -101,12 +103,12 @@ public class PlayerInteract : MonoBehaviour
 
             //Debug.Log(Vector3.Distance(hand.transform.position, targetObj.transform.position));
 
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.1f);
         }
 
         //tell pickup is being held
         currentPickup.OnPickup();
-        Debug.Log("End of couroutine 1");
+        //Debug.Log("End of couroutine 1");
         yield break;
 
     }
@@ -131,7 +133,7 @@ public class PlayerInteract : MonoBehaviour
 
             //Debug.Log(Vector3.Distance(hand.transform.localPosition, initialPos));
     
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.1f);
         }
 
         //Debug.Log("End of couroutine 2");
@@ -145,6 +147,6 @@ public class PlayerInteract : MonoBehaviour
         //move hand back to player
         StartCoroutine(MoveHandToPlayer(R_HandObject, RH_initialPos));
 
-        Debug.Log(currentPickup);
+        //Debug.Log(currentPickup);
     }
 }

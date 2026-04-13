@@ -33,7 +33,7 @@ public class FlagsSystem : MonoBehaviour
     {
         //añadir flag a la lista
         flags.Add(newFlag, startingValue);
-        Debug.Log(newFlag + " " + startingValue);
+        //Debug.Log(newFlag + " " + startingValue);
     }
 
     public event Action<string, bool> onFlagsChange;

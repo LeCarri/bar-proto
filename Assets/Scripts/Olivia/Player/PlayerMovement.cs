@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
+    DialogueSystem dialogueSys;
+
     [SerializeField]
     private float speed = 1f;
 
@@ -23,6 +25,7 @@ public class PlayerMovement : MonoBehaviour
 
         cameraTransform = GameObject.FindWithTag("MainCamera").transform;
         rb = GetComponent<Rigidbody>();
+        dialogueSys = DialogueSystem.Instance;
     }
 
     private void FixedUpdate()
@@ -31,7 +34,7 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearVelocity = rb.linearVelocity / 2;
         }
-        else
+        else if(dialogueSys.inDialogue == false)
             Move();
     }
 

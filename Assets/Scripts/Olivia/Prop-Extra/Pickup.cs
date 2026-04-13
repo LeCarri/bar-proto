@@ -115,7 +115,7 @@ public class Pickup : MonoBehaviour
 
             
 
-            Debug.Log("Dropped the pickup");
+            //Debug.Log("Dropped the pickup");
         }
     }
 
