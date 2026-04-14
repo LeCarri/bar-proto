@@ -34,7 +34,7 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearVelocity = rb.linearVelocity / 2;
         }
-        else if(dialogueSys.inDialogue == false)
+         else if(dialogueSys.inDialogue == false)
             Move();
     }
 
