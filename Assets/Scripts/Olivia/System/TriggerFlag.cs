@@ -9,10 +9,7 @@ public class TriggerFlag : FlagListener
     private GameObject exampleObject; //Objeto de ejemplo
 
     [SerializeField]
-    private string dialogueDisplayName;
-
-    [SerializeField]
-    private string dialogueId;
+    private DialogueFlag dialogueFlagScript;
 
     [SerializeField]
     bool deactivateOnTouch = true;
@@ -25,8 +22,8 @@ public class TriggerFlag : FlagListener
         if (exampleObject != null) //Si tiene un objeto asignado en la variable, se suscribe al evento de onFlagsChange.
             flagsSystem.onFlagsChange += EnableObject;
 
-        if (dialogueId != null || dialogueId != "")
-            flagsSystem.onFlagsChange += PlayText;
+        if (dialogueFlagScript != null)
+            flagsSystem.onFlagsChange += StartDialogue;
     }
 
     private void EnableObject(string flag, bool flagsValue) 
@@ -37,20 +34,20 @@ public class TriggerFlag : FlagListener
         }
     }
 
-    private void PlayText(string flag, bool flagsValue) 
+    private void StartDialogue(string flag, bool flagsValue) 
     {
-        if (flag == flagName && flagsValue == changeFlagTo)
-        {
-            DialogueSystem.Instance.Displaytext(dialogueId, dialogueDisplayName);
-        }
+        dialogueFlagScript.DisplayText(flag, flagsValue);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        flagsSystem.ChangeFlag(flagName, changeFlagTo); //Cambia la flag al hacer contacto con el trigger.
+        if (other.gameObject.CompareTag("Player")) 
+        {
+            flagsSystem.ChangeFlag(flagName, changeFlagTo); //Cambia la flag al hacer contacto con el trigger.
 
-        if (deactivateOnTouch)
-            gameObject.SetActive(false); //Desactiva el trigger al activarlo si se desea.
+            if (deactivateOnTouch)
+                gameObject.SetActive(false); //Desactiva el trigger al activarlo si se desea.
+        }
     }
 
 
