@@ -5,13 +5,15 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteract : MonoBehaviour
 {
+    UIManager ui;
+
     DialogueSystem dialogueSys;
     public static PlayerInteract Instance { get; private set; }
 
     public float playerReach = 3f;
 
     [SerializeField]
-    Pickup currentPickup = null;
+    public Pickup currentPickup = null;
 
     InputAction inputPickupWithRightHand;
 
@@ -19,18 +21,21 @@ public class PlayerInteract : MonoBehaviour
 
     [SerializeField]
     GameObject R_HandObject;
-    Vector3 RH_initialPos; 
-    
+    Vector3 RH_initialPos;
 
-    private void Start()
+    private void Awake()
     {
         if (Instance == null)
             Instance = this;
         else
             Destroy(this);
+    }
 
+    private void Start()
+    {
         dialogueSys = DialogueSystem.Instance;
         inputPickupWithRightHand = InputSystem.actions.FindAction("PickupRHand");
+        ui = UIManager.Instance;
 
         HandsCenterParent = R_HandObject.transform.parent;
         //Debug.Log(R_HandObject.transform.localPosition);
@@ -65,16 +70,20 @@ public class PlayerInteract : MonoBehaviour
                 {
                     //set new pickup
                     currentPickup = newPickup;
-                    //move hand to pickup
+                    
                     HandleItem(R_HandObject);
-                    //tell pickup is being held
-                    //newPickup.OnPickup();
-
-                    //Debug.Log(currentPickup);
                 }
 
             }
         }
+    }
+
+    public void HandleLiquidContainerPickup(LiquidContainer providedContainer) 
+    {
+        ui.PickupInfo.text =
+            "- " + providedContainer.containerName + "\n" +
+            "- Contains: " + providedContainer.GetLiquidType() + "\n" +
+            "- " + providedContainer.GetStoragedLiquid() + "/" + providedContainer.GetMaxStoragedLiquid() + "ml";
     }
 
     private void HandleItem(GameObject hand) 

@@ -1,3 +1,4 @@
+using Unity.Cinemachine;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,16 +10,25 @@ public class Pickup : MonoBehaviour
     Rigidbody playerRB;
     
     InputAction inputReleaseRPickup;
-    InputAction inputThrowMode;
+    InputAction inputAltMode;
+    InputAction inputToggleRotation;
+    InputAction inputToggleMovement;
 
 
     public bool isHolding = false;
+    
+    private PickupMode pickMode = PickupMode.Holding;
 
     float throwForce = 8f;
+    float rotationMultiplier = 15f;
+
+    [SerializeField]
+    float slowModeMultiplier = 0.5f;
    
     float maxDistancce;
     float distance;
 
+    LiquidContainer lc;
     TempParent tempParent;
     Rigidbody rb;
 
@@ -27,12 +37,15 @@ public class Pickup : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        lc = GetComponent<LiquidContainer>();
         //tempParent = TempParent.Instance;
         GetDependencies();
 
         //inputInteraction = InputSystem.actions.FindAction("Interact");
         inputReleaseRPickup = InputSystem.actions.FindAction("ReleaseRPickup");
-        inputThrowMode = InputSystem.actions.FindAction("ThrowMode");
+        inputAltMode = InputSystem.actions.FindAction("ThrowMode");
+        inputToggleRotation = InputSystem.actions.FindAction("RotationMode");
+        inputToggleMovement = InputSystem.actions.FindAction("MovingMode");
     }
 
     private void Update()
@@ -66,15 +79,17 @@ public class Pickup : MonoBehaviour
                 this.transform.SetParent(tempParent.transform);
                 
             }
+
+            if (lc != null) 
+            {
+                UIManager.Instance.HideShowPickupInfo(true);
+                UIManager.Instance.HideShowPickupControls(true);
+                Debug.Log("Can contain liquids");
+            }
             //Debug.Log("Temp parent detected");
         }
         else { Debug.Log("No temp parent detected"); }
     }
-
-    private void OnRelease() { }
-
-    private void OnSlip() { }
-
     private void Hold() 
     {
         distance = Vector3.Distance(this.transform.position, tempParent.transform.position);
@@ -84,14 +99,35 @@ public class Pickup : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        if (inputThrowMode.IsPressed() && inputReleaseRPickup.WasPerformedThisFrame()) // Shift + RMB
+        if (inputToggleRotation.WasCompletedThisFrame()) //Cambiar modos.
+            TransitionToMode(PickupMode.Rotating);
+
+        if (inputToggleMovement.WasCompletedThisFrame())
+            TransitionToMode(PickupMode.Moving);
+
+                //Hacer las correspondientes funciones para cada modo.
+        if (pickMode == PickupMode.Holding)
         {
-            Throw(); //throw
+            if (inputAltMode.IsPressed() && inputReleaseRPickup.WasPerformedThisFrame()) // Shift + RMB
+            {
+                Throw(); //throw
+            }
+            else if (inputReleaseRPickup.WasPerformedThisFrame()) // RMB
+            {
+                Drop(); //drop
+            }
         }
-        else if (inputReleaseRPickup.WasPerformedThisFrame()) // RMB
+        else
         {
-            Drop(); //drop
+            switch (pickMode)
+            {
+                case PickupMode.Rotating: OnRotationMode(); break;
+                case PickupMode.Moving: OnMoveMode(); break;
+            }
         }
+
+        if (lc != null)
+        { playerInteract.HandleLiquidContainerPickup(lc); }
 
         //Debug.Log(distance + "/" + maxDistancce);
     }
@@ -100,11 +136,18 @@ public class Pickup : MonoBehaviour
     {
         if (isHolding)
         {
+            if (lc != null)
+                UIManager.Instance.HideShowPickupInfo(false);
+
+            UIManager.Instance.HideShowPickupControls(false);
+            TransitionToMode(PickupMode.Holding);
+            
             isHolding = false;
             playerInteract.ResetCurrentPickup();
 
             objPos = this.transform.position;
             this.transform.position = objPos;
+            
             this.transform.SetParent(null);
             rb.useGravity = true;
 
@@ -141,4 +184,80 @@ public class Pickup : MonoBehaviour
     {
         Drop(true);
     }
+
+    private void TransitionToMode(PickupMode newMode) 
+    {
+        CinemachineInputAxisController cameraController =
+            GameObject.FindWithTag("CinemachineCamera").GetComponent<CinemachineInputAxisController>();
+
+        if (newMode == PickupMode.Holding)
+        {
+            cameraController.enabled = true;
+        }
+        else if (newMode == pickMode) 
+        {
+            pickMode = PickupMode.Holding;
+            cameraController.enabled = true;
+            return;
+        }
+        else
+        {
+            cameraController.enabled = false;
+        }
+
+            pickMode = newMode;
+    }
+
+    private void OnRotationMode() 
+    {
+        Vector2 lookValues = InputSystem.actions.FindAction("Look").ReadValue<Vector2>();
+
+        if ( lookValues.y != 0)
+        {
+            if (inputAltMode.IsPressed())
+                transform.Rotate(new Vector3(-lookValues.y * slowModeMultiplier * Time.deltaTime * rotationMultiplier,
+                                                -lookValues.x * Time.deltaTime * rotationMultiplier, 0));
+            else
+                transform.Rotate(new Vector3(-lookValues.y * Time.deltaTime * rotationMultiplier,
+                    -lookValues.x * Time.deltaTime * rotationMultiplier, 0));
+            //transform.Rotate(new Vector3(lookValues.y, 0, 0));
+        }
+
+        Debug.Log(InputSystem.actions.FindAction("Look").ReadValue<Vector2>());
+        //Debug.Log(inputRotationValues.ReadValue<float>());
+    }
+
+    private void OnMoveMode() 
+    {
+        Vector2 lookValues = InputSystem.actions.FindAction("Look").ReadValue<Vector2>();
+
+        Transform cameraTransform = GameObject.FindWithTag("MainCamera").transform;
+
+        if (lookValues.y != 0 || lookValues.x != 0)
+        {
+            if (inputAltMode.IsPressed())
+            {
+                //transform.Translate(new Vector3(0, 0, lookValues.y * Time.deltaTime * 0.6f * slowModeMultiplier));
+                //transform.localPosition += new Vector3
+                //    (cameraTransform.right.x * -lookValues.x * Time.deltaTime * 0.6f * slowModeMultiplier, 0, 0);
+                transform.Translate(new Vector3(0, 0, lookValues.y * Time.deltaTime * 0.6f));
+                transform.localPosition += new Vector3(0, 0, cameraTransform.right.x * -lookValues.x * Time.deltaTime * 0.6f);
+            }
+            else
+            {
+                transform.Translate(new Vector3(0, 0, lookValues.y * Time.deltaTime * 0.6f));
+                transform.localPosition += new Vector3(cameraTransform.right.x * -lookValues.x * Time.deltaTime * 0.6f, 0, 0);
+            }
+        }
+
+        //Arreglar el movimiento en z
+        Debug.Log(InputSystem.actions.FindAction("Look").ReadValue<Vector2>());
+    }
 }
+
+public enum PickupMode 
+    { 
+        Holding, // Mientras se mueve el jugador
+        Rotating, // Mientras se rota el objeto
+        Moving // Mientras se mueve el objeto
+    }
