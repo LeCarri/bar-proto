@@ -16,6 +16,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0;
 
+    //HOLA
+
     void Awake() // Usamos Awake para asegurarnos de captar el componente antes que nada
     {
         characterController = GetComponent<CharacterController>();
