@@ -59,6 +59,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "RotationMode",
+                    "type": "Button",
+                    "id": "65fc5572-c126-4fa1-b1b6-a1bff0f8958d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MovingMode",
+                    "type": "Button",
+                    "id": "8731da34-61fe-4e3b-9555-e5d5c6608b42",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -334,6 +352,28 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "ThrowMode",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8a229bb8-3435-4dd0-992a-030ce2b9555e",
+                    "path": "<Keyboard>/#(R)",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "RotationMode",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c6074c17-5d79-4fc4-aae0-fb5cc39b1c16",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "MovingMode",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
