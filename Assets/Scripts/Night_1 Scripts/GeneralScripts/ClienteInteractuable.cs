@@ -2,36 +2,50 @@ using UnityEngine;
 
 public class ClienteInteractuable : MonoBehaviour, IInteractable
 {
-    [Header("Configuración")]
-    public string nombreCliente;
-    public string dialogoPedido;
-    
-    [Header("UI Indicador")]
-    public GameObject indicadorVisual; // Arrastrá acá el Canvas o la Imagen de la flecha
+    [Header("Datos del Cliente")]
+    public string nombreCliente = "Cliente";
+    [TextArea(3, 10)]
+    public string dialogoPedido = "Hola... ¿me das una cerveza?";
+
+    [Header("Referencias Visuales")]
+    public GameObject indicadorVioleta; // El triángulo que flota
 
     private bool yaAtendido = false;
 
-    void Start()
-    {
-        // Al empezar el servicio, la flecha debe estar encendida
-        if (indicadorVisual != null) 
-            indicadorVisual.SetActive(true);
-    }
-
     public void Interact()
     {
+        // Solo interactuamos si no fue atendido
         if (!yaAtendido)
         {
-            FindObjectOfType<Act1Manager>().MostrarDialogo(nombreCliente + ": " + dialogoPedido);
-            yaAtendido = true;
-
-            // ¡Apagamos la señalización!
-            if (indicadorVisual != null) 
-                indicadorVisual.SetActive(false);
-
-            FindObjectOfType<Act1Manager>().ClienteAtendido();
+            Atender();
+        }
+        else
+        {
+            // Opcional: Diálogo corto por si le volvés a hablar
+            //FindObjectOfType<Act1Manager>().MostrarDialogo(nombreCliente + ": Ya estoy bien, gracias.");
         }
     }
 
-    public string GetDescription() => yaAtendido ? "" : "Presiona [E] para atender";
+        public string GetDescription()
+    {
+        if (yaAtendido) return "";
+        return "Presiona [E] para atender a " + nombreCliente;
+    }
+
+    void Atender()
+    {
+        yaAtendido = true;
+
+        // 1. Apagamos la flecha violeta
+        if (indicadorVioleta != null) 
+            indicadorVioleta.SetActive(false);
+
+        // 2. Mostramos su pedido en la UI de Lucas
+        FindObjectOfType<Act1Manager>().MostrarDialogo(nombreCliente + ": " + dialogoPedido);
+
+        // 3. Le avisamos al Manager que sume uno para habilitar la cocina/olor
+        FindObjectOfType<Act1Manager>().ClienteAtendido();
+
+        Debug.Log(nombreCliente + " ha sido atendido.");
+    }
 }

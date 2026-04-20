@@ -31,7 +31,14 @@ public class Act1Manager : MonoBehaviour
 
     public void ClienteAtendido()
     {
-        ClientesAtendidos ++;
+        ClientesAtendidos++;
+    
+        // Si ya atendió a los suficientes, podemos habilitar el trigger del olor
+        if (ClientesParaAtender >= ClientesAtendidos)
+        {
+            Debug.Log("Lucas terminó el servicio. Camino a la cocina habilitado.");
+            // Aquí podrías activar el objeto del Trigger del Olor si lo tenías desactivado
+        }
     }
 
     public bool ListoParaSotano()
