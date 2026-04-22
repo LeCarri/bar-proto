@@ -24,10 +24,23 @@ public class Act1Manager : MonoBehaviour
 
     public EffectoParpadeo effectoParpadeo; //arrastra el objeto con el sccript 
 
+    [Header("Audio")]
+    public AudioSource ambientBar;
+    public AudioSource musicBar;
+
     [Header("Progreso de servicio")]
     public int ClientesParaAtender = 2;
     private int ClientesAtendidos = 0;
     public GameObject puertaSotano; //referencia a la puerta para bloquearla
+
+    [Header("Lógica de Pedidos")]
+    public bool tieneObjetoEnMano = false;
+    public int clientesAtendidosTotal = 0;
+
+    [Header("Final de Acto")]
+    public GameObject objetoMujer;      
+    public GameObject triggerRegresoBarra; 
+
 
     public void ClienteAtendido()
     {
@@ -87,6 +100,7 @@ public class Act1Manager : MonoBehaviour
 
         // Esperamos un segundo de silencio tenso después del golpe
         yield return new WaitForSeconds(2f);
+
     }
 
     yield return new WaitForSeconds(4f);
@@ -110,6 +124,15 @@ public class Act1Manager : MonoBehaviour
     // 4. Cambiamos de estado y Lucas habla
     estadoActual = ActoState.Servicio;
     MostrarDialogo("Clientes ?... a trabajar.");
+
+     if (ambientBar != null && !ambientBar.isPlaying)
+        {
+            ambientBar.Play();
+        }
+    if (musicBar != null && !musicBar.isPlaying)
+        {
+            musicBar.Play();
+        }
 }
 
     void AparecerClientes()
@@ -132,4 +155,56 @@ public class Act1Manager : MonoBehaviour
     }
 
     void LimpiarTexto() => textoSubtitulos.text = "";
+
+    public void RecogerObjeto(bool esEnBarra)
+    {
+        if (esEnBarra && clientesAtendidosTotal == 1) // El segundo cliente
+        {
+            MostrarDialogo("Lucas: No queda nada acá... voy a tener que buscar un barril a la cocina.");
+            // Aquí habilitamos el Trigger de la cocina
+        }
+        else
+        {
+            tieneObjetoEnMano = true;
+            MostrarDialogo("Lucas: Ya tengo el pedido. A entregarlo.");
+        }
+    }
+
+    public bool TienePedidoEntregable() => tieneObjetoEnMano;
+
+    public void ClienteCompletado()
+    {
+        clientesAtendidosTotal++;
+
+        // Si es el segundo cliente (el que nos mandó a la cocina)
+        if (clientesAtendidosTotal == 2)
+        {
+            StartCoroutine(SecuenciaQuiebreRealidad());
+        }
+    }
+
+    IEnumerator SecuenciaQuiebreRealidad()
+    {   
+        // 1. Segundo parpadeo (el que limpia el bar)
+        if (effectoParpadeo != null) effectoParpadeo.IniciarParpadeo();
+    
+        // Esperamos un momento en medio del parpadeo
+        yield return new WaitForSeconds(0.5f);
+
+        // 2. Apagamos la música y desaparecemos a los clientes
+        if (ambientBar != null) ambientBar.Stop();
+        if (musicBar != null) musicBar.Stop();
+    
+        // Desactivamos el grupo de clientes (el GameObject que los contiene a todos)
+        if (grupoClientes != null) grupoClientes.SetActive(false);
+
+        yield return new WaitForSeconds(4f);
+
+        // 3. Lucas reacciona
+        MostrarDialogo("Lucas: ¿Qué...? ¿A dónde se fueron todos? No hace ninguna gracia...");
+
+        // 4. Habilitamos el trigger de regreso a la barra para la aparición
+        if (triggerRegresoBarra != null) triggerRegresoBarra.SetActive(true);
+    }
+
 }
