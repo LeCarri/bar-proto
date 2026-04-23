@@ -24,10 +24,39 @@ public class Act1Manager : MonoBehaviour
 
     public EffectoParpadeo effectoParpadeo; //arrastra el objeto con el sccript 
 
+    [Header("Sistemas de Iluminación")]
+    public GameObject lucesNormales;   // Amarillas (Bar vacío)
+    public GameObject lucesServicio;   // Violetas (Modo servicio/aparición)
+    public GameObject lucesCombate;
+
+    [Header("Audio")]
+    public AudioSource ambientBar;
+    public AudioSource musicBar;
+
     [Header("Progreso de servicio")]
     public int ClientesParaAtender = 2;
     private int ClientesAtendidos = 0;
     public GameObject puertaSotano; //referencia a la puerta para bloquearla
+
+    [Header("Lógica de Pedidos")]
+    public bool tieneObjetoEnMano = false;
+    public int clientesAtendidosTotal = 0;
+
+    [Header("Final de Acto")]
+    public GameObject objetoMujer;      
+    public GameObject triggerRegresoBarra; 
+
+    [Header("Secuencia de la Botella")]
+    public GameObject botellaEspecial;     // El cilindro en la cocina
+
+    [Header("Combate")]
+    public GameObject linternaObjeto;      // El objeto de la linterna para recoger
+    public GameObject[] enemigos;
+    public AudioSource sonidoMutacion;
+    public CameraShake sacudidaCamara;
+
+
+
 
     public void ClienteAtendido()
     {
@@ -56,6 +85,7 @@ public class Act1Manager : MonoBehaviour
     void Start()
     {
         estadoActual = ActoState.Limpieza;
+        CambiarIluminacion("Normal");
         if (grupoClientes != null) grupoClientes.SetActive(false);
         MostrarDialogo("Hay que dejar todo listo antes de abrir...");
     }
@@ -87,6 +117,7 @@ public class Act1Manager : MonoBehaviour
 
         // Esperamos un segundo de silencio tenso después del golpe
         yield return new WaitForSeconds(2f);
+
     }
 
     yield return new WaitForSeconds(4f);
@@ -95,11 +126,12 @@ public class Act1Manager : MonoBehaviour
     if (effectoParpadeo != null)
     {
         effectoParpadeo.IniciarParpadeo();
+        yield return new WaitForSeconds(1f);
+        CambiarIluminacion("Servicio");
     }
 
     // Esperamos a que el parpadeo esté por terminar (por ejemplo, antes del apagón final)
     // Si el parpadeo dura 1.5s en total, esperamos 1s
-    yield return new WaitForSeconds(1f);
 
     // 3. Activamos a los clientes MIENTRAS la luz está parpadeando
     if (grupoClientes != null) grupoClientes.SetActive(true);
@@ -110,6 +142,15 @@ public class Act1Manager : MonoBehaviour
     // 4. Cambiamos de estado y Lucas habla
     estadoActual = ActoState.Servicio;
     MostrarDialogo("Clientes ?... a trabajar.");
+
+     if (ambientBar != null && !ambientBar.isPlaying)
+        {
+            ambientBar.Play();
+        }
+    if (musicBar != null && !musicBar.isPlaying)
+        {
+            musicBar.Play();
+        }
 }
 
     void AparecerClientes()
@@ -132,4 +173,133 @@ public class Act1Manager : MonoBehaviour
     }
 
     void LimpiarTexto() => textoSubtitulos.text = "";
+
+    public void RecogerObjeto(bool esEnBarra)
+    {
+        if (esEnBarra && clientesAtendidosTotal == 1) // El segundo cliente
+        {
+            MostrarDialogo("Lucas: No queda nada acá... voy a tener que buscar un barril a la cocina.");
+            // Aquí habilitamos el Trigger de la cocina
+        }
+        else
+        {
+            tieneObjetoEnMano = true;
+            MostrarDialogo("Lucas: Ya tengo el pedido. A entregarlo.");
+        }
+    }
+
+    public bool TienePedidoEntregable() => tieneObjetoEnMano;
+
+    public void ClienteCompletado()
+    {
+        clientesAtendidosTotal++;
+
+        // Si es el segundo cliente (el que nos mandó a la cocina)
+        if (clientesAtendidosTotal == 2)
+        {
+            StartCoroutine(SecuenciaQuiebreRealidad());
+        }
+    }
+
+    IEnumerator SecuenciaQuiebreRealidad()
+    {   
+        // 1. Segundo parpadeo (el que limpia el bar)
+        if (effectoParpadeo != null) effectoParpadeo.IniciarParpadeo();
+    
+        // Esperamos un momento en medio del parpadeo
+        yield return new WaitForSeconds(0.5f);
+
+        // 2. Apagamos la música y desaparecemos a los clientes
+        if (ambientBar != null) ambientBar.Stop();
+        if (musicBar != null) musicBar.Stop();
+        CambiarIluminacion("Normal");
+    
+        // Desactivamos el grupo de clientes (el GameObject que los contiene a todos)
+        if (grupoClientes != null) grupoClientes.SetActive(false);
+
+        yield return new WaitForSeconds(4f);
+
+        // 3. Lucas reacciona
+        MostrarDialogo("Lucas: ¿Qué...? ¿A dónde se fueron todos? No hace ninguna gracia...");
+
+        // 4. Habilitamos el trigger de regreso a la barra para la aparición
+        if (triggerRegresoBarra != null) triggerRegresoBarra.SetActive(true);
+    }
+
+    public void CambiarIluminacion(string estado)
+    {
+        // Debug para verificar en consola qué estado se está llamando
+        Debug.Log("Cambiando iluminación a: " + estado);
+
+        if (lucesNormales != null) lucesNormales.SetActive(false);
+        if (lucesServicio != null) lucesServicio.SetActive(false);
+        if (lucesCombate != null) lucesCombate.SetActive(false);
+
+        switch (estado)
+        {
+            case "Normal":
+                if (lucesNormales != null) lucesNormales.SetActive(true);
+                break;
+            case "Servicio":
+                if (lucesServicio != null) lucesServicio.SetActive(true);
+                break;
+            case "Combate":
+                if (lucesCombate != null) lucesCombate.SetActive(true);
+                break;
+            default:
+                Debug.LogWarning("El estado de luz '" + estado + "' no existe.");
+                break;
+        }
+    }
+
+    public void HabilitarTriggerCocinaFinal()
+    {
+        if (botellaEspecial != null)
+        {
+            // Activamos el objeto para que el jugador pueda interactuar con él
+            botellaEspecial.SetActive(true);
+        
+            // Opcional: Podés poner una flecha violeta sutil sobre la puerta 
+            // de la cocina para guiar al jugador en este momento de confusión.
+            Debug.Log("Misión: Ir a buscar la botella especial.");
+        }
+    }
+
+    public void AlRecogerBotellaEspecial()
+    {
+        estadoActual = ActoState.ElQuiebre;
+        CambiarIluminacion("Combate"); // Rojo
+
+        if (objetoMujer != null) objetoMujer.SetActive(false);
+        if (linternaObjeto != null) linternaObjeto.SetActive(true);
+
+        // Lanzamos el temblor y el sonido
+        if (sacudidaCamara != null) StartCoroutine(sacudidaCamara.Shake(0.8f, 0.2f));
+        if (sonidoMutacion != null) sonidoMutacion.Play();
+
+        // ACTIVACIÓN DE ENEMIGOS
+        StartCoroutine(ActivarEnemigosSecuencial());
+
+        MostrarDialogo("Lucas: ¡¿Qué carajo fue eso?! ¡No veo nada!");
+    }
+
+    IEnumerator ActivarEnemigosSecuencial()
+    {
+        // Esperamos un segundo después del estruendo para que aparezcan
+        yield return new WaitForSeconds(1f);
+
+        foreach (GameObject enemigo in enemigos)
+        {
+            if (enemigo != null)
+            {
+                enemigo.SetActive(true);
+                // Si tienen un AudioSource con un rugido o sonido metálico, tiralo acá
+                AudioSource snd = enemigo.GetComponent<AudioSource>();
+                if(snd != null) snd.Play();
+            }
+            
+            // Opcional: que aparezcan de a uno con un pequeño delay
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
 }

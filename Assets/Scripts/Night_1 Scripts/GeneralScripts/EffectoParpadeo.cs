@@ -4,7 +4,7 @@ using System.Collections;
 public class EffectoParpadeo : MonoBehaviour
 {
     [Header("Referencias")]
-    public GameObject grupoLuces; 
+    //public GameObject grupoLuces; 
     public GameObject pantallaNegra; 
     public AudioSource audioLuces; // Arrastrá acá un AudioSource con el sonido de chispazo
 
@@ -41,7 +41,7 @@ public class EffectoParpadeo : MonoBehaviour
 
     void ToggleEfecto(bool estado)
     {
-        if (grupoLuces) grupoLuces.SetActive(estado);
+        //if (grupoLuces) grupoLuces.SetActive(estado);
         if (pantallaNegra) pantallaNegra.SetActive(!estado);
     }
 }
