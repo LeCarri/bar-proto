@@ -30,11 +30,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (moveInput.y == 0 && moveInput.x == 0) 
-        {
-            rb.linearVelocity = rb.linearVelocity / 2;
-        }
-         else if(dialogueSys.inDialogue == false)
+        if ((moveInput.y != 0 || moveInput.x != 0) && dialogueSys.inDialogue == false)
             Move();
     }
 
