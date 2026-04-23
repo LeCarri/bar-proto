@@ -25,12 +25,13 @@ public class PlayerMovement : MonoBehaviour
 
         cameraTransform = GameObject.FindWithTag("MainCamera").transform;
         rb = GetComponent<Rigidbody>();
+        Debug.Log(rb);
         dialogueSys = DialogueSystem.Instance;
     }
 
     private void FixedUpdate()
     {
-        if ((moveInput.y != 0 || moveInput.x != 0) && dialogueSys.inDialogue == false)
+        if ((moveInput.y != 0 || moveInput.x != 0) && !InDialogue())
             Move();
     }
 
@@ -67,5 +68,16 @@ public class PlayerMovement : MonoBehaviour
         
     }
 
+    private bool InDialogue() 
+    {
+        if (dialogueSys != null) 
+        {
+            if (dialogueSys.inDialogue == false)
+                return false;
+            else
+                return true;
+        }
+        else return false;
+    }
 
 }
