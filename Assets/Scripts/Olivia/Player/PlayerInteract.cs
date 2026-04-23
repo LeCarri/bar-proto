@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Cinemachine;
 using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,6 +9,8 @@ public class PlayerInteract : MonoBehaviour
     UIManager ui;
 
     DialogueSystem dialogueSys;
+    CinemachineInputAxisController cameraController;
+    
     public static PlayerInteract Instance { get; private set; }
 
     public float playerReach = 3f;
@@ -36,6 +39,7 @@ public class PlayerInteract : MonoBehaviour
         dialogueSys = DialogueSystem.Instance;
         inputPickupWithRightHand = InputSystem.actions.FindAction("PickupRHand");
         ui = UIManager.Instance;
+        cameraController = GameObject.FindWithTag("CinemachineCamera").GetComponent<CinemachineInputAxisController>();
 
         HandsCenterParent = R_HandObject.transform.parent;
         //Debug.Log(R_HandObject.transform.localPosition);
@@ -97,26 +101,19 @@ public class PlayerInteract : MonoBehaviour
 
     private IEnumerator MoveHandToPickup(GameObject hand, GameObject targetObj) 
     {
+        //lock camera
+        cameraController.enabled = false;
+
         //move hand to item
-        while (true) 
-        {   
-            if (Vector3.Distance(hand.transform.position, targetObj.transform.position) > 0.2f)
-                hand.transform.position = Vector3.Slerp(hand.transform.position, targetObj.transform.position, 1f);
-            else
-            {
-                hand.transform.position = targetObj.transform.position;
-
-                hand.transform.SetParent(targetObj.transform);
-                break;
-            }
-
-            //Debug.Log(Vector3.Distance(hand.transform.position, targetObj.transform.position));
-
-            yield return new WaitForSeconds(0.1f);
-        }
+        hand.transform.LeanMove(targetObj.transform.position, 0.4f)
+            .setEaseOutSine()
+            .setOnComplete(() => hand.transform.SetParent(targetObj.transform));
 
         //tell pickup is being held
-        currentPickup.OnPickup();
+        yield return new WaitForSeconds(0.4f);
+
+        currentPickup.OnPickup(); //pickup obj
+        cameraController.enabled = true; //unlock camera
         //Debug.Log("End of couroutine 1");
         yield break;
 
@@ -129,21 +126,26 @@ public class PlayerInteract : MonoBehaviour
         hand.transform.SetParent(HandsCenterParent);
 
         //reset hand pos
-        while (true)
-        {
-            if (Vector3.Distance(hand.transform.localPosition, initialPos) > 0.2f)
-                hand.transform.localPosition = Vector3.Slerp(hand.transform.position, initialPos, 1f);
-            else
-            {
-                hand.transform.localPosition = initialPos;
-                hand.transform.localEulerAngles = new Vector3(-90, 180, 0);
-                break;
-            }
+        hand.transform.LeanMoveLocal(initialPos, 0.3f)
+            .setEaseOutSine();
+        LeanTween.rotateLocal(hand, new Vector3(-90, 180, 0), 0.2f)
+            .setEaseOutSine();
 
-            //Debug.Log(Vector3.Distance(hand.transform.localPosition, initialPos));
-    
-            yield return new WaitForSeconds(0.1f);
-        }
+        //while (true)
+        //{
+        //    if (Vector3.Distance(hand.transform.localPosition, initialPos) > 0.2f)
+        //        hand.transform.localPosition = Vector3.Slerp(hand.transform.position, initialPos, 1f);
+        //    else
+        //    {
+        //        hand.transform.localPosition = initialPos;
+        //        hand.transform.localEulerAngles = new Vector3(-90, 180, 0);
+        //        break;
+        //    }
+        //
+        //    //Debug.Log(Vector3.Distance(hand.transform.localPosition, initialPos));
+        //
+        //    yield return new WaitForSeconds(0.1f);
+        //}
 
         //Debug.Log("End of couroutine 2");
         yield break;
@@ -154,7 +156,7 @@ public class PlayerInteract : MonoBehaviour
         currentPickup = null;
 
         //move hand back to player
-        StartCoroutine(MoveHandToPlayer(R_HandObject, RH_initialPos));
+        StartCoroutine(MoveHandToPlayer(R_HandObject, new Vector3(2,0,0)));
 
         //Debug.Log(currentPickup);
     }
