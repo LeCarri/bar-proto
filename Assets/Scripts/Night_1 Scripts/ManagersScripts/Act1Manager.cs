@@ -126,6 +126,7 @@ public class Act1Manager : MonoBehaviour
     if (effectoParpadeo != null)
     {
         effectoParpadeo.IniciarParpadeo();
+        
         yield return new WaitForSeconds(1f);
         CambiarIluminacion("Servicio");
     }
@@ -143,7 +144,9 @@ public class Act1Manager : MonoBehaviour
     estadoActual = ActoState.Servicio;
     MostrarDialogo("Clientes ?... a trabajar.");
 
-     if (ambientBar != null && !ambientBar.isPlaying)
+        ParanoiaSystem.Instance.AddParanoia(25f);//sube la paranoia en un 25%
+
+        if (ambientBar != null && !ambientBar.isPlaying)
         {
             ambientBar.Play();
         }
