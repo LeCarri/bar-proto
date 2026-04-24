@@ -5,8 +5,8 @@ using UnityEngine.EventSystems;
 
 public class UIButtons : MonoBehaviour
 {
-    [Header("UI Audio")]
-    [SerializeField] private AudioSource uiAudioSource;
+    [Header("UI SFX Audio")]
+    [SerializeField] private AudioSource uiSfxAudioSource;
     [SerializeField] private AudioClip hoverClip;
     [SerializeField] private AudioClip clickClip;
     [SerializeField] [Range(0f, 1f)] private float hoverVolume = 0.6f;
@@ -14,7 +14,7 @@ public class UIButtons : MonoBehaviour
 
     private void Awake()
     {
-        EnsureAudioSource();
+        EnsureSfxAudioSource();
         RegisterButtonAudio();
     }
 
@@ -56,22 +56,30 @@ public class UIButtons : MonoBehaviour
         PlayClip(clickClip, clickVolume);
     }
 
-    private void EnsureAudioSource()
+    private void EnsureSfxAudioSource()
     {
-        if (uiAudioSource != null)
+        if (uiSfxAudioSource != null)
         {
             return;
         }
 
-        uiAudioSource = GetComponent<AudioSource>();
-
-        if (uiAudioSource == null)
+        AudioSource[] audioSources = GetComponents<AudioSource>();
+        foreach (AudioSource audioSource in audioSources)
         {
-            uiAudioSource = gameObject.AddComponent<AudioSource>();
+            if (audioSource != null && !audioSource.playOnAwake && !audioSource.loop)
+            {
+                uiSfxAudioSource = audioSource;
+                break;
+            }
         }
 
-        uiAudioSource.playOnAwake = false;
-        uiAudioSource.loop = false;
+        if (uiSfxAudioSource == null)
+        {
+            uiSfxAudioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        uiSfxAudioSource.playOnAwake = false;
+        uiSfxAudioSource.loop = false;
     }
 
     private void RegisterButtonAudio()
@@ -99,12 +107,12 @@ public class UIButtons : MonoBehaviour
 
     private void PlayClip(AudioClip clip, float volume)
     {
-        if (uiAudioSource == null || clip == null)
+        if (uiSfxAudioSource == null || clip == null)
         {
             return;
         }
 
-        uiAudioSource.PlayOneShot(clip, volume);
+        uiSfxAudioSource.PlayOneShot(clip, volume);
     }
 }
 
