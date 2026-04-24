@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,6 +12,12 @@ public class UIButtons : MonoBehaviour
     [SerializeField] private AudioClip clickClip;
     [SerializeField] [Range(0f, 1f)] private float hoverVolume = 0.6f;
     [SerializeField] [Range(0f, 1f)] private float clickVolume = 0.8f;
+
+    [Header("Intro Screen")]
+    [SerializeField] private GameObject introPanel;
+
+    private readonly Dictionary<GameObject, bool> menuVisibilityBeforeCredits = new Dictionary<GameObject, bool>();
+    private bool creditsFocusApplied;
 
     private void Awake()
     {
@@ -33,7 +40,26 @@ public class UIButtons : MonoBehaviour
 
     public void TogglePanel(GameObject panel)
     {
-        panel.SetActive(!panel.activeSelf);
+        if (panel == null)
+        {
+            return;
+        }
+
+        bool shouldOpen = !panel.activeSelf;
+        panel.SetActive(shouldOpen);
+
+        if (panel.name == "PanelCreditos")
+        {
+            SetCreditsPanelFocus(panel, shouldOpen);
+        }
+    }
+
+    public void ShowIntroScreen()
+    {
+        if (introPanel != null)
+        {
+            introPanel.SetActive(true);
+        }
     }
 
     public void SetVolume(float volume)
@@ -113,6 +139,58 @@ public class UIButtons : MonoBehaviour
         }
 
         uiSfxAudioSource.PlayOneShot(clip, volume);
+    }
+
+    private void SetCreditsPanelFocus(GameObject creditsPanel, bool isOpen)
+    {
+        Transform canvasRoot = creditsPanel.transform.parent;
+        if (canvasRoot == null)
+        {
+            return;
+        }
+
+        if (isOpen)
+        {
+            menuVisibilityBeforeCredits.Clear();
+
+            foreach (Transform child in canvasRoot)
+            {
+                GameObject childObject = child.gameObject;
+
+                if (childObject == creditsPanel)
+                {
+                    continue;
+                }
+
+                if (childObject.name == "Background")
+                {
+                    childObject.SetActive(true);
+                    continue;
+                }
+
+                menuVisibilityBeforeCredits[childObject] = childObject.activeSelf;
+                childObject.SetActive(false);
+            }
+
+            creditsFocusApplied = true;
+            return;
+        }
+
+        if (!creditsFocusApplied)
+        {
+            return;
+        }
+
+        foreach (KeyValuePair<GameObject, bool> entry in menuVisibilityBeforeCredits)
+        {
+            if (entry.Key != null)
+            {
+                entry.Key.SetActive(entry.Value);
+            }
+        }
+
+        menuVisibilityBeforeCredits.Clear();
+        creditsFocusApplied = false;
     }
 }
 
