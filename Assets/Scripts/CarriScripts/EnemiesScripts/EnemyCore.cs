@@ -19,7 +19,9 @@ public class EnemyCore : MonoBehaviour
 
     protected virtual void Die()
     {
-        // Aca podemos instanciar partículas de humo si usamos o simplemente destruir
+        Act1Manager manager = Object.FindAnyObjectByType<Act1Manager>();
+        if (manager != null) manager.EnemigoEliminado();
+
         Destroy(gameObject);
     }
 

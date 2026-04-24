@@ -2,50 +2,63 @@ using UnityEngine;
 
 public class ClienteInteractuable : MonoBehaviour, IInteractable
 {
-    [Header("Datos del Cliente")]
-    public string nombreCliente = "Cliente";
-    [TextArea(3, 10)]
-    public string dialogoPedido = "Hola... ¿me das una cerveza?";
+    public enum EstadoCliente { EsperandoAtencion, EsperandoPedido, Atendido }
+    public EstadoCliente estadoActual = EstadoCliente.EsperandoAtencion;
 
-    [Header("Referencias Visuales")]
-    public GameObject indicadorVioleta; // El triángulo que flota
+    [Header("Configuración")]
+    public string nombreCliente;
+    public string dialogoPedido = "Hola, traeme una cerveza.";
+    public string dialogoGracias = "Gracias, Lucas. Dejala ahí.";
 
-    private bool yaAtendido = false;
+    [Header("UI")]
+    public GameObject indicadorVioleta;
 
     public void Interact()
     {
-        // Solo interactuamos si no fue atendido
-        if (!yaAtendido)
+        switch (estadoActual)
         {
-            Atender();
+            case EstadoCliente.EsperandoAtencion:
+                TomarPedido();
+                break;
+            case EstadoCliente.EsperandoPedido:
+                EntregarPedido();
+                break;
+        }
+    }
+
+    void TomarPedido()
+    {
+        FindObjectOfType<Act1Manager>().MostrarDialogo(nombreCliente + ": " + dialogoPedido);
+        estadoActual = EstadoCliente.EsperandoPedido;
+        
+        // El indicador violeta se queda encendido pero quizás podrías cambiarle el color 
+        // o dejarlo para que Lucas sepa que todavía tiene algo pendiente aquí.
+        
+        Debug.Log("Pedido tomado. Lucas debe buscar el objeto.");
+    }
+
+    void EntregarPedido()
+    {
+        // Solo entregamos si Lucas realmente tiene el objeto (esto lo validamos en el Manager)
+        if (FindObjectOfType<Act1Manager>().TienePedidoEntregable())
+        {
+            FindObjectOfType<Act1Manager>().MostrarDialogo(nombreCliente + ": " + dialogoGracias);
+            estadoActual = EstadoCliente.Atendido;
+            
+            if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
+            
+            FindObjectOfType<Act1Manager>().ClienteCompletado();
         }
         else
         {
-            // Opcional: Diálogo corto por si le volvés a hablar
-            //FindObjectOfType<Act1Manager>().MostrarDialogo(nombreCliente + ": Ya estoy bien, gracias.");
+            FindObjectOfType<Act1Manager>().MostrarDialogo("Lucas: Todavía no tengo lo que me pidió...");
         }
     }
 
-        public string GetDescription()
+    public string GetDescription()
     {
-        if (yaAtendido) return "";
-        return "Presiona [E] para atender a " + nombreCliente;
-    }
-
-    void Atender()
-    {
-        yaAtendido = true;
-
-        // 1. Apagamos la flecha violeta
-        if (indicadorVioleta != null) 
-            indicadorVioleta.SetActive(false);
-
-        // 2. Mostramos su pedido en la UI de Lucas
-        FindObjectOfType<Act1Manager>().MostrarDialogo(nombreCliente + ": " + dialogoPedido);
-
-        // 3. Le avisamos al Manager que sume uno para habilitar la cocina/olor
-        FindObjectOfType<Act1Manager>().ClienteAtendido();
-
-        Debug.Log(nombreCliente + " ha sido atendido.");
+        if (estadoActual == EstadoCliente.EsperandoAtencion) return "Presiona [E] para tomar pedido";
+        if (estadoActual == EstadoCliente.EsperandoPedido) return "Presiona [E] para entregar pedido";
+        return "";
     }
 }
