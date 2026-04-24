@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7314440809650636922}
   - component: {fileID: 1638020842389138781}
   - component: {fileID: 8670645926993649376}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -126,13 +126,13 @@ GameObject:
   - component: {fileID: 6515602611952583806}
   - component: {fileID: 8244836861431771053}
   - component: {fileID: 9144947511448511384}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Spot Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6515602611952583806
 Transform:
   m_ObjectHideFlags: 0
@@ -252,7 +252,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2316779096662292979}
   - component: {fileID: 1456986326621966892}
-  m_Layer: 0
+  - component: {fileID: 3775108212997711434}
+  - component: {fileID: 7783841349094393964}
+  m_Layer: 3
   m_Name: Flashlight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -303,6 +305,32 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   firePoint: {fileID: 7303343556027037844}
+--- !u!114 &3775108212997711434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7058900763340401169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a61b561603066441b4e09f4acdd756c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LinternaRecogible
+  linternaEnMano: {fileID: 0}
+  mensajeUI: Presiona E para agarrar la linterna
+--- !u!114 &7783841349094393964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7058900763340401169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd9fc1e89afe182409b50d5c8ff05905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlLinterna
 --- !u!1 &7774647019847307283
 GameObject:
   m_ObjectHideFlags: 0
@@ -312,7 +340,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7303343556027037844}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: FirePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}

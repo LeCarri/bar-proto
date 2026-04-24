@@ -55,6 +55,12 @@ public class Act1Manager : MonoBehaviour
     public AudioSource sonidoMutacion;
     public CameraShake sacudidaCamara;
 
+    public int enemigosDerrotados = 0;
+    public int totalEnemigos = 3;
+
+    [Header("Referencias de Cierre")] // Las luces originales del bar
+    public CanvasGroup fadeCanvasGroup; // Un Panel negro que cubra toda la pantalla
+    public TextMeshProUGUI interactionText;
 
 
 
@@ -207,7 +213,7 @@ public class Act1Manager : MonoBehaviour
         if (effectoParpadeo != null) effectoParpadeo.IniciarParpadeo();
     
         // Esperamos un momento en medio del parpadeo
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
 
         // 2. Apagamos la música y desaparecemos a los clientes
         if (ambientBar != null) ambientBar.Stop();
@@ -301,5 +307,71 @@ public class Act1Manager : MonoBehaviour
             // Opcional: que aparezcan de a uno con un pequeño delay
             yield return new WaitForSeconds(0.5f);
         }
+    }
+
+    public void EnemigoEliminado()
+    {
+        enemigosDerrotados++;
+
+        if (enemigosDerrotados >= totalEnemigos)
+        {
+            FinalizarNoche();
+        }
+    }
+
+    void FinalizarNoche()
+    {
+        // 1. Volver a la normalidad
+        lucesCombate.SetActive(false);
+        lucesNormales.SetActive(true);
+
+        // 2. Lanzar el diálogo (Si tenés un sistema de subtítulos)
+        Debug.Log("Lucas: 'Uff... qué carajo fue eso... estoy agotado...'");
+        
+        // 3. Empezar el fundido a negro
+        StartCoroutine(SecuenciaCierreNoche());
+    }
+
+    IEnumerator SecuenciaCierreNoche()
+    {
+        // 1. EL PARPADEO (Disimula el cambio repentino)
+        // Hacemos que las luces rojas titilen antes de morir
+        float t = 0;
+        while (t < 1.2f) 
+            {
+            lucesCombate.SetActive(!lucesCombate.activeSelf);
+            // El sonido de un cortocircuito aquí quedaría genial
+            yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
+            t += 0.15f;
+            }
+        lucesCombate.SetActive(false);
+
+        // 2. OSCURIDAD TOTAL (Tensión de un segundo)
+        yield return new WaitForSeconds(1.0f);
+
+        // 3. VUELTA A LA NORMALIDAD
+        lucesNormales.SetActive(true);
+        // Aquí podés activar el texto de Lucas:
+        if (interactionText != null) 
+            {
+                interactionText.text = "Lucas: No puedo más... necesito dormir...";
+                interactionText.gameObject.SetActive(true);
+            }
+
+        // 4. ESPERA ANTES DEL FIN
+        yield return new WaitForSeconds(3.0f);
+
+        // 5. FUNDIDO A NEGRO (El efecto final original)
+        float duracionFade = 2.5f;
+        float tiempoFade = 0;
+        while (tiempoFade < duracionFade)
+            {
+            tiempoFade += Time.deltaTime;
+            fadeCanvasGroup.alpha = Mathf.Lerp(0, 1, tiempoFade / duracionFade);
+            yield return null;
+            }
+
+        Debug.Log("Noche 1 terminada con éxito.");
+        // Aquí podrías poner el SceneManager.LoadScene para la Noche 2
     }
 }

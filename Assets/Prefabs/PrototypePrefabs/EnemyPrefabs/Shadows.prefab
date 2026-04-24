@@ -46,8 +46,8 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 1.5
-  m_Acceleration: 8
+  m_Speed: 8
+  m_Acceleration: 10
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
@@ -89,7 +89,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 685654397462158766}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 4
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -121,7 +121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersecutionEnemy
   health: 100
-  deathSpeed: 20
+  deathSpeed: 30
 --- !u!1 &7495763057537176333
 GameObject:
   m_ObjectHideFlags: 0

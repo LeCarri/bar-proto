@@ -1,25 +1,29 @@
 using UnityEngine;
 
-public class BotellaEspecial : MonoBehaviour
+// Agregamos ", IInteractable" para que el Raycast de Lucas lo reconozca
+public class BotellaEspecial : MonoBehaviour, IInteractable 
 {
-    private void OnTriggerEnter(Collider other)
+    public string GetDescription() 
     {
-        // Debug para ver en consola quién te está tocando (temporal)
-        Debug.Log("Objeto tocando la botella: " + other.name + " | Tag: " + other.tag);
+        return "Presiona E para recoger la botella";
+    }
+    // Esta es la función que va a llamar tu script de PlayerInteraction
+    public void Interact() 
+    {
+        Debug.Log("¡Lucas recogió la botella usando la E!");
 
-        // --- ESTA LÍNEA ES LA CRÍTICA ---
-        // Solo ejecuta la lógica si el objeto que colisiona tiene el tag "Player"
-        if (other.CompareTag("Player")) 
+        // Buscamos al manager (usamos tu lógica de FindAnyObjectByType)
+        Act1Manager manager = Object.FindAnyObjectByType<Act1Manager>();
+
+        if (manager != null)
         {
-            Debug.Log("¡Lucas recogió la botella!");
-            
-            Act1Manager manager = Object.FindAnyObjectByType<Act1Manager>();
-            
-            if (manager != null)
-            {
-                manager.AlRecogerBotellaEspecial();
-                gameObject.SetActive(false); // Desaparece la botella
-            }
+            manager.AlRecogerBotellaEspecial();
+            gameObject.SetActive(false); // La botella desaparece
+        }
+        else 
+        {
+            Debug.LogError("Ojo: No se encontró el Act1Manager en la escena.");
         }
     }
+
 }
