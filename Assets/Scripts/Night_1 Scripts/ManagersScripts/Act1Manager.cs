@@ -80,13 +80,6 @@ public class Act1Manager : MonoBehaviour
     {
         return ClientesAtendidos >= ClientesParaAtender;
     }
-
-    public void HabilitarSotano()
-{
-    // cambiar el estado o simplemente permitir la interacción con la puerta
-    Debug.Log("Lucas ya puede entrar a la cocina/sótano.");
-}
-        
     
     void Start()
     {
@@ -115,6 +108,7 @@ public class Act1Manager : MonoBehaviour
     if (sonidoGolpeSuelo != null)
     {
         sonidoGolpeSuelo.Play();
+        ParanoiaSystem.Instance.AddParanoia(15f);
 
         yield return new WaitForSeconds(2f);
 
@@ -226,7 +220,8 @@ public class Act1Manager : MonoBehaviour
         // Desactivamos el grupo de clientes (el GameObject que los contiene a todos)
         if (grupoClientes != null) grupoClientes.SetActive(false);
 
-        yield return new WaitForSeconds(4f);
+        yield return new WaitForSeconds(2f);
+        ParanoiaSystem.Instance.AddParanoia(15f);
 
         // 3. Lucas reacciona
         MostrarDialogo("Lucas: ¿Qué...? ¿A dónde se fueron todos? No hace ninguna gracia...");
@@ -285,6 +280,7 @@ public class Act1Manager : MonoBehaviour
         // Lanzamos el temblor y el sonido
         if (sacudidaCamara != null) StartCoroutine(sacudidaCamara.Shake(0.8f, 0.2f));
         if (sonidoMutacion != null) sonidoMutacion.Play();
+        ParanoiaSystem.Instance.AddParanoia(100f);
 
         // ACTIVACIÓN DE ENEMIGOS
         StartCoroutine(ActivarEnemigosSecuencial());
@@ -327,6 +323,7 @@ public class Act1Manager : MonoBehaviour
         // 1. Volver a la normalidad
         lucesCombate.SetActive(false);
         lucesNormales.SetActive(true);
+        ParanoiaSystem.Instance.AddParanoia(-60f);
 
         // 2. Lanzar el diálogo (Si tenés un sistema de subtítulos)
         Debug.Log("Lucas: 'Uff... qué carajo fue eso... estoy agotado...'");

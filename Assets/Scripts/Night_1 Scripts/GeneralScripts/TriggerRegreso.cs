@@ -26,6 +26,7 @@ public class TriggerRegreso : MonoBehaviour
         // --- 2. EL MOMENTO DEL PARPADEO ---
         // Iniciamos el efecto visual para ocultar la aparición
         if (manager.effectoParpadeo != null) manager.effectoParpadeo.IniciarParpadeo();
+        ParanoiaSystem.Instance.AddParanoia(20f);
         
         // Esperamos un momento breve mientras las luces están apagadas
         yield return new WaitForSeconds(1f);
