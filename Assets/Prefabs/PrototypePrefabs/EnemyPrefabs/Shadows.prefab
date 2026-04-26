@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 9069489938529472470}
   - component: {fileID: 88838967985018635}
   - component: {fileID: 1105365651911117815}
+  - component: {fileID: 2073158877631832439}
+  - component: {fileID: -4830815726521908217}
   m_Layer: 3
   m_Name: Shadows
   m_TagString: Untagged
@@ -115,13 +117,49 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 685654397462158766}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c5de32a62aedb6469fc745486f13096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersecutionEnemy
   health: 100
   deathSpeed: 30
+--- !u!114 &2073158877631832439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685654397462158766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 490805811825c61469df908de317f99a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SombraLookAt
+  duracionMirada: 4
+  velocidadRotacion: 35
+  avanzarAlAtacar: 1
+  distanciaAvance: 0.4
+  componentesDeAtaque:
+  - {fileID: 1105365651911117815}
+  audioRespiracion: {fileID: 0}
+  audioAtaque: {fileID: 0}
+--- !u!114 &-4830815726521908217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685654397462158766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4910db282be81b24496293a327f9d55f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyCore_Act2
+  health: 100
+  deathSpeed: 20
+  desvanecerAlMorir: 1
+  duracionDesvanecimiento: 0.8
 --- !u!1 &7495763057537176333
 GameObject:
   m_ObjectHideFlags: 0

@@ -67,13 +67,13 @@ public class ParanoiaSystem : MonoBehaviour
         paranoiaBarImage.fillAmount = Mathf.Lerp(paranoiaBarFillAmmount, paranoia/100, t);
     }
 
-    public void AddParanoia(float value) 
+    public void AddParanoia(float value)
     {
         currentLerpTime = 0;
-        paranoia += value;
-        if (paranoia > 100f)
-            paranoia = 100f;
+        paranoia = Mathf.Clamp(paranoia + value, 0f, 100f);
     }
+
+    public float GetParanoia() => paranoia;
 
     void ActualizarEfectosSensoriales()
     {
