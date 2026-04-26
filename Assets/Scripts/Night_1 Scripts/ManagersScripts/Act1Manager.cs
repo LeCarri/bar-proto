@@ -3,14 +3,19 @@ using TMPro;
 using System.Collections;
 using JetBrains.Annotations;
 using Unity.VisualScripting; // Necesario para usar Corrutinas (IEnumerator)
+using UnityEngine.SceneManagement;
 
 public class Act1Manager : MonoBehaviour
 {
     public enum ActoState { Limpieza, Servicio, ElQuiebre }
     public ActoState estadoActual = ActoState.Limpieza;
+    private Coroutine corrutinaActiva;
 
-    [Header("UI y Diálogos")]
+   [Header("UI y Diálogos")]
     public TextMeshProUGUI textoSubtitulos;
+    public CanvasGroup canvasGroupDialogo; // Asegúrate de que el fondo tenga este componente
+    public float velocidadEscritura = 0.04f;
+    public float velocidadFade = 3f; // Nueva variable para controlar la suavidad
 
     [Header("Referencias de Escena")]
     public GameObject grupoClientes; 
@@ -62,6 +67,9 @@ public class Act1Manager : MonoBehaviour
     public CanvasGroup fadeCanvasGroup; // Un Panel negro que cubra toda la pantalla
     public TextMeshProUGUI interactionText;
 
+    [Header("Objetivos")]
+    public TextMeshProUGUI textoObjetivo;
+
 
 
     public void ClienteAtendido()
@@ -84,9 +92,58 @@ public class Act1Manager : MonoBehaviour
     void Start()
     {
         estadoActual = ActoState.Limpieza;
+
+        if (fadeCanvasGroup != null)
+        {
+            // Forzamos que el objeto esté activo y sea negro al 100%
+            fadeCanvasGroup.gameObject.SetActive(true);
+            fadeCanvasGroup.alpha = 1f;
+        
+            Debug.Log("Iniciando fundido de entrada...");
+            StartCoroutine(SecuenciaInicioNoche());
+        }
+        else 
+        {
+            Debug.LogError("¡Ojo! No asignaste el fadeCanvasGroup en el Inspector.");
+        }
+
         CambiarIluminacion("Normal");
         if (grupoClientes != null) grupoClientes.SetActive(false);
         MostrarDialogo("Hay que dejar todo listo antes de abrir...");
+        ActualizarObjetivo("Acomodá las sillas (" + sillasAcomodadas + "/" + totalSillas + ")");
+    }
+
+    public void ActualizarObjetivo(string nuevoObjetivo)
+    {
+        if (textoObjetivo != null)
+        {
+            textoObjetivo.text = "- " + nuevoObjetivo;
+            // Opcional: Podés disparar una pequeña animación de escala o color 
+            // para que el jugador note que el objetivo cambió.
+        }
+    }
+
+    IEnumerator SecuenciaInicioNoche()
+    {
+        // Aseguramos que empiece totalmente negro
+        fadeCanvasGroup.alpha = 1f;
+    
+        yield return new WaitForSeconds(0.5f); // Un breve momento de suspenso en negro
+
+        float duracionFade = 2.0f; // Qué tan lento querés que aclare
+        float tiempo = 0;
+
+        while (tiempo < duracionFade)
+        {
+            tiempo += Time.deltaTime;
+            // Va de 1 (negro) a 0 (transparente)
+            fadeCanvasGroup.alpha = Mathf.Lerp(1, 0, tiempo / duracionFade);
+            yield return null;
+        }
+
+        fadeCanvasGroup.alpha = 0f;
+        // Desactivamos el Raycast para que no bloquee el click del mouse al jugar
+        fadeCanvasGroup.blocksRaycasts = false;
     }
 
     public void SillaCompletada()
@@ -98,51 +155,53 @@ public class Act1Manager : MonoBehaviour
         {
             StartCoroutine(SecuenciaTransicionSuelo());
         }
+        ActualizarObjetivo("Acomodá las sillas (" + sillasAcomodadas + "/" + totalSillas + ")");
     }
 
     // Usamos un IEnumerator para manejar los tiempos de forma secuencial
     IEnumerator SecuenciaTransicionSuelo()
-{
-    yield return new WaitForSeconds(4f);
-    // 1. Empieza el sonido del golpe sordo
-    if (sonidoGolpeSuelo != null)
     {
-        sonidoGolpeSuelo.Play();
-        ParanoiaSystem.Instance.AddParanoia(15f);
+        yield return new WaitForSeconds(4f);
+        // 1. Empieza el sonido del golpe sordo
+        if (sonidoGolpeSuelo != null)
+        {
+            sonidoGolpeSuelo.Play();
+            ParanoiaSystem.Instance.AddParanoia(15f);
 
-        yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(2f);
 
-        // Lucas reacciona
-        MostrarDialogo("¿Qué fue eso? Estas cañerías están cada vez peor...");
+            // Lucas reacciona
+            MostrarDialogo("¿Qué fue eso? Estas cañerías están cada vez peor...");
 
-        // Esperamos un segundo de silencio tenso después del golpe
-        yield return new WaitForSeconds(2f);
+            // Esperamos un segundo de silencio tenso después del golpe
+            yield return new WaitForSeconds(2f);
 
-    }
+        }   
 
-    yield return new WaitForSeconds(4f);
+        yield return new WaitForSeconds(4f);
 
-    // 2. Lanzamos el efecto de parpadeo (que dura X segundos)
-    if (effectoParpadeo != null)
-    {
-        effectoParpadeo.IniciarParpadeo();
+        // 2. Lanzamos el efecto de parpadeo (que dura X segundos)
+        if (effectoParpadeo != null)
+        {
+            effectoParpadeo.IniciarParpadeo();
         
-        yield return new WaitForSeconds(1f);
-        CambiarIluminacion("Servicio");
-    }
+            yield return new WaitForSeconds(1f);
+            CambiarIluminacion("Servicio");
+        }
 
-    // Esperamos a que el parpadeo esté por terminar (por ejemplo, antes del apagón final)
-    // Si el parpadeo dura 1.5s en total, esperamos 1s
+        // Esperamos a que el parpadeo esté por terminar (por ejemplo, antes del apagón final)
+        // Si el parpadeo dura 1.5s en total, esperamos 1s
 
-    // 3. Activamos a los clientes MIENTRAS la luz está parpadeando
-    if (grupoClientes != null) grupoClientes.SetActive(true);
+        // 3. Activamos a los clientes MIENTRAS la luz está parpadeando
+        if (grupoClientes != null) grupoClientes.SetActive(true);
 
-    // Esperamos un poquito más para asegurar que el parpadeo terminó
-    yield return new WaitForSeconds(0.5f);
+        // Esperamos un poquito más para asegurar que el parpadeo terminó
+        yield return new WaitForSeconds(0.5f);
 
-    // 4. Cambiamos de estado y Lucas habla
-    estadoActual = ActoState.Servicio;
-    MostrarDialogo("Clientes ?... a trabajar.");
+        // 4. Cambiamos de estado y Lucas habla
+        estadoActual = ActoState.Servicio;
+        MostrarDialogo("Clientes ?... a trabajar.");
+        ActualizarObjetivo("Atende a los clientes, busca las bebidas detras de la barra.");
 
         ParanoiaSystem.Instance.AddParanoia(25f);//sube la paranoia en un 25%
 
@@ -150,11 +209,11 @@ public class Act1Manager : MonoBehaviour
         {
             ambientBar.Play();
         }
-    if (musicBar != null && !musicBar.isPlaying)
+        if (musicBar != null && !musicBar.isPlaying)
         {
-            musicBar.Play();
+                musicBar.Play();
         }
-}
+    }
 
     void AparecerClientes()
     {
@@ -165,14 +224,52 @@ public class Act1Manager : MonoBehaviour
         MostrarDialogo("Clientes ?... a trabajar.");
     }
 
-    public void MostrarDialogo(string mensaje)
+   public void MostrarDialogo(string mensaje)
     {
-        if (textoSubtitulos != null)
+        if (textoSubtitulos != null && canvasGroupDialogo != null)
         {
-            textoSubtitulos.text = mensaje;
-            CancelInvoke("LimpiarTexto");
-            Invoke("LimpiarTexto", 4f);
+            // Si ya hay algo escribiéndose, lo matamos de raíz
+            if (corrutinaActiva != null)
+            {
+                StopCoroutine(corrutinaActiva);
+            }
+        
+            // Guardamos la nueva corrutina en la variable
+            corrutinaActiva = StartCoroutine(SecuenciaDialogo(mensaje));
         }
+    }
+
+    IEnumerator SecuenciaDialogo(string frase)
+    {
+        // 1. Limpieza total antes de empezar la nueva frase
+        textoSubtitulos.text = "";
+    
+        // Forzamos el fade in (si ya estaba visible, no pasa nada)
+        while (canvasGroupDialogo.alpha < 1)
+        {
+            canvasGroupDialogo.alpha += Time.deltaTime * velocidadFade;
+            yield return null;
+        }
+
+        // 2. Efecto Typewriter
+        foreach (char letra in frase.ToCharArray())
+        {
+            textoSubtitulos.text += letra;
+            yield return new WaitForSeconds(velocidadEscritura);
+        }
+
+        // 3. Tiempo de lectura
+        yield return new WaitForSeconds(3f);
+
+        // 4. Fade Out
+        while (canvasGroupDialogo.alpha > 0)
+        {
+            canvasGroupDialogo.alpha -= Time.deltaTime * (velocidadFade / 2);
+            yield return null;
+        }
+    
+        // Importante: decimos que ya terminó para limpiar la referencia
+        corrutinaActiva = null; 
     }
 
     void LimpiarTexto() => textoSubtitulos.text = "";
@@ -181,7 +278,7 @@ public class Act1Manager : MonoBehaviour
     {
         if (esEnBarra && clientesAtendidosTotal == 1) // El segundo cliente
         {
-            MostrarDialogo("Lucas: No queda nada acá... voy a tener que buscar un barril a la cocina.");
+            MostrarDialogo("Lucas: No queda nada acá... voy a tener que ir a buscar a la cocina.");
             // Aquí habilitamos el Trigger de la cocina
         }
         else
@@ -222,6 +319,7 @@ public class Act1Manager : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
         ParanoiaSystem.Instance.AddParanoia(15f);
+        ActualizarObjetivo("??? explora el bar en busca de los clientes");
 
         // 3. Lucas reacciona
         MostrarDialogo("Lucas: ¿Qué...? ¿A dónde se fueron todos? No hace ninguna gracia...");
@@ -262,6 +360,7 @@ public class Act1Manager : MonoBehaviour
         {
             // Activamos el objeto para que el jugador pueda interactuar con él
             botellaEspecial.SetActive(true);
+            ActualizarObjetivo("Buscá la botella especial en la cocina");
         
             // Opcional: Podés poner una flecha violeta sutil sobre la puerta 
             // de la cocina para guiar al jugador en este momento de confusión.
@@ -273,6 +372,7 @@ public class Act1Manager : MonoBehaviour
     {
         estadoActual = ActoState.ElQuiebre;
         CambiarIluminacion("Combate"); // Rojo
+        ActualizarObjetivo("¡SOBREVIVE! derrota a las sombras con tu linterna (click derecho para hacerles daño)");
 
         if (objetoMujer != null) objetoMujer.SetActive(false);
         if (linternaObjeto != null) linternaObjeto.SetActive(true);
@@ -347,19 +447,22 @@ public class Act1Manager : MonoBehaviour
         lucesCombate.SetActive(false);
 
         // 2. OSCURIDAD TOTAL (Tensión de un segundo)
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(2f);
 
         // 3. VUELTA A LA NORMALIDAD
         lucesNormales.SetActive(true);
+        ActualizarObjetivo("Lograste sobrevivir");
         // Aquí podés activar el texto de Lucas:
         if (interactionText != null) 
             {
-                interactionText.text = "Lucas: No puedo más... necesito dormir...";
-                interactionText.gameObject.SetActive(true);
+                MostrarDialogo("Lucas: ¿Que mierda fue es ?");
+                yield return new WaitForSeconds(3f);
+                MostrarDialogo("Lucas: No puedo mas... Necesito descansar");
+                //interactionText.gameObject.SetActive(true);
             }
 
         // 4. ESPERA ANTES DEL FIN
-        yield return new WaitForSeconds(3.0f);
+        yield return new WaitForSeconds(12f);
 
         // 5. FUNDIDO A NEGRO (El efecto final original)
         float duracionFade = 2.5f;
@@ -372,6 +475,6 @@ public class Act1Manager : MonoBehaviour
             }
 
         Debug.Log("Noche 1 terminada con éxito.");
-        // Aquí podrías poner el SceneManager.LoadScene para la Noche 2
+        SceneManager.LoadScene("Home");
     }
 }

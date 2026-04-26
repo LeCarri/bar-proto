@@ -53,15 +53,15 @@ public class TriggerRegreso : MonoBehaviour
         // --- 4. EL DIÁLOGO DE CIERRE DE ACTO ---
         // 1. Ella habla
         manager.MostrarDialogo("Mujer: Lucas... ¿Todavía servís lo mismo de siempre?");
-        yield return new WaitForSeconds(4f);
+        yield return new WaitForSeconds(5f);
 
         // 2. Lucas duda (Indicios de que la conoce)
         // Como sos barítono, aquí la actuación de voz sería un susurro confuso
         manager.MostrarDialogo("Lucas: Esa voz... ¿Nos conocemos de algún lado?");
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(5f);
     
         manager.MostrarDialogo("Mujer: No lo sé. Quizás el tiempo borró más que solo los nombres.");
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(5f);
 
         // 3. Lucas intenta volver a la normalidad (mecanismo de defensa)
         manager.MostrarDialogo("Lucas: Tengo una botella especial en la cocina. Es... de la casa. Ya vuelvo.");
