@@ -31,8 +31,8 @@ public class PlayerInteraction : MonoBehaviour
             {
                 hitSomething = true;
                 // Mostramos el texto del objeto 
-                interactionText.text = interactable.GetDescription();
-                interactionText.gameObject.SetActive(true);
+                //interactionText.text = interactable.GetDescription();
+                //interactionText.gameObject.SetActive(true);
 
                 if (Input.GetKeyDown(KeyCode.E))
                 {
@@ -44,7 +44,7 @@ public class PlayerInteraction : MonoBehaviour
         
         if (!hitSomething)
         {
-            interactionText.gameObject.SetActive(false);
+            //interactionText.gameObject.SetActive(false);
         }
     }
 }
