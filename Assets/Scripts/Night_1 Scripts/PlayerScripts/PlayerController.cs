@@ -37,10 +37,10 @@ public class PlayerController : MonoBehaviour
         if (characterController == null) return;
 
         // 1. ROTACIÓN
-        rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
+        rotationX += -Input.GetAxis("Mouse Y") * lookSpeed * Time.timeScale;
         rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
         playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-        transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
+        transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed * Time.timeScale, 0);
 
         // 2. MOVIMIENTO
         float inputX = Input.GetAxis("Vertical");

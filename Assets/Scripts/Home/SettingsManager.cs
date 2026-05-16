@@ -36,12 +36,35 @@ public class SettingsManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
+            Instance.BindSettingsUI(volumeSlider, volumePercentLabel, sensitivitySlider, sensitivityPercentLabel);
             Destroy(gameObject);
             return;
         }
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        LoadSettings();
+    }
+
+    public void BindSettingsUI(Slider newVolumeSlider, TextMeshProUGUI newVolumePercentLabel, Slider newSensitivitySlider, TextMeshProUGUI newSensitivityPercentLabel)
+    {
+        volumeSlider = newVolumeSlider;
+        volumePercentLabel = newVolumePercentLabel;
+        sensitivitySlider = newSensitivitySlider;
+        sensitivityPercentLabel = newSensitivityPercentLabel;
+
+        if (volumeSlider != null)
+        {
+            volumeSlider.onValueChanged.RemoveAllListeners();
+            volumeSlider.onValueChanged.AddListener(SetMasterVolume);
+        }
+
+        if (sensitivitySlider != null)
+        {
+            sensitivitySlider.onValueChanged.RemoveAllListeners();
+            sensitivitySlider.onValueChanged.AddListener(SetCameraSensitivity);
+        }
 
         LoadSettings();
     }
