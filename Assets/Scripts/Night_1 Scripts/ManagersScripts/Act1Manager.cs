@@ -91,6 +91,8 @@ public class Act1Manager : MonoBehaviour
     
     void Start()
     {
+        Time.timeScale = 1f;
+        
         estadoActual = ActoState.Limpieza;
 
         if (fadeCanvasGroup != null)

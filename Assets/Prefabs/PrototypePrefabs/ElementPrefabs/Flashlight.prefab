@@ -31,8 +31,7 @@ Transform:
   m_LocalPosition: {x: 8.25, y: 1.4, z: -2.84}
   m_LocalScale: {x: 0.5435431, y: 0.5435431, z: 0.5435431}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 6515602611952583806}
+  m_Children: []
   m_Father: {fileID: 2316779096662292979}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!33 &7314440809650636922
@@ -141,12 +140,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6775787135421563033}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.5, y: -0.5, z: -0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: 0.98, z: -0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0.001999855, y: -0.023000121, z: -0.022327662}
+  m_LocalScale: {x: 0.5435431, y: 0.54354304, z: 0.54354316}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 7362169779251046067}
+  m_Father: {fileID: 7303343556027037844}
   m_LocalEulerAnglesHint: {x: -90, y: -90, z: 0}
 --- !u!108 &8244836861431771053
 Light:
@@ -331,6 +330,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd9fc1e89afe182409b50d5c8ff05905, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControlLinterna
+  luzLinterna: {fileID: 0}
+  luzVolumetrica: {fileID: 0}
+  fuenteAudio: {fileID: 0}
+  sonidoClick: {fileID: 0}
 --- !u!1 &7774647019847307283
 GameObject:
   m_ObjectHideFlags: 0
@@ -359,6 +362,7 @@ Transform:
   m_LocalPosition: {x: 8.248, y: 1.423, z: -2.285}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 6515602611952583806}
   m_Father: {fileID: 2316779096662292979}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
