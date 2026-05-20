@@ -13,7 +13,7 @@ public class ControlLinterna : MonoBehaviour
     void Update()
     {
         // Detecta si Lucas presiona el botón (Click izquierdo o F)
-        if (Input.GetKeyDown(KeyCode.F) || Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.F))
         {
             AlternarLinterna();
         }

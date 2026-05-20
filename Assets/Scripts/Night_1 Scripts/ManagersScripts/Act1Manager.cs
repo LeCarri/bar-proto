@@ -4,6 +4,7 @@ using System.Collections;
 using JetBrains.Annotations;
 using Unity.VisualScripting; // Necesario para usar Corrutinas (IEnumerator)
 using UnityEngine.SceneManagement;
+using UnityEngine.Categorization;
 
 public class Act1Manager : MonoBehaviour
 {
@@ -70,6 +71,10 @@ public class Act1Manager : MonoBehaviour
     [Header("Objetivos")]
     public TextMeshProUGUI textoObjetivo;
 
+    [Header("Indicadores de Objetivos")]
+    public GameObject indicadorNevera;
+    public GameObject indicadorCervezas;
+
 
 
     public void ClienteAtendido()
@@ -91,6 +96,8 @@ public class Act1Manager : MonoBehaviour
     
     void Start()
     {
+        Time.timeScale = 1f;
+        
         estadoActual = ActoState.Limpieza;
 
         if (fadeCanvasGroup != null)
@@ -203,6 +210,17 @@ public class Act1Manager : MonoBehaviour
         MostrarDialogo("Clientes ?... a trabajar.");
         ActualizarObjetivo("Atende a los clientes, busca las bebidas detras de la barra.");
 
+        if (indicadorNevera != null) 
+        {
+            indicadorNevera.SetActive(true);
+            Debug.Log("Indicador de nevera activado.");
+        }
+
+        if (indicadorCervezas != null)
+        {
+            indicadorCervezas.SetActive(true);
+        }
+
         ParanoiaSystem.Instance.AddParanoia(25f);//sube la paranoia en un 25%
 
         if (ambientBar != null && !ambientBar.isPlaying)
@@ -222,6 +240,7 @@ public class Act1Manager : MonoBehaviour
         
         // Diálogo de inicio de jornada
         MostrarDialogo("Clientes ?... a trabajar.");
+
     }
 
    public void MostrarDialogo(string mensaje)
@@ -455,7 +474,7 @@ public class Act1Manager : MonoBehaviour
         // Aquí podés activar el texto de Lucas:
         if (interactionText != null) 
             {
-                MostrarDialogo("Lucas: ¿Que mierda fue es ?");
+                MostrarDialogo("Lucas: ¿Que mierda fue eso ?");
                 yield return new WaitForSeconds(3f);
                 MostrarDialogo("Lucas: No puedo mas... Necesito descansar");
                 //interactionText.gameObject.SetActive(true);
