@@ -28,7 +28,7 @@ public class Pickup : MonoBehaviour
     float maxDistancce;
     float distance;
 
-    LiquidContainer lc;
+    public LiquidContainer lc;
     TempParent tempParent;
     Rigidbody rb;
 
@@ -84,7 +84,7 @@ public class Pickup : MonoBehaviour
             {
                 UIManager.Instance.HideShowPickupInfo(true);
                 UIManager.Instance.HideShowPickupControls(true);
-                Debug.Log("Can contain liquids");
+                //Debug.Log("Can contain liquids");
             }
             //Debug.Log("Temp parent detected");
         }
