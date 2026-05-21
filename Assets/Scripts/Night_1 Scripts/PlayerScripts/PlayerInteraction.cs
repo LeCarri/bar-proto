@@ -30,19 +30,22 @@ public class PlayerInteraction : MonoBehaviour
             if (interactable != null)
             {
                 hitSomething = true;
-                // Mostramos el texto del objeto 
-                interactionText.text = interactable.GetDescription();
-                interactionText.gameObject.SetActive(true);
+                // Mostramos el texto del objeto
+                if (interactionText != null)
+                {
+                    interactionText.text = interactable.GetDescription();
+                    interactionText.gameObject.SetActive(true);
+                }
 
-                if (Input.GetKeyDown(KeyCode.E))
+                    if (Input.GetKeyDown(KeyCode.E))
                 {
                     interactable.Interact();
-                    Debug.Log("Tocaste: " + hit.collider.name);
+                    //Debug.Log("Tocaste: " + hit.collider.name);
                 }
             }
         }
         
-        if (!hitSomething)
+        if (!hitSomething && interactionText != null)
         {
             interactionText.gameObject.SetActive(false);
         }
