@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class ClienteInteractuable : MonoBehaviour, IInteractable
 {
-    public enum EstadoCliente { EsperandoAtencion, EsperandoPedido, Atendido }
     public EstadoCliente estadoActual = EstadoCliente.EsperandoAtencion;
 
     [Header("Configuración")]
@@ -62,3 +61,5 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
         return "";
     }
 }
+
+public enum EstadoCliente { EsperandoAtencion, EsperandoPedido, Atendido }
