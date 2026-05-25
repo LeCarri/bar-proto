@@ -8,8 +8,17 @@ public class PlayerHealth : MonoBehaviour
     private bool estaMuerto = false;
 
     [Header("UI de Derrota (Asignar en cada escena)")]
-    public GameObject pantallaDerrota; 
+    public GameObject pantallaDerrota;
 
+    public static PlayerHealth Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
     void Start()
     {
         vidaActual = vidaMaxima;
