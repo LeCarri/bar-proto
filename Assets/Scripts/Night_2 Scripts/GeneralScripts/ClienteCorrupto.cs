@@ -50,7 +50,10 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
 
         TomarPedido();
     }
-
+    public bool CanInteract()
+    {
+        return true;
+    }
     void TomarPedido()
     {
         Act2Manager manager = Act2Manager.Instance;

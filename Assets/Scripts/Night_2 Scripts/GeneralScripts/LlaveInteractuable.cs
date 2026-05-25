@@ -44,7 +44,10 @@ public class LlaveInteractuable : MonoBehaviour, IInteractable
         // El Act2Manager se encarga del resto (Vigilante + Psicosis)
         Act2Manager.Instance?.LlaveRecogida();
     }
-
+    public bool CanInteract()
+    {
+        return true;
+    }
     public string GetDescription()
     {
         if (recogida) return "";
