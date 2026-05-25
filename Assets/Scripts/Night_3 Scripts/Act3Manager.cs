@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine.SceneManagement;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Act3Manager : MonoBehaviour
@@ -9,6 +8,7 @@ public class Act3Manager : MonoBehaviour
     public static Act3Manager Instance;
 
     public GameObject clientesActo3;
+    public GameObject enemigos;
 
     [Header("UI y Diálogos")]
     public TextMeshProUGUI textoSubtitulos;
@@ -26,15 +26,19 @@ public class Act3Manager : MonoBehaviour
     public bool enSotano = false;
     public int clientesAtendidos = 0;
 
-
     private ClienteAct3 ultimoClienteDetectado;
+
+    // PEDIDOS
+    public string pedidoActual = "";
+    public bool tienePedido = false;
+    public bool tienePedidoBuscado = false;
 
     void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); 
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -47,16 +51,51 @@ public class Act3Manager : MonoBehaviour
         ParanoiaSystem.Instance.AddParanoia(50f);
 
         StartCoroutine(MantenerParanoiaMinima());
-
         StartCoroutine(SecuenciaInicio());
-
     }
 
-     void Update()
+    void Update()
     {
-        if (PlayerInteract.Instance != null &&
-        PlayerInteract.Instance.currentPickup != null)
+        // PUERTA DEL SÓTANO
+        if (Input.GetKeyDown(KeyCode.E))
         {
+            Ray ray = new Ray(
+                Camera.main.transform.position,
+                Camera.main.transform.forward
+            );
+
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, 10f))
+            {
+                PuertaSotano puerta =
+                    hit.collider.GetComponentInParent<PuertaSotano>();
+
+                if (puerta != null)
+                {
+                    puerta.Interact();
+                    return;
+                }
+            }
+        }
+
+        // PICKUPS
+        if (PlayerInteract.Instance != null &&
+            PlayerInteract.Instance.currentPickup != null)
+        {
+            // PEDIDO
+            PedidoPickup pedido =
+                PlayerInteract.Instance.currentPickup.GetComponent<PedidoPickup>();
+
+            if (pedido != null)
+            {
+                pedido.Interact();
+
+                StartCoroutine(SoltarCliente());
+                return;
+            }
+
+            // CLIENTE
             ClienteAct3Pickup trigger =
                 PlayerInteract.Instance.currentPickup.GetComponent<ClienteAct3Pickup>();
 
@@ -78,13 +117,13 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    //DIÁLOGOS 
+    
+    // DIÁLOGOS
+    
 
     public void MostrarDialogo(string mensaje)
     {
         if (textoSubtitulos == null) return;
-        Debug.Log("MOSTRANDO: " + mensaje);
-
 
         if (dialogoActual != null)
             StopCoroutine(dialogoActual);
@@ -100,12 +139,11 @@ public class Act3Manager : MonoBehaviour
     }
 
     
-    //ILUMINACIÓN
+    // ILUMINACIÓN
     
+
     public void CambiarIluminacion(string estado)
     {
-        Debug.Log("Cambiando iluminación a: " + estado);
-
         if (lucesNormales != null) lucesNormales.SetActive(false);
         if (lucesServicio != null) lucesServicio.SetActive(false);
         if (lucesCombate != null) lucesCombate.SetActive(false);
@@ -113,36 +151,36 @@ public class Act3Manager : MonoBehaviour
         switch (estado)
         {
             case "Normal":
-                if (lucesNormales != null) lucesNormales.SetActive(true);
+                lucesNormales.SetActive(true);
                 break;
 
             case "Servicio":
-                if (lucesServicio != null) lucesServicio.SetActive(true);
+                lucesServicio.SetActive(true);
                 break;
 
             case "Combate":
-                if (lucesCombate != null) lucesCombate.SetActive(true);
+                lucesCombate.SetActive(true);
                 break;
 
-            default:
-                Debug.LogWarning("Estado de luz inválido: " + estado);
+            case "Apagado":
                 break;
         }
     }
 
     
-    //SECUENCIA INICIAL
+    // INICIO
+    
+
     IEnumerator SecuenciaInicio()
     {
-        Debug.Log("Inicio Acto 3");
-
         if (effectoParpadeo != null)
             effectoParpadeo.IniciarParpadeo();
 
         yield return new WaitForSeconds(1.5f);
 
-        MostrarDialogo("Ya casi... una ronda más y bajo a buscarlas. Tienen que estar por despertar.");
-
+        MostrarDialogo(
+            "Ya casi... una ronda más y bajo a buscarlas."
+        );
 
         yield return new WaitForSeconds(3f);
 
@@ -152,63 +190,122 @@ public class Act3Manager : MonoBehaviour
             effectoParpadeo.IniciarParpadeo();
 
         clientesActo3.SetActive(true);
-
     }
 
-
-    //CLIENTES 
-
-    public bool tienePedido = false;
+    
+    // PEDIDOS
+    
 
     public bool TienePedidoEntregable()
     {
-        return tienePedido;
+        return tienePedido && tienePedidoBuscado;
     }
 
-    public void TomarPedido()
+    public void TomarPedido(string pedido)
     {
+        pedidoActual = pedido;
         tienePedido = true;
+        tienePedidoBuscado = false;
+
+        Debug.Log("Pedido tomado: " + pedidoActual);
+    }
+
+    public void RecogerPedido(string objeto)
+    {
+        Debug.Log("Objeto recogido: " + objeto);
+        Debug.Log("Pedido actual: " + pedidoActual);
+
+        if (tienePedido && objeto == pedidoActual)
+        {
+            tienePedidoBuscado = true;
+
+            Debug.Log("Pedido correcto.");
+
+            MostrarDialogo(
+                "Tengo el pedido. Hora de entregarlo."
+            );
+        }
     }
 
     public void EntregarPedido()
     {
         tienePedido = false;
+        tienePedidoBuscado = false;
+        pedidoActual = "";
     }
+
+    
+    // CLIENTES
+    
 
     public void ClienteCompletado()
     {
-        Debug.Log("Cliente completado");
+        clientesAtendidos++;
+
+        Debug.Log("Clientes completos: " + clientesAtendidos);
+
+        if (clientesAtendidos == 2)
+        {
+            StartCoroutine(AvanzarNoche());
+        }
     }
 
-    //SOLTAR CLIENTES
-    IEnumerator SoltarCliente()
+    
+    // AVANZAR NOCHE
+    
+
+    IEnumerator AvanzarNoche()
+    {
+        Debug.Log("Los dos clientes fueron atendidos");
+
+        yield return new WaitForSeconds(4f);
+
+        if (effectoParpadeo != null)
+            effectoParpadeo.IniciarParpadeo();
+
+        clientesActo3.SetActive(false);
+
+        yield return new WaitForSeconds(3f);
+
+        MostrarDialogo("Listo... voy a buscarlas.");
+
+        yield return new WaitForSeconds(5f);
+
+        CambiarIluminacion("Apagado");
+
+        yield return new WaitForSeconds(1.5f);
+
+        enemigos.SetActive(true);
+    }
+
+    
+    // UTILIDADES
+    
+
+    public IEnumerator SoltarCliente()
     {
         yield return new WaitForSeconds(0.5f);
 
         if (PlayerInteract.Instance != null)
-        {
             PlayerInteract.Instance.ResetCurrentPickup();
-        }
     }
 
-
-    //PARANOIA
     IEnumerator MantenerParanoiaMinima()
     {
         while (true)
         {
-            // Mantiene viva la paranoia del Act3
             ParanoiaSystem.Instance.AddParanoia(1f);
-
             yield return new WaitForSeconds(5f);
         }
     }
 
+    
+    // SÓTANO
+    
 
-    //SOTANO
     public void IrASotano()
     {
         enSotano = true;
-        SceneManager.LoadScene("Sotano"); // nombre de la escena
+        SceneManager.LoadScene("Basement");
     }
 }
