@@ -310,7 +310,7 @@ public class Act2Manager : MonoBehaviour
             Debug.LogError("[Act2Manager] sombrasCombate no asignado — las sombras no aparecerán. Asignalo en el Inspector o ejecutá Auto-buscar referencias.");
 
         // La figura del niño aparece después de un rato de combate
-        yield return new WaitForSeconds(6f);
+        yield return new WaitForSeconds(3f);
 
         if (figuraNino != null) figuraNino.Aparecer();
     }
