@@ -117,9 +117,9 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    // =========================
+    
     // DIÁLOGOS
-    // =========================
+    
 
     public void MostrarDialogo(string mensaje)
     {
@@ -138,9 +138,9 @@ public class Act3Manager : MonoBehaviour
         textoSubtitulos.text = "";
     }
 
-    // =========================
+    
     // ILUMINACIÓN
-    // =========================
+    
 
     public void CambiarIluminacion(string estado)
     {
@@ -167,9 +167,9 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    // =========================
+    
     // INICIO
-    // =========================
+    
 
     IEnumerator SecuenciaInicio()
     {
@@ -192,9 +192,9 @@ public class Act3Manager : MonoBehaviour
         clientesActo3.SetActive(true);
     }
 
-    // =========================
+    
     // PEDIDOS
-    // =========================
+    
 
     public bool TienePedidoEntregable()
     {
@@ -234,9 +234,9 @@ public class Act3Manager : MonoBehaviour
         pedidoActual = "";
     }
 
-    // =========================
+    
     // CLIENTES
-    // =========================
+    
 
     public void ClienteCompletado()
     {
@@ -250,9 +250,9 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    // =========================
+    
     // AVANZAR NOCHE
-    // =========================
+    
 
     IEnumerator AvanzarNoche()
     {
@@ -278,9 +278,9 @@ public class Act3Manager : MonoBehaviour
         enemigos.SetActive(true);
     }
 
-    // =========================
+    
     // UTILIDADES
-    // =========================
+    
 
     public IEnumerator SoltarCliente()
     {
@@ -299,9 +299,9 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    // =========================
+    
     // SÓTANO
-    // =========================
+    
 
     public void IrASotano()
     {
