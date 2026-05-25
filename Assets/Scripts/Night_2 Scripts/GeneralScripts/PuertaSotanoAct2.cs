@@ -66,6 +66,10 @@ public class PuertaSotanoAct2 : MonoBehaviour, IInteractable
             sonidoGolpesRitmicos.Play();
         }
     }
+    public bool CanInteract()
+    {
+        return true;
+    }
 
     public void DesactivarGolpes()
     {

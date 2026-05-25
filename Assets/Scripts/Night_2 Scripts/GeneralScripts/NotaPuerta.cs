@@ -44,6 +44,10 @@ public class NotaPuerta : MonoBehaviour, IInteractable
     {
         Act2Manager.Instance?.NotaLeida();
     }
+    public bool CanInteract()
+    {
+        return true;
+    }
 
     public string GetDescription()
     {

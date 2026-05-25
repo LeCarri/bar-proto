@@ -44,6 +44,10 @@ public class ZapatosNino : MonoBehaviour, IInteractable
         // El objeto sigue siendo visible pero ya no interactuable
         // (los zapatos quedan ahí, el jugador no los lleva)
     }
+    public bool CanInteract()
+    {
+        return true;
+    }
 
     public string GetDescription()
     {
