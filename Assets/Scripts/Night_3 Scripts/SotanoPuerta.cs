@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PuertaSotano : MonoBehaviour, IInteractable
+public class PuertaSotano : MonoBehaviour
 {
     public void Interact()
     {
@@ -10,15 +10,5 @@ public class PuertaSotano : MonoBehaviour, IInteractable
         {
             Act3Manager.Instance.IrASotano();
         }
-    }
-
-    public string GetDescription()
-    {
-        return "Presiona [E] para entrar al sótano";
-    }
-
-    public bool CanInteract()
-    {
-        return true;
     }
 }
