@@ -16,4 +16,9 @@ public class PuertaSotano : MonoBehaviour, IInteractable
     {
         return "Presiona [E] para entrar al sótano";
     }
+
+    public bool CanInteract()
+    {
+        return true;
+    }
 }

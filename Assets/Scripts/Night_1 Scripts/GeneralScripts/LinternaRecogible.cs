@@ -12,6 +12,11 @@ public class LinternaRecogible : MonoBehaviour, IInteractable
         return mensajeUI;
     }
 
+    public bool CanInteract()
+    {
+        return true;
+    }
+
     public void Interact()
     {
         // 1. Activamos la linterna que Lucas tiene en la mano

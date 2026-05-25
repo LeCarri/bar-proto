@@ -99,6 +99,11 @@ public class Cliente : MonoBehaviour, IInteractable
         return "";
     }
 
+    public bool CanInteract()
+    {
+        return true;
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (canCollisionGrab == true 

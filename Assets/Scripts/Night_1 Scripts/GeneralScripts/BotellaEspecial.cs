@@ -7,6 +7,12 @@ public class BotellaEspecial : MonoBehaviour, IInteractable
     {
         return "Presiona E para recoger la botella";
     }
+
+    public bool CanInteract()
+    {
+        return true;
+    }
+
     // Esta es la función que va a llamar tu script de PlayerInteraction
     public void Interact() 
     {
