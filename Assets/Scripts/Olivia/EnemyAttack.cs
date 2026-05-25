@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 public class EnemyAttack : MonoBehaviour
 {
     [SerializeField]
-    [InspectorName("Daño")]
+    [InspectorName("Daï¿½o")]
     private float damage = 5f;
 
     private void OnCollisionEnter(Collision collision)
