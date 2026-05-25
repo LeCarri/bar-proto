@@ -8,6 +8,10 @@ public class SillaInteractuable : MonoBehaviour, IInteractable
     
     [Header("Ajustes de Movimiento")]
     public float velocidad = 5f;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource chairAudioSource;
+    [SerializeField] private AudioClip chairMoveClip;
     
     private bool estaAcomodada = false;
     private bool moviendo = false;
@@ -26,6 +30,7 @@ public class SillaInteractuable : MonoBehaviour, IInteractable
 
             estaAcomodada = true;
             moviendo = true;
+            PlayChairMoveSound();
             Debug.Log("Acomodando silla...");
 
             // Avisamos al Act1Manager del progreso
@@ -67,5 +72,13 @@ public class SillaInteractuable : MonoBehaviour, IInteractable
     public bool CanInteract()
     {
         return !estaAcomodada && !moviendo;
+    }
+
+    private void PlayChairMoveSound()
+    {
+        if (chairAudioSource != null && chairMoveClip != null)
+        {
+            chairAudioSource.PlayOneShot(chairMoveClip);
+        }
     }
 }
