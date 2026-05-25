@@ -2,18 +2,43 @@ using UnityEngine;
 
 public class ControlLinterna : MonoBehaviour
 {
-    public Light luzLinterna; // Arrastrá el componente Light acá
-    public GameObject luzVolumetrica; // Opcional (si tenés un haz de luz visual)
-    private bool encendida = false;
+    [Header("Componentes de Luz")]
+    public GameObject luzLinterna;     // Tu Spot Light (Light) común
+    public GameObject luzVolumetrica;  // Tu Spot Light (1) volumétrica
 
-    // Sonidos (opcional)
+    [Header("Audio")]
     public AudioSource fuenteAudio;
     public AudioClip sonidoClick;
 
+    private bool estaPrendida = false;
+    private bool tieneLaLinterna = false;
+
+    void Start()
+    {
+        // VITAL: Forzamos el apagado físico de ambas al arrancar la escena
+        // Así podés dejarlas prendidas en el Inspector para que no se te rompa el mapeo
+        if (luzLinterna != null) luzLinterna.SetActive(false);
+        if (luzVolumetrica != null) luzVolumetrica.SetActive(false);
+        
+        estaPrendida = false;
+        tieneLaLinterna = true;
+    }
+
+    public void HabilitarLinterna()
+    {
+        tieneLaLinterna = true;
+        // Al levantar la botella arranca apagada hasta que Lucas pulse la F
+        estaPrendida = false; 
+        if (luzLinterna != null) luzLinterna.SetActive(false);
+        if (luzVolumetrica != null) luzVolumetrica.SetActive(false);
+        Debug.Log("SISTEMA: Linterna en mano y lista.");
+    }
+
     void Update()
     {
-        // Detecta si Lucas presiona el botón (Click izquierdo o F)
-        if (Input.GetKeyDown(KeyCode.F) || Input.GetMouseButtonDown(0))
+        if (!tieneLaLinterna) return;
+
+        if (Input.GetKeyDown(KeyCode.F))
         {
             AlternarLinterna();
         }
@@ -21,18 +46,18 @@ public class ControlLinterna : MonoBehaviour
 
     void AlternarLinterna()
     {
-        encendida = !encendida;
-        
-        // Prendemos/Apagamos la luz
-        if (luzLinterna != null) luzLinterna.enabled = encendida;
-        
-        // Prendemos/Apagamos el haz visual si tenés uno
-        if (luzVolumetrica != null) luzVolumetrica.SetActive(encendida);
+        estaPrendida = !estaPrendida;
 
-        // Sonido de click
+        // Cambiamos el estado de las DOS luces al mismo tiempo
+        if (luzLinterna != null) luzLinterna.SetActive(estaPrendida);
+        if (luzVolumetrica != null) luzVolumetrica.SetActive(estaPrendida);
+
+        // Sonido de feedback de la linterna vieja
         if (fuenteAudio != null && sonidoClick != null)
         {
             fuenteAudio.PlayOneShot(sonidoClick);
         }
+
+        Debug.Log($"Linterna General: {(estaPrendida ? "ENCENDIDA" : "APAGADA")}");
     }
 }

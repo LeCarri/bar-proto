@@ -93,10 +93,11 @@ public class PlayerInteract : MonoBehaviour
     private void HandleItem(GameObject hand) 
     {
         //set hand parent to correct handle
-        hand.transform.SetParent(null);
+        //hand.transform.SetParent(null);
 
         //move hand to handle
-        StartCoroutine(MoveHandToPickup(hand, currentPickup.gameObject));
+        MovePickupToHand(hand, currentPickup.gameObject);
+        //StartCoroutine(MoveHandToPickup(hand, currentPickup.gameObject));
     }
 
     private IEnumerator MoveHandToPickup(GameObject hand, GameObject targetObj) 
@@ -117,6 +118,13 @@ public class PlayerInteract : MonoBehaviour
         //Debug.Log("End of couroutine 1");
         yield break;
 
+    }
+
+    private void MovePickupToHand(GameObject hand, GameObject targetObj) 
+    {
+        targetObj.transform.position = hand.transform.position;
+
+        currentPickup.OnPickup();
     }
 
     private IEnumerator MoveHandToPlayer(GameObject hand, Vector3 initialPos) 
@@ -156,7 +164,7 @@ public class PlayerInteract : MonoBehaviour
         currentPickup = null;
 
         //move hand back to player
-        StartCoroutine(MoveHandToPlayer(R_HandObject, new Vector3(2,0,0)));
+        //StartCoroutine(MoveHandToPlayer(R_HandObject, new Vector3(2,0,0)));
 
         //Debug.Log(currentPickup);
     }

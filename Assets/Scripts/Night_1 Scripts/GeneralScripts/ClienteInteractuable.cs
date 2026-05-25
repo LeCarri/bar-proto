@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class ClienteInteractuable : MonoBehaviour, IInteractable
 {
-    public enum EstadoCliente { EsperandoAtencion, EsperandoPedido, Atendido }
     public EstadoCliente estadoActual = EstadoCliente.EsperandoAtencion;
 
     [Header("Configuración")]
@@ -61,4 +60,11 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
         if (estadoActual == EstadoCliente.EsperandoPedido) return "Presiona [E] para entregar pedido";
         return "";
     }
+
+    public bool CanInteract()
+    {
+        return estadoActual != EstadoCliente.Atendido;
+    }
 }
+
+public enum EstadoCliente { EsperandoAtencion, EsperandoPedido, Atendido }

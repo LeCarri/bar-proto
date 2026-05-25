@@ -11,8 +11,8 @@ public class Flashlight : MonoBehaviour
     public float focusedIntensity = 4f;
 
     [Header("Batería")]
-    public float battery = 100f;
-    public float maxBattery = 100f;
+    public float battery = 10000f;
+    public float maxBattery = 10000f;
     public float consumptionRate = 10f; // Cuánto gasta por segundo en modo enfoque
     public float rechargeRate = 2f;    // Opcional: si queremos que se recupere sola un poco
 
