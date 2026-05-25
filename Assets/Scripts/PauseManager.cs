@@ -1,13 +1,16 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class PauseManager : MonoBehaviour
 {
     [Header("Panels")]
     [SerializeField] private GameObject pausePanel;
-    [SerializeField] private GameObject settingsPanel;
+    [SerializeField] private GameObject panelComoJugar;
+    [FormerlySerializedAs("settingsPanel")]
+    [SerializeField] private GameObject panelAjustes;
 
     [Header("Buttons")]
     [SerializeField] private Button resumeButton;
@@ -66,6 +69,13 @@ public class PauseManager : MonoBehaviour
     {
         if (isPaused)
         {
+            if (IsSecondaryPanelOpen())
+            {
+                CloseSecondaryPanels();
+                ShowPausePanel();
+                return;
+            }
+
             ResumeGame();
             return;
         }
@@ -93,10 +103,7 @@ public class PauseManager : MonoBehaviour
             pausePanel.SetActive(true);
         }
 
-        if (settingsPanel != null)
-        {
-            settingsPanel.SetActive(false);
-        }
+        CloseSecondaryPanels();
     }
 
     public void ResumeGame()
@@ -114,30 +121,54 @@ public class PauseManager : MonoBehaviour
         Cursor.lockState = cursorLockModeBeforePause;
     }
 
-    public void OpenSettings()
+    public void OpenComoJugar()
     {
-        if (pausePanel != null)
+        OpenHowToPlay();
+    }
+
+    public void CloseComoJugar()
+    {
+        CloseHowToPlay();
+    }
+
+    public void OpenHowToPlay()
+    {
+        OpenSecondaryPanel(panelComoJugar);
+    }
+
+    public void CloseHowToPlay()
+    {
+        if (panelComoJugar != null)
         {
-            pausePanel.SetActive(false);
+            panelComoJugar.SetActive(false);
         }
 
-        if (settingsPanel != null)
+        ShowPausePanel();
+    }
+
+    public void OpenAjustes()
+    {
+        OpenSecondaryPanel(panelAjustes);
+    }
+
+    public void CloseAjustes()
+    {
+        if (panelAjustes != null)
         {
-            settingsPanel.SetActive(true);
+            panelAjustes.SetActive(false);
         }
+
+        ShowPausePanel();
+    }
+
+    public void OpenSettings()
+    {
+        OpenAjustes();
     }
 
     public void CloseSettings()
     {
-        if (settingsPanel != null)
-        {
-            settingsPanel.SetActive(false);
-        }
-
-        if (pausePanel != null)
-        {
-            pausePanel.SetActive(true);
-        }
+        CloseAjustes();
     }
 
     public void ReturnToMainMenu()
@@ -222,10 +253,7 @@ public class PauseManager : MonoBehaviour
             pausePanel.SetActive(active);
         }
 
-        if (settingsPanel != null)
-        {
-            settingsPanel.SetActive(false);
-        }
+        CloseSecondaryPanels();
     }
 
     public void TogglePanel(GameObject panelToShow)
@@ -236,8 +264,51 @@ public class PauseManager : MonoBehaviour
         }
 
         bool isCurrentlyActive = panelToShow.activeSelf;
-        SetPausePanels(false);
+        CloseSecondaryPanels();
+        ShowPausePanel();
         panelToShow.SetActive(!isCurrentlyActive);
+    }
+
+    private bool IsSecondaryPanelOpen()
+    {
+        return IsPanelOpen(panelComoJugar) || IsPanelOpen(panelAjustes);
+    }
+
+    private bool IsPanelOpen(GameObject panel)
+    {
+        return panel != null && panel.activeSelf;
+    }
+
+    private void OpenSecondaryPanel(GameObject panelToOpen)
+    {
+        CloseSecondaryPanels();
+        ShowPausePanel();
+
+        if (panelToOpen != null)
+        {
+            panelToOpen.SetActive(true);
+        }
+    }
+
+    private void CloseSecondaryPanels()
+    {
+        if (panelComoJugar != null)
+        {
+            panelComoJugar.SetActive(false);
+        }
+
+        if (panelAjustes != null)
+        {
+            panelAjustes.SetActive(false);
+        }
+    }
+
+    private void ShowPausePanel()
+    {
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(true);
+        }
     }
 
     private void AddClickListener(Button button, UnityEngine.Events.UnityAction action)

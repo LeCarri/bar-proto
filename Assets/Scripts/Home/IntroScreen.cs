@@ -67,6 +67,11 @@ public class IntroScreen : MonoBehaviour
             yield return new WaitForSeconds(typewriterSpeed);
         }
 
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+        }
+
         // Esperar 2 segundos después de la animación
         yield return new WaitForSeconds(2f);
 
