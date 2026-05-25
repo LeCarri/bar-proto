@@ -8,7 +8,16 @@ public class PlayerInteraction : MonoBehaviour
     public LayerMask interactableLayer;
 
     [Header("UI")]
-    public TextMeshProUGUI interactionText;
+    [SerializeField] private GameObject interactionPanel;
+    [SerializeField] private TextMeshProUGUI interactionText;
+    [SerializeField] private TextMeshProUGUI descriptionText;
+
+    private const string DefaultInteractionText = "Interactuar";
+
+    void Awake()
+    {
+        HideInteractionUI();
+    }
 
     void Update()
     {
@@ -27,17 +36,12 @@ public class PlayerInteraction : MonoBehaviour
 
             IInteractable interactable = hit.collider.GetComponent<IInteractable>();
 
-            if (interactable != null)
+            if (interactable != null && interactable.CanInteract())
             {
                 hitSomething = true;
-                // Mostramos el texto del objeto
-                if (interactionText != null)
-                {
-                    interactionText.text = interactable.GetDescription();
-                    interactionText.gameObject.SetActive(true);
-                }
+                ShowInteractionUI(interactable.GetDescription());
 
-                    if (Input.GetKeyDown(KeyCode.E))
+                if (Input.GetKeyDown(KeyCode.E))
                 {
                     interactable.Interact();
                     //Debug.Log("Tocaste: " + hit.collider.name);
@@ -45,9 +49,66 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
         
-        if (!hitSomething && interactionText != null)
+        if (!hitSomething)
         {
-            interactionText.gameObject.SetActive(false);
+            HideInteractionUI();
         }
+    }
+
+    private void ShowInteractionUI(string description)
+    {
+        if (interactionPanel != null)
+        {
+            interactionPanel.SetActive(true);
+        }
+
+        if (interactionText != null)
+        {
+            interactionText.text = DefaultInteractionText;
+        }
+
+        if (descriptionText != null)
+        {
+            descriptionText.text = GetContextDescription(description);
+        }
+    }
+
+    private void HideInteractionUI()
+    {
+        if (interactionPanel != null)
+        {
+            interactionPanel.SetActive(false);
+        }
+    }
+
+    private string GetContextDescription(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return "";
+        }
+
+        string contextDescription = description.Trim();
+        contextDescription = RemovePrefix(contextDescription, "Presiona [E] para ");
+        contextDescription = RemovePrefix(contextDescription, "Presiona E para ");
+        contextDescription = RemovePrefix(contextDescription, "Press [E] to ");
+        contextDescription = RemovePrefix(contextDescription, "Press E to ");
+
+        if (contextDescription.Length == 0)
+        {
+            return "";
+        }
+
+        return char.ToUpper(contextDescription[0]) + contextDescription.Substring(1);
+    }
+
+    private string RemovePrefix(string text, string prefix)
+    {
+        if (text.StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase))
+        {
+            return text.Substring(prefix.Length);
+        }
+
+        return text;
     }
 }

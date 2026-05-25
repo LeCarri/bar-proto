@@ -16,7 +16,7 @@ public class SillaInteractuable : MonoBehaviour, IInteractable
     public void Interact()
     {
         // Solo actuamos si la silla no está ya en su lugar y no se está moviendo
-        if (!estaAcomodada && !moviendo)
+        if (CanInteract())
         {
             if (posicionCorrecta == null)
             {
@@ -24,6 +24,7 @@ public class SillaInteractuable : MonoBehaviour, IInteractable
                 return;
             }
 
+            estaAcomodada = true;
             moviendo = true;
             Debug.Log("Acomodando silla...");
 
@@ -61,5 +62,10 @@ public class SillaInteractuable : MonoBehaviour, IInteractable
     {
         if (estaAcomodada) return "";
         return "Presiona [E] para acomodar silla";
+    }
+
+    public bool CanInteract()
+    {
+        return !estaAcomodada && !moviendo;
     }
 }

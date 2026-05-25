@@ -10,4 +10,6 @@ public class PuntoSuministro : MonoBehaviour, IInteractable
     }
 
     public string GetDescription() => "Presiona [E] para recoger pedido";
+
+    public bool CanInteract() => true;
 }
