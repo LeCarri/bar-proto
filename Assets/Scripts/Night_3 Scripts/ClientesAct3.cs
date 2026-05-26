@@ -18,7 +18,7 @@ public class ClienteAct3 : MonoBehaviour
     {
         Debug.Log("ENTRÓ A INTERACT");
 
-        // Primera interacción 
+        // PRIMERA INTERACCIÓN
         if (!pedidoTomado)
         {
             Debug.Log("Mostrando pedido");
@@ -33,13 +33,10 @@ public class ClienteAct3 : MonoBehaviour
             pedidoTomado = true;
         }
 
-        // Segunda interacción 
+        // SEGUNDA INTERACCIÓN
         else
         {
             Debug.Log("Intentando entregar");
-
-            Debug.Log("Tiene pedido entregable: " +
-                Act3Manager.Instance.TienePedidoEntregable());
 
             if (Act3Manager.Instance.TienePedidoEntregable())
             {
@@ -49,10 +46,6 @@ public class ClienteAct3 : MonoBehaviour
                 );
 
                 Act3Manager.Instance.EntregarPedido();
-
-                Act3Manager.Instance.StartCoroutine(
-                    Act3Manager.Instance.SoltarCliente()
-                );
 
                 Act3Manager.Instance.ClienteCompletado();
             }
