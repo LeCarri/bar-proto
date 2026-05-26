@@ -366,6 +366,7 @@ public class Act1Manager : MonoBehaviour
                 break;
             case "Combate":
                 if (lucesCombate != null) lucesCombate.SetActive(true);
+                RenderSettings.ambientLight = Color.black;
                 break;
             default:
                 Debug.LogWarning("El estado de luz '" + estado + "' no existe.");
