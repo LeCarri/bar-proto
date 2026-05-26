@@ -47,6 +47,9 @@ public class Cliente : MonoBehaviour, IInteractable
 
     void EntregarPedido()
     {
+        if (PlayerInteract.Instance.currentPickup == null)
+            return;
+
         // Solo entregamos si Lucas realmente tiene el objeto (esto lo validamos en el Manager)
         if (PlayerInteract.Instance.currentPickup.lc.liquid == bebidaDeseada)
         {

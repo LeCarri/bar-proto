@@ -3,24 +3,38 @@ using System.Collections;
 
 public class CameraShake : MonoBehaviour
 {
+    [Tooltip("Transform a sacudir. Asigná la Main Camera aquí. Si se deja vacío, sacude este mismo GameObject.")]
+    public Transform camaraObjetivo;
+
+    void Start()
+    {
+        // Fallback automático: busca la cámara principal si no se asignó nada
+        if (camaraObjetivo == null && Camera.main != null)
+            camaraObjetivo = Camera.main.transform;
+    }
+
     public IEnumerator Shake(float duracion, float magnitud)
     {
-        Vector3 posicionOriginal = transform.localPosition;
+        Transform objetivo = camaraObjetivo != null ? camaraObjetivo : transform;
+
+        Vector3 posicionOriginal = objetivo.localPosition;
         float tiempoTranscurrido = 0f;
 
         while (tiempoTranscurrido < duracion)
         {
-            // Generamos un movimiento aleatorio
             float x = Random.Range(-1f, 1f) * magnitud;
             float y = Random.Range(-1f, 1f) * magnitud;
 
-            transform.localPosition = new Vector3(x, y, posicionOriginal.z);
+            objetivo.localPosition = new Vector3(
+                posicionOriginal.x + x,
+                posicionOriginal.y + y,
+                posicionOriginal.z
+            );
 
             tiempoTranscurrido += Time.deltaTime;
-
-            yield return null; // Espera al siguiente frame
+            yield return null;
         }
 
-        transform.localPosition = posicionOriginal; // Volvemos a la normalidad
+        objetivo.localPosition = posicionOriginal;
     }
 }
