@@ -26,8 +26,6 @@ public class Act3Manager : MonoBehaviour
     public bool enSotano = false;
     public int clientesAtendidos = 0;
 
-    private ClienteAct3 ultimoClienteDetectado;
-
     // PEDIDOS
     public string pedidoActual = "";
     public bool tienePedido = false;
@@ -56,7 +54,6 @@ public class Act3Manager : MonoBehaviour
 
     void Update()
     {
-        // PUERTA DEL SÓTANO
         if (Input.GetKeyDown(KeyCode.E))
         {
             Ray ray = new Ray(
@@ -68,6 +65,7 @@ public class Act3Manager : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit, 10f))
             {
+                // PUERTA
                 PuertaSotano puerta =
                     hit.collider.GetComponentInParent<PuertaSotano>();
 
@@ -76,50 +74,31 @@ public class Act3Manager : MonoBehaviour
                     puerta.Interact();
                     return;
                 }
-            }
-        }
 
-        // PICKUPS
-        if (PlayerInteract.Instance != null &&
-            PlayerInteract.Instance.currentPickup != null)
-        {
-            // PEDIDO
-            PedidoPickup pedido =
-                PlayerInteract.Instance.currentPickup.GetComponent<PedidoPickup>();
+                // CLIENTE
+                SimpleInteract cliente =
+                    hit.collider.GetComponentInParent<SimpleInteract>();
 
-            if (pedido != null)
-            {
-                pedido.Interact();
-
-                StartCoroutine(SoltarCliente());
-                return;
-            }
-
-            // CLIENTE
-            ClienteAct3Pickup trigger =
-                PlayerInteract.Instance.currentPickup.GetComponent<ClienteAct3Pickup>();
-
-            if (trigger != null)
-            {
-                if (trigger.clienteReal != ultimoClienteDetectado)
+                if (cliente != null)
                 {
-                    ultimoClienteDetectado = trigger.clienteReal;
+                    cliente.Interact();
+                    return;
+                }
 
-                    trigger.clienteReal.Interact();
+                // PEDIDO
+                PedidoPickup pedido =
+                    hit.collider.GetComponentInParent<PedidoPickup>();
 
-                    StartCoroutine(SoltarCliente());
+                if (pedido != null)
+                {
+                    pedido.Interact();
+                    return;
                 }
             }
         }
-        else
-        {
-            ultimoClienteDetectado = null;
-        }
     }
 
-    
     // DIÁLOGOS
-    
 
     public void MostrarDialogo(string mensaje)
     {
@@ -138,9 +117,7 @@ public class Act3Manager : MonoBehaviour
         textoSubtitulos.text = "";
     }
 
-    
     // ILUMINACIÓN
-    
 
     public void CambiarIluminacion(string estado)
     {
@@ -167,9 +144,7 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    
     // INICIO
-    
 
     IEnumerator SecuenciaInicio()
     {
@@ -192,9 +167,7 @@ public class Act3Manager : MonoBehaviour
         clientesActo3.SetActive(true);
     }
 
-    
     // PEDIDOS
-    
 
     public bool TienePedidoEntregable()
     {
@@ -234,9 +207,7 @@ public class Act3Manager : MonoBehaviour
         pedidoActual = "";
     }
 
-    
     // CLIENTES
-    
 
     public void ClienteCompletado()
     {
@@ -250,9 +221,7 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    
     // AVANZAR NOCHE
-    
 
     IEnumerator AvanzarNoche()
     {
@@ -278,17 +247,7 @@ public class Act3Manager : MonoBehaviour
         enemigos.SetActive(true);
     }
 
-    
-    // UTILIDADES
-    
-
-    public IEnumerator SoltarCliente()
-    {
-        yield return new WaitForSeconds(0.5f);
-
-        if (PlayerInteract.Instance != null)
-            PlayerInteract.Instance.ResetCurrentPickup();
-    }
+    // PARANOIA
 
     IEnumerator MantenerParanoiaMinima()
     {
@@ -299,9 +258,7 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    
     // SÓTANO
-    
 
     public void IrASotano()
     {
