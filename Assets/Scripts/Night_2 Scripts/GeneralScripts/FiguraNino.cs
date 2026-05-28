@@ -18,8 +18,7 @@ public class FiguraNino : MonoBehaviour
     [Tooltip("El modelo 3D del niño (hijo de este GameObject)")]
     public GameObject modeloNino;
 
-    [Tooltip("Transform de la mesa donde aparece sentado el niño")]
-    public Transform posicionMesa;
+
 
     [Header("Audio")]
     [Tooltip("Voz del niño llamando al protagonista (cerca del jugador)")]
@@ -76,8 +75,6 @@ public class FiguraNino : MonoBehaviour
         aparecido = true;
         tiempoAparicion = Time.time;
 
-        if (posicionMesa != null)
-            transform.position = posicionMesa.position;
 
         if (modeloNino != null) modeloNino.SetActive(true);
 

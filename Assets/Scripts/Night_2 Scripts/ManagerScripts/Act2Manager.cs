@@ -67,6 +67,8 @@ public class Act2Manager : MonoBehaviour
 
     private bool parpadeandoLuces = false;
 
+    private bool parpadeandoLuces2 = false;
+
     [Header("Cierre del Acto")]
     public CanvasGroup fadeCanvasGroup;
     public AudioSource sonidoLlaveCrack;
@@ -102,7 +104,7 @@ public class Act2Manager : MonoBehaviour
 
         if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(false);
         if (llaveObjeto != null)            llaveObjeto.gameObject.SetActive(false);
-        if (figuraNino != null)             figuraNino.gameObject.SetActive(false);
+        if (figuraNino != null)             figuraNino.gameObject.SetActive(true);
         if (notaPuerta != null)             notaPuerta.gameObject.SetActive(false);
 
         // Linterna: si el campo no está asignado, busca Flashlight_Act2 en la escena (incluyendo inactivos)
@@ -283,6 +285,19 @@ public class Act2Manager : MonoBehaviour
             Debug.LogError("[Act2Manager] vigilanteMirror no asignado — el Vigilante no aparecerá. Asignalo en el Inspector o ejecutá Auto-buscar referencias.");
 
         StartCoroutine(SecuenciaPsicosis());
+
+        parpadeandoLuces2 = true;
+        StartCoroutine(ParpadeoLucesPsicosis());
+    }
+    IEnumerator ParpadeoLucesPsicosis()
+    {
+        bool encendidas = true;
+        while (parpadeandoLuces2)
+        {
+            encendidas = !encendidas;
+            if (lucesPsicosis != null) lucesPsicosis.SetActive(encendidas);
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     // =========================================================
@@ -339,6 +354,8 @@ public class Act2Manager : MonoBehaviour
         if (sonidoLlaveCrack != null) sonidoLlaveCrack.Play();
         if (sacudidaCamara != null)
             StartCoroutine(sacudidaCamara.Shake(0.5f, 0.2f));
+
+        parpadeandoLuces2 = false;
 
         llaveTenida = false;
         Paranoia(50f);
