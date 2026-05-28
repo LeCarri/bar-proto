@@ -509,8 +509,8 @@ public class Act1Manager : MonoBehaviour
             MostrarDialogo("Lucas: No puedo más... Necesito descansar...");
         }
 
-        // 4. ESPERA ANTES DEL FIN (Bajé este tiempo de 12s a 5s para que no quede un bache tan largo)
-        yield return new WaitForSeconds(5f);
+        // 4. ESPERA ANTES DEL FIN 
+        yield return new WaitForSeconds(8f);
 
         // 5. FUNDIDO A NEGRO FINAL (Transición directa a la Noche 2)
         float duracionFade = 2.5f;
@@ -523,6 +523,6 @@ public class Act1Manager : MonoBehaviour
         }
 
         Debug.Log("Noche 1 terminada con éxito. Cargando Noche 2...");
-        SceneManager.LoadScene("Night_2 Scene"); 
+        SceneManager.LoadScene("Night_2"); 
     }
 }
