@@ -8,7 +8,7 @@ using UnityEngine.Categorization;
 
 public class Act1Manager : MonoBehaviour
 {
-    public enum ActoState { Limpieza, Servicio, ElQuiebre }
+    public enum ActoState { Limpieza, Servicio, AparicionBarra, ElQuiebre }
     public ActoState estadoActual = ActoState.Limpieza;
     private Coroutine corrutinaActiva;
 
@@ -31,9 +31,10 @@ public class Act1Manager : MonoBehaviour
     public EffectoParpadeo effectoParpadeo; //arrastra el objeto con el sccript 
 
     [Header("Sistemas de Iluminación")]
-    public GameObject lucesNormales;   // Amarillas (Bar vacío)
-    public GameObject lucesServicio;   // Violetas (Modo servicio/aparición)
-    public GameObject lucesCombate;
+    public GameObject lucesNormales;   // Amarillas (Bar vacío / Limpieza)
+    public GameObject lucesServicio;   // Violetas (Modo servicio general)
+    public GameObject lucesCreepy;     // NUEVO: Foco tétrico/parpadeo para la mujer en la barra
+    public GameObject lucesCombate;    // Apagón total del combate (Boca de lobo)
 
     [Header("Audio")]
     public AudioSource ambientBar;
@@ -349,25 +350,36 @@ public class Act1Manager : MonoBehaviour
 
     public void CambiarIluminacion(string estado)
     {
-        // Debug para verificar en consola qué estado se está llamando
         Debug.Log("Cambiando iluminación a: " + estado);
 
+        // Apagamos absolutamente todo primero para que no se pisen
         if (lucesNormales != null) lucesNormales.SetActive(false);
         if (lucesServicio != null) lucesServicio.SetActive(false);
+        if (lucesCreepy != null) lucesCreepy.SetActive(false);
         if (lucesCombate != null) lucesCombate.SetActive(false);
 
         switch (estado)
         {
             case "Normal":
                 if (lucesNormales != null) lucesNormales.SetActive(true);
+                RenderSettings.ambientLight = new Color(0.22f, 0.22f, 0.22f); // Claridad normal de base
                 break;
+
             case "Servicio":
                 if (lucesServicio != null) lucesServicio.SetActive(true);
+                RenderSettings.ambientLight = new Color(0.15f, 0.15f, 0.15f); // Penumbra ambiente violeta
                 break;
+
+            case "Creepy":
+                if (lucesCreepy != null) lucesCreepy.SetActive(true);
+                RenderSettings.ambientLight = new Color(0.05f, 0.05f, 0.05f); // Casi oscuras, resalta la barra
+                break;
+
             case "Combate":
-                if (lucesCombate != null) lucesCombate.SetActive(true);
-                RenderSettings.ambientLight = Color.black;
+                if (lucesCombate != null) lucesCombate.SetActive(true); // Tus luces rojas/combate
+                RenderSettings.ambientLight = Color.black; // Oscuridad absoluta en la cocina/salón
                 break;
+
             default:
                 Debug.LogWarning("El estado de luz '" + estado + "' no existe.");
                 break;
@@ -484,17 +496,19 @@ public class Act1Manager : MonoBehaviour
         // 4. ESPERA ANTES DEL FIN
         yield return new WaitForSeconds(12f);
 
-        // 5. FUNDIDO A NEGRO (El efecto final original)
+        // 5. FUNDIDO A NEGRO
         float duracionFade = 2.5f;
         float tiempoFade = 0;
         while (tiempoFade < duracionFade)
-            {
+        {
             tiempoFade += Time.deltaTime;
             fadeCanvasGroup.alpha = Mathf.Lerp(0, 1, tiempoFade / duracionFade);
             yield return null;
-            }
+        }
 
-        Debug.Log("Noche 1 terminada con éxito.");
-        SceneManager.LoadScene("Home");
+        Debug.Log("Noche 1 terminada. Cargando Noche 2 de una...");
+        
+        // 🔥 EL CAMBIO CLAVE: Cambiamos "Home" por el nombre de tu escena de la Noche 2
+        SceneManager.LoadScene("Night_2 Scene"); 
     }
 }
