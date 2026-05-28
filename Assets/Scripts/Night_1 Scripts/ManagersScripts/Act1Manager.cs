@@ -403,11 +403,11 @@ public class Act1Manager : MonoBehaviour
     public void AlRecogerBotellaEspecial()
     {
         estadoActual = ActoState.ElQuiebre;
-        CambiarIluminacion("Combate"); // Rojo
+        CambiarIluminacion("Combate"); // Se pone todo en negro/rojo
         ActualizarObjetivo("¡SOBREVIVE! derrota a las sombras con tu linterna (click derecho para hacerles daño)");
 
         if (objetoMujer != null) objetoMujer.SetActive(false);
-        if (linternaObjeto != null) linternaObjeto.SetActive(true);
+        if (linternaObjeto != null) linternaObjeto.SetActive(true); // Se activa la linterna física para recoger
 
         // Lanzamos el temblor y el sonido
         if (sacudidaCamara != null) StartCoroutine(sacudidaCamara.Shake(0.8f, 0.2f));
@@ -417,7 +417,21 @@ public class Act1Manager : MonoBehaviour
         // ACTIVACIÓN DE ENEMIGOS
         StartCoroutine(ActivarEnemigosSecuencial());
 
+        // Reacción inicial de Lucas
         MostrarDialogo("Lucas: ¡¿Qué carajo fue eso?! ¡No veo nada!");
+
+        // 🔥 NUEVO: Lanzamos la secuencia del tutorial de la linterna
+        StartCoroutine(SecuenciaTutorialLinterna());
+    }
+
+    // 🔥 NUEVA CORRUTINA: Espera 5 segundos y te enseña a usar la F
+    IEnumerator SecuenciaTutorialLinterna()
+    {
+        // Espera los 5 segundos que me pediste desde que empezó el caos
+        yield return new WaitForSeconds(5f);
+
+        // Lanza el diálogo instructivo en pantalla
+        MostrarDialogo("Puedes presionar la [F] para encender la linterna.");
     }
 
     IEnumerator ActivarEnemigosSecuencial()
@@ -466,37 +480,39 @@ public class Act1Manager : MonoBehaviour
 
     IEnumerator SecuenciaCierreNoche()
     {
-        // 1. EL PARPADEO (Disimula el cambio repentino)
-        // Hacemos que las luces rojas titilen antes de morir
-        float t = 0;
-        while (t < 1.2f) 
-            {
-            lucesCombate.SetActive(!lucesCombate.activeSelf);
-            // El sonido de un cortocircuito aquí quedaría genial
-            yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
-            t += 0.15f;
-            }
-        lucesCombate.SetActive(false);
+        // 1. 🔥 EL NUEVO PARPADEO POST-COMBATE
+        // Usamos tu script especializado para hacer titilar las luces antes del apagón
+        if (effectoParpadeo != null)
+        {
+            Debug.Log("Iniciando parpadeo de luces post-combate...");
+            effectoParpadeo.IniciarParpadeo();
+        }
 
-        // 2. OSCURIDAD TOTAL (Tensión de un segundo)
+        // Esperamos un momento tenso mientras las luces titilan descontroladas
         yield return new WaitForSeconds(2f);
 
-        // 3. VUELTA A LA NORMALIDAD
-        lucesNormales.SetActive(true);
+        // 2. OSCURIDAD TOTAL
+        // Apagamos las luces de combate definitivamente para dejar el bar a oscuras
+        if (lucesCombate != null) lucesCombate.SetActive(false);
+        RenderSettings.ambientLight = Color.black; // Boca de lobo
+
+        yield return new WaitForSeconds(2f);
+
+        // 3. VUELTA A LA NORMALIDAD (A medias... Lucas está exhausto)
+        if (lucesNormales != null) lucesNormales.SetActive(true);
         ActualizarObjetivo("Lograste sobrevivir");
-        // Aquí podés activar el texto de Lucas:
+        
         if (interactionText != null) 
-            {
-                MostrarDialogo("Lucas: ¿Que mierda fue eso ?");
-                yield return new WaitForSeconds(3f);
-                MostrarDialogo("Lucas: No puedo mas... Necesito descansar");
-                //interactionText.gameObject.SetActive(true);
-            }
+        {
+            MostrarDialogo("Lucas: ¿Qué mierda fue eso?");
+            yield return new WaitForSeconds(3f);
+            MostrarDialogo("Lucas: No puedo más... Necesito descansar...");
+        }
 
-        // 4. ESPERA ANTES DEL FIN
-        yield return new WaitForSeconds(12f);
+        // 4. ESPERA ANTES DEL FIN (Bajé este tiempo de 12s a 5s para que no quede un bache tan largo)
+        yield return new WaitForSeconds(5f);
 
-        // 5. FUNDIDO A NEGRO
+        // 5. FUNDIDO A NEGRO FINAL (Transición directa a la Noche 2)
         float duracionFade = 2.5f;
         float tiempoFade = 0;
         while (tiempoFade < duracionFade)
@@ -506,9 +522,7 @@ public class Act1Manager : MonoBehaviour
             yield return null;
         }
 
-        Debug.Log("Noche 1 terminada. Cargando Noche 2 de una...");
-        
-        // 🔥 EL CAMBIO CLAVE: Cambiamos "Home" por el nombre de tu escena de la Noche 2
+        Debug.Log("Noche 1 terminada con éxito. Cargando Noche 2...");
         SceneManager.LoadScene("Night_2 Scene"); 
     }
 }
