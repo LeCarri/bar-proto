@@ -257,9 +257,15 @@ public class Act3Manager : MonoBehaviour
 
         vigilante.transform.position = posicion;
 
-        // mira al jugador
+        Vector3 direccion =
+            cam.position - vigilante.transform.position;
+
+        direccion.y = 0f;
+
         vigilante.transform.rotation =
-            Quaternion.LookRotation(-cam.forward);
+            Quaternion.LookRotation(direccion);
+
+        vigilante.transform.Rotate(0, 90, 0);
 
         vigilante.SetActive(true);
     }
