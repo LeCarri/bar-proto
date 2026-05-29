@@ -26,6 +26,8 @@ public class Act3Manager : MonoBehaviour
     public bool enSotano = false;
     public int clientesAtendidos = 0;
 
+    public GameObject vigilante;
+
     // PEDIDOS
     public string pedidoActual = "";
     public bool tienePedido = false;
@@ -245,6 +247,21 @@ public class Act3Manager : MonoBehaviour
         yield return new WaitForSeconds(1.5f);
 
         enemigos.SetActive(true);
+
+        Transform cam = Camera.main.transform;
+
+        Vector3 posicion =
+            cam.position + cam.forward * 5f;
+
+        posicion.y = vigilante.transform.position.y;
+
+        vigilante.transform.position = posicion;
+
+        // mira al jugador
+        vigilante.transform.rotation =
+            Quaternion.LookRotation(-cam.forward);
+
+        vigilante.SetActive(true);
     }
 
     // PARANOIA
