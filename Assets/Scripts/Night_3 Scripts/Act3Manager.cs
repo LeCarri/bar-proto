@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine;
+using Unity.VisualScripting;
 
 public class Act3Manager : MonoBehaviour
 {
@@ -27,24 +28,14 @@ public class Act3Manager : MonoBehaviour
     public int clientesAtendidos = 0;
 
     public GameObject vigilante;
+   
 
     // PEDIDOS
     public string pedidoActual = "";
     public bool tienePedido = false;
     public bool tienePedidoBuscado = false;
 
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
+    
 
     void Start()
     {
@@ -248,6 +239,8 @@ public class Act3Manager : MonoBehaviour
 
         enemigos.SetActive(true);
 
+
+        //aparicion vigilante
         Transform cam = Camera.main.transform;
 
         Vector3 posicion =
@@ -286,6 +279,18 @@ public class Act3Manager : MonoBehaviour
     public void IrASotano()
     {
         enSotano = true;
-        SceneManager.LoadScene("Basement");
+        SceneManager.LoadScene("Basement (pasto)");
     }
+
+    //estando en el sotano
+
+    public void sotano()
+    {
+       if (enSotano == true)
+        {
+            Debug.Log("sotanooooooo");
+        }
+    }
+
+
 }
