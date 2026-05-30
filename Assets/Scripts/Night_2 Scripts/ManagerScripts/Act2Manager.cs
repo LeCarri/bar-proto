@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Orquestador maestro del Acto 2 - La Fisura de la Realidad.
@@ -31,6 +32,9 @@ public class Act2Manager : MonoBehaviour
 
     [Header("UI y Diálogos")]
     public TextMeshProUGUI textoSubtitulos;
+    public CanvasGroup canvasGroupDialogo; // Asegúrate de que el fondo tenga este componente
+    public float velocidadEscritura = 0.04f;
+    public float velocidadFade = 3f; // Nueva variable para controlar la suavidad
 
     [Header("Sistema de Iluminación")]
     public GameObject lucesNormales;    // Luces normales del bar (amarillas)
@@ -50,7 +54,8 @@ public class Act2Manager : MonoBehaviour
     public PasilloEfecto pasilloEfecto;
 
     [Header("Sótano")]
-    public PuertaSotanoAct2 puertaSotano;
+    public PuertaSotanoAct2 puertaSotanoL;
+    public PuertaSotanoAct2 puertaSotanoR;
     public NotaPuerta notaPuerta;
     public AudioSource sonidoGolpesSotano;
 
@@ -67,6 +72,10 @@ public class Act2Manager : MonoBehaviour
 
     private bool parpadeandoLuces = false;
 
+    private bool parpadeandoLuces2 = false;
+
+    private Coroutine corrutinaActiva;
+
     [Header("Cierre del Acto")]
     public CanvasGroup fadeCanvasGroup;
     public AudioSource sonidoLlaveCrack;
@@ -74,20 +83,19 @@ public class Act2Manager : MonoBehaviour
     [Tooltip("Trigger cerca de la puerta del sótano — se habilita al recoger la llave y dispara la secuencia de cierre")]
     public Collider triggerCierreSotano;
 
-    [Header("Inventario Inicial")]
-    [Tooltip("GameObject de la linterna — se activa al iniciar el acto")]
-    public GameObject linternaObjeto;
-
     [Header("Audio Ambiental")]
     public AudioSource ambientBar;
     public AudioSource musicBar;
+
+    [Header("Objetivos")]
+    public TextMeshProUGUI textoObjetivo;
 
     void Awake()
     {
         Instance = this;
 
         // Aviso si hay un Act1Manager en la escena
-        if (Object.FindFirstObjectByType<Act1Manager>() != null)
+        if (Object.FindAnyObjectByType<Act1Manager>() != null)
             Debug.LogError("[Act2Manager] ¡ACT1MANAGER DETECTADO EN LA ESCENA! Eliminalo del hierarchy para evitar conflictos.");
     }
 
@@ -98,31 +106,35 @@ public class Act2Manager : MonoBehaviour
         if (textoSubtitulos != null) textoSubtitulos.text = "";
 
         estadoActual = Act2State.Inicio;
+
+        StartCoroutine(FundirDesdeNegro());
+
         CambiarIluminacion("Normal");
 
         if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(false);
         if (llaveObjeto != null)            llaveObjeto.gameObject.SetActive(false);
-        if (figuraNino != null)             figuraNino.gameObject.SetActive(false);
+        if (figuraNino != null)             figuraNino.gameObject.SetActive(true);
         if (notaPuerta != null)             notaPuerta.gameObject.SetActive(false);
 
-        // Linterna: si el campo no está asignado, busca Flashlight_Act2 en la escena (incluyendo inactivos)
-        if (linternaObjeto == null)
-        {
-            Flashlight_Act2 fl = Object.FindFirstObjectByType<Flashlight_Act2>(FindObjectsInactive.Include);
-            if (fl != null) linternaObjeto = fl.gameObject;
-        }
-        if (linternaObjeto != null)
-            linternaObjeto.SetActive(true);
-        else
-            Debug.LogWarning("[Act2Manager] linternaObjeto no encontrado — asignalo en el Inspector.");
-
         StartCoroutine(SecuenciaInicio());
+
+
+        ActualizarObjetivo("Preparate para el servicio...");
     }
 
-    // Crea un TMP de emergencia en pantalla si no hay uno asignado
-    TextMeshProUGUI CrearTextoEmergencia()
+    public void ActualizarObjetivo(string nuevoObjetivo)
     {
-        var canvas = Object.FindFirstObjectByType<Canvas>();
+        if (textoObjetivo != null)
+        {
+            textoObjetivo.text = "- " + nuevoObjetivo;
+            // Opcional: Podés disparar una pequeña animación de escala o color 
+            // para que el jugador note que el objetivo cambió.
+        }
+    }
+        // Crea un TMP de emergencia en pantalla si no hay uno asignado
+        TextMeshProUGUI CrearTextoEmergencia()
+    {
+        var canvas = Object.FindAnyObjectByType<Canvas>();
         if (canvas == null)
         {
             Debug.LogWarning("[Act2Manager] No hay Canvas en la escena. El texto de diálogo no se mostrará.");
@@ -145,11 +157,42 @@ public class Act2Manager : MonoBehaviour
     // =========================================================
     // ESTADO 1: INICIO — Parpadeos y cansancio del barman
     // =========================================================
+    IEnumerator FundirDesdeNegro()
+    {
+        float duracion = 2.5f;
+        float t = 0f;
+
+        // Empieza completamente oscuro
+        if (fadeCanvasGroup != null)
+            fadeCanvasGroup.alpha = 1f;
+
+        while (t < duracion)
+        {
+            t += Time.deltaTime;
+            if (fadeCanvasGroup != null)
+                fadeCanvasGroup.alpha = Mathf.Lerp(1f, 0f, t / duracion);
+            yield return null;
+        }
+
+        // Asegura que quede completamente transparente al final
+        if (fadeCanvasGroup != null)
+            fadeCanvasGroup.alpha = 0f;
+
+        Debug.Log("Capítulo iniciado.");
+        yield return new WaitForSeconds(2f);
+
+    }
+
+
+
+
     IEnumerator SecuenciaInicio()
     {
         yield return new WaitForSeconds(2f);
 
         MostrarDialogo("Lucas: No pude dormir nada ayer... estoy que me desmayo...");
+        yield return new WaitForSeconds(3f);
+        ActualizarObjetivo("Preparate para el servicio...");
         Paranoia(10f);
 
         yield return new WaitForSeconds(4f);
@@ -189,6 +232,10 @@ public class Act2Manager : MonoBehaviour
         if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(true);
         if (ambientBar != null && !ambientBar.isPlaying) ambientBar.Play();
 
+        yield return new WaitForSeconds(3f);
+
+        ActualizarObjetivo("Atende a los... Clientes??..");
+
         Paranoia(15f);
     }
 
@@ -196,6 +243,8 @@ public class Act2Manager : MonoBehaviour
     public void IrACocina()
     {
         estadoActual = Act2State.Pasillo;
+
+        ActualizarObjetivo("Anda a la cocina por la Bebida especial");
     }
 
     // =========================================================
@@ -247,8 +296,12 @@ public class Act2Manager : MonoBehaviour
 
         // Activar golpes rítmicos y nota en la puerta
         if (sonidoGolpesSotano != null) sonidoGolpesSotano.Play();
-        if (puertaSotano != null)       puertaSotano.ActivarGolpes();
+        if (puertaSotanoL != null)       puertaSotanoL.ActivarGolpes();
         if (notaPuerta != null)         notaPuerta.gameObject.SetActive(true);
+
+        yield return new WaitForSeconds(3f);
+
+        ActualizarObjetivo("Investiga los ruidos del sotano");
     }
 
     // =========================================================
@@ -258,7 +311,7 @@ public class Act2Manager : MonoBehaviour
     {
         MostrarDialogo("Lucas: \"La guardé donde nadie limpia\"... el baño.");
         estadoActual = Act2State.Bano;
-
+        ActualizarObjetivo("Ir a buscar la llave del sotano al baño");
         // Activar la llave en el baño
         if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(true);
     }
@@ -283,6 +336,19 @@ public class Act2Manager : MonoBehaviour
             Debug.LogError("[Act2Manager] vigilanteMirror no asignado — el Vigilante no aparecerá. Asignalo en el Inspector o ejecutá Auto-buscar referencias.");
 
         StartCoroutine(SecuenciaPsicosis());
+
+        parpadeandoLuces2 = true;
+        StartCoroutine(ParpadeoLucesPsicosis());
+    }
+    IEnumerator ParpadeoLucesPsicosis()
+    {
+        bool encendidas = true;
+        while (parpadeandoLuces2)
+        {
+            encendidas = !encendidas;
+            if (lucesPsicosis != null) lucesPsicosis.SetActive(encendidas);
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     // =========================================================
@@ -301,6 +367,10 @@ public class Act2Manager : MonoBehaviour
             StartCoroutine(sacudidaCamara.Shake(1f, 0.3f));
 
         Paranoia(40f);
+
+        yield return new WaitForSeconds(3f);
+
+        ActualizarObjetivo("SOBREVIVI Y LLEGA AL SOTANO");
 
         yield return new WaitForSeconds(2f);
 
@@ -340,6 +410,8 @@ public class Act2Manager : MonoBehaviour
         if (sacudidaCamara != null)
             StartCoroutine(sacudidaCamara.Shake(0.5f, 0.2f));
 
+        parpadeandoLuces2 = false;
+
         llaveTenida = false;
         Paranoia(50f);
 
@@ -355,6 +427,10 @@ public class Act2Manager : MonoBehaviour
 
         CambiarIluminacion("Normal");
 
+        yield return new WaitForSeconds(3f);
+
+        ActualizarObjetivo("???");
+
         yield return new WaitForSeconds(2f);
 
         // Recuperación de paranoia
@@ -365,8 +441,12 @@ public class Act2Manager : MonoBehaviour
         yield return new WaitForSeconds(4f);
 
         // La puerta del sótano se abre sola
-        if (puertaSotano != null)
-            puertaSotano.AbrirSola();
+        if (puertaSotanoL != null)
+            puertaSotanoL.AbrirSola();
+        else
+            Debug.LogError("[Act2Manager] puertaSotano no asignado — la puerta no se abrirá. Asignalo en el Inspector.");
+        if (puertaSotanoR != null)
+            puertaSotanoR.AbrirSola();
         else
             Debug.LogError("[Act2Manager] puertaSotano no asignado — la puerta no se abrirá. Asignalo en el Inspector.");
 
@@ -374,7 +454,7 @@ public class Act2Manager : MonoBehaviour
 
         MostrarDialogo("Lucas: No me animo a entrar...");
 
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1f);
 
         StartCoroutine(FundirANegro());
     }
@@ -393,33 +473,66 @@ public class Act2Manager : MonoBehaviour
         }
 
         Debug.Log("Acto 2 finalizado.");
-        // SceneManager.LoadScene("Act_3 Scene"); // Descomentar cuando exista el Acto 3
+        yield return new WaitForSeconds(5f);
+        SceneManager.LoadScene("Night_3 Scene"); // Descomentar cuando exista el Acto 3
     }
 
     // =========================================================
     // UTILIDADES
     // =========================================================
+
     public void MostrarDialogo(string mensaje)
     {
-        // Intento de búsqueda de emergencia si el campo quedó sin asignar
-        if (textoSubtitulos == null)
+        if (textoSubtitulos != null && canvasGroupDialogo != null)
         {
-            textoSubtitulos = Object.FindFirstObjectByType<TextMeshProUGUI>();
-            if (textoSubtitulos == null)
+            // Si ya hay algo escribiéndose, lo matamos de raíz
+            if (corrutinaActiva != null)
             {
-                Debug.LogWarning($"[Act2Manager] DIÁLOGO PERDIDO (sin TextMeshProUGUI): \"{mensaje}\"");
-                return;
+                StopCoroutine(corrutinaActiva);
             }
+
+            // Guardamos la nueva corrutina en la variable
+            corrutinaActiva = StartCoroutine(SecuenciaDialogo(mensaje));
         }
-        textoSubtitulos.text = mensaje;
-        CancelInvoke(nameof(LimpiarTexto));
-        Invoke(nameof(LimpiarTexto), 4f);
     }
 
-    void LimpiarTexto()
+
+
+
+    IEnumerator SecuenciaDialogo(string frase)
     {
-        if (textoSubtitulos != null) textoSubtitulos.text = "";
+        // 1. Limpieza total antes de empezar la nueva frase
+        textoSubtitulos.text = "";
+
+        // Forzamos el fade in (si ya estaba visible, no pasa nada)
+        while (canvasGroupDialogo.alpha < 1)
+        {
+            canvasGroupDialogo.alpha += Time.deltaTime * velocidadFade;
+            yield return null;
+        }
+
+        // 2. Efecto Typewriter
+        foreach (char letra in frase.ToCharArray())
+        {
+            textoSubtitulos.text += letra;
+            yield return new WaitForSeconds(velocidadEscritura);
+        }
+
+        // 3. Tiempo de lectura
+        yield return new WaitForSeconds(3f);
+
+        // 4. Fade Out
+        while (canvasGroupDialogo.alpha > 0)
+        {
+            canvasGroupDialogo.alpha -= Time.deltaTime * (velocidadFade / 2);
+            yield return null;
+        }
+
+        // Importante: decimos que ya terminó para limpiar la referencia
+        corrutinaActiva = null;
     }
+
+    void LimpiarTexto() => textoSubtitulos.text = "";
 
     // Wrapper seguro para paranoia (evita NullRef si ParanoiaSystem no está en la escena)
     void Paranoia(float valor)
@@ -468,21 +581,18 @@ public class Act2Manager : MonoBehaviour
         Chk(sacudidaCamara,        "sacudidaCamara");
         Chk(grupoClientesCorruptos,"grupoClientesCorruptos");
         Chk(pasilloEfecto,         "pasilloEfecto");
-        Chk(puertaSotano,          "puertaSotano");
+        Chk(puertaSotanoL,          "puertaSotano");
         Chk(notaPuerta,            "notaPuerta");
         Chk(llaveObjeto,           "llaveObjeto");
         Chk(vigilanteMirror,       "vigilanteMirror");
         Chk(sombrasCombate,        "sombrasCombate");
         Chk(figuraNino,            "figuraNino");
         if (ok) Debug.Log("[Act2Manager] ✓ Todos los campos están asignados.");
-        if (Object.FindFirstObjectByType<Act1Manager>() != null)
+        if (Object.FindAnyObjectByType<Act1Manager>() != null)
             Debug.LogError("[Act2Manager] ACT1MANAGER está en la escena — eliminalo.");
         if (ParanoiaSystem.Instance == null)
             Debug.LogError("[Act2Manager] ParanoiaSystem no encontrado en la escena.");
     }
-
-    [ContextMenu("▶ TEST: Mostrar diálogo de prueba")]
-    void TestDialogo() => MostrarDialogo("Lucas: [TEXTO DE PRUEBA] — Si ves esto, el sistema de diálogo funciona.");
 
     [ContextMenu("▶ TEST: Saltar a SERVICIO (clientes)")]
     void TestSaltarServicio()
@@ -568,22 +678,22 @@ public class Act2Manager : MonoBehaviour
         // --- Efectos visuales ---
         if (efectoParpadeo == null)
         {
-            efectoParpadeo = FindFirstObjectByType<EffectoParpadeo>();
+            efectoParpadeo = FindAnyObjectByType<EffectoParpadeo>();
             if (efectoParpadeo != null) encontrados++;
         }
         if (parpadeoBarCambio == null)
         {
-            parpadeoBarCambio = FindFirstObjectByType<ParpadeoBarCambio>();
+            parpadeoBarCambio = FindAnyObjectByType<ParpadeoBarCambio>();
             if (parpadeoBarCambio != null) encontrados++;
         }
         if (efectoPsicosis == null)
         {
-            efectoPsicosis = FindFirstObjectByType<EfectoPsicosis>();
+            efectoPsicosis = FindAnyObjectByType<EfectoPsicosis>();
             if (efectoPsicosis != null) encontrados++;
         }
         if (sacudidaCamara == null)
         {
-            sacudidaCamara = FindFirstObjectByType<CameraShake>();
+            sacudidaCamara = FindAnyObjectByType<CameraShake>();
             if (sacudidaCamara != null) encontrados++;
         }
 
@@ -614,43 +724,43 @@ public class Act2Manager : MonoBehaviour
         // --- Pasillo ---
         if (pasilloEfecto == null)
         {
-            pasilloEfecto = FindFirstObjectByType<PasilloEfecto>();
+            pasilloEfecto = FindAnyObjectByType<PasilloEfecto>();
             if (pasilloEfecto != null) encontrados++;
         }
 
         // --- Sótano ---
-        if (puertaSotano == null)
+        if (puertaSotanoL == null)
         {
-            puertaSotano = FindFirstObjectByType<PuertaSotanoAct2>();
-            if (puertaSotano != null) encontrados++;
+            puertaSotanoL = FindAnyObjectByType<PuertaSotanoAct2>();
+            if (puertaSotanoL    != null) encontrados++;
         }
         if (notaPuerta == null)
         {
-            notaPuerta = FindFirstObjectByType<NotaPuerta>();
+            notaPuerta = FindAnyObjectByType<NotaPuerta>();
             if (notaPuerta != null) encontrados++;
         }
 
         // --- Baño ---
         if (llaveObjeto == null)
         {
-            llaveObjeto = FindFirstObjectByType<LlaveInteractuable>();
+            llaveObjeto = FindAnyObjectByType<LlaveInteractuable>();
             if (llaveObjeto != null) encontrados++;
         }
         if (vigilanteMirror == null)
         {
-            vigilanteMirror = FindFirstObjectByType<VigenteMirror>();
+            vigilanteMirror = FindAnyObjectByType<VigenteMirror>();
             if (vigilanteMirror != null) encontrados++;
         }
 
         // --- Psicosis ---
         if (sombrasCombate == null)
         {
-            sombrasCombate = FindFirstObjectByType<SombrasCombate>();
+            sombrasCombate = FindAnyObjectByType<SombrasCombate>();
             if (sombrasCombate != null) encontrados++;
         }
         if (figuraNino == null)
         {
-            figuraNino = FindFirstObjectByType<FiguraNino>();
+            figuraNino = FindAnyObjectByType<FiguraNino>();
             if (figuraNino != null) encontrados++;
         }
 
