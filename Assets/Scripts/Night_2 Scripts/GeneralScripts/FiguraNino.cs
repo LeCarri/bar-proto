@@ -31,39 +31,16 @@ public class FiguraNino : MonoBehaviour
     [Tooltip("Clip de audio: misma voz pero desde el sótano")]
     public AudioClip clipVozSotano;
 
-    [Header("Comportamiento")]
-    [Tooltip("Distancia en metros a la que el niño desaparece cuando el jugador se acerca")]
-    public float distanciaDesaparicion = 2.5f;
-
-    [Tooltip("Segundos de espera después de aparecer antes de empezar a detectar al jugador")]
-    public float delayDeteccion = 2f;
-
     private bool aparecido = false;
     private bool desaparecido = false;
-    private Transform jugador;
-    private float tiempoAparicion;
 
     void Start()
     {
         if (modeloNino != null) modeloNino.SetActive(false);
-
-        // Busca el jugador por tag
-        GameObject obj = GameObject.FindGameObjectWithTag("Player");
-        if (obj != null) jugador = obj.transform;
     }
 
     void Update()
     {
-        if (!aparecido || desaparecido || jugador == null) return;
-
-        // Solo detecta proximidad después del delay
-        if (Time.time - tiempoAparicion < delayDeteccion) return;
-
-        float distancia = Vector3.Distance(transform.position, jugador.position);
-        if (distancia <= distanciaDesaparicion)
-        {
-            StartCoroutine(DesapareceYVozSotano());
-        }
     }
 
     /// <summary>
@@ -73,7 +50,6 @@ public class FiguraNino : MonoBehaviour
     {
         if (aparecido) return;
         aparecido = true;
-        tiempoAparicion = Time.time;
 
 
         if (modeloNino != null) modeloNino.SetActive(true);
@@ -86,7 +62,7 @@ public class FiguraNino : MonoBehaviour
         }
     }
 
-    IEnumerator DesapareceYVozSotano()
+    public IEnumerator DesapareceYVozSotano()
     {
         desaparecido = true;
 
