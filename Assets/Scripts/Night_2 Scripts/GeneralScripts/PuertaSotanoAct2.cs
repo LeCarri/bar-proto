@@ -115,7 +115,7 @@ public class PuertaSotanoAct2 : MonoBehaviour, IInteractable
         else
         {
             // Apertura manual con rotación
-            rotacionObjetivo = transform.rotation * Quaternion.Euler(0f, anguloApertura, 0f);
+            rotacionObjetivo = transform.rotation * Quaternion.Euler(0f, 0f, anguloApertura);
             abriendoSuave = true;
         }
     }

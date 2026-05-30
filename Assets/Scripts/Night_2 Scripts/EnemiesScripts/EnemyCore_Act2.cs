@@ -23,7 +23,7 @@ public class EnemyCore_Act2 : EnemyCore
 
         Act2Manager.Instance?.SombraDerrotada();
 
-        SombrasCombate combate = Object.FindFirstObjectByType<SombrasCombate>();
+        SombrasCombate combate = Object.FindAnyObjectByType<SombrasCombate>();
         combate?.SombraEliminada();
 
         if (desvanecerAlMorir)
