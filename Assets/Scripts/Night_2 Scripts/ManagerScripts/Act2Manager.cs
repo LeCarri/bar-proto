@@ -67,6 +67,8 @@ public class Act2Manager : MonoBehaviour
     [Header("Psicosis y Combate")]
     public SombrasCombate sombrasCombate;
     public FiguraNino figuraNino;
+    public Collider triggerDesaparicion;
+
     private int sombrasDerrotadas = 0;
     public int totalSombras = 3;
 
