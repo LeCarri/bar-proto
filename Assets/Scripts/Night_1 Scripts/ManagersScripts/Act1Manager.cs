@@ -48,6 +48,7 @@ public class Act1Manager : MonoBehaviour
     [Header("Lógica de Pedidos")]
     public bool tieneObjetoEnMano = false;
     public int clientesAtendidosTotal = 0;
+    public bool marielaPidioHoney = false;
 
     [Header("Final de Acto")]
     public GameObject objetoMujer;      
@@ -95,32 +96,45 @@ public class Act1Manager : MonoBehaviour
         return ClientesAtendidos >= ClientesParaAtender;
     }
     
-    void Start()
+void Start()
+{
+    Time.timeScale = 1f;
+        
+    estadoActual = ActoState.Limpieza;
+
+    tieneObjetoEnMano = false;
+    clientesAtendidosTotal = 0;
+    marielaPidioHoney = false;
+
+    if (indicadorNevera != null)
     {
-        Time.timeScale = 1f;
-        
-        estadoActual = ActoState.Limpieza;
-
-        if (fadeCanvasGroup != null)
-        {
-            // Forzamos que el objeto esté activo y sea negro al 100%
-            fadeCanvasGroup.gameObject.SetActive(true);
-            fadeCanvasGroup.alpha = 1f;
-        
-            Debug.Log("Iniciando fundido de entrada...");
-            StartCoroutine(SecuenciaInicioNoche());
-        }
-        else 
-        {
-            Debug.LogError("¡Ojo! No asignaste el fadeCanvasGroup en el Inspector.");
-        }
-
-        CambiarIluminacion("Normal");
-        if (grupoClientes != null) grupoClientes.SetActive(false);
-        MostrarDialogo("Hay que dejar todo listo antes de abrir...");
-        ActualizarObjetivo("Acomodá las sillas (" + sillasAcomodadas + "/" + totalSillas + ")");
+        indicadorNevera.SetActive(false);
     }
 
+    if (indicadorCervezas != null)
+    {
+        indicadorCervezas.SetActive(false);
+    }
+
+    if (fadeCanvasGroup != null)
+    {
+        // Forzamos que el objeto esté activo y sea negro al 100%
+        fadeCanvasGroup.gameObject.SetActive(true);
+        fadeCanvasGroup.alpha = 1f;
+    
+        Debug.Log("Iniciando fundido de entrada...");
+        StartCoroutine(SecuenciaInicioNoche());
+    }
+    else 
+    {
+        Debug.LogError("¡Ojo! No asignaste el fadeCanvasGroup en el Inspector.");
+    }
+
+    CambiarIluminacion("Normal");
+    if (grupoClientes != null) grupoClientes.SetActive(false);
+    MostrarDialogo("Hay que dejar todo listo antes de abrir...");
+    ActualizarObjetivo("Acomodá las sillas (" + sillasAcomodadas + "/" + totalSillas + ")");
+}
     public void ActualizarObjetivo(string nuevoObjetivo)
     {
         if (textoObjetivo != null)
@@ -208,7 +222,7 @@ public class Act1Manager : MonoBehaviour
 
         // 4. Cambiamos de estado y Lucas habla
         estadoActual = ActoState.Servicio;
-        MostrarDialogo("Clientes ?... a trabajar.");
+        MostrarDialogo("¿Clientes? Bueno, a trabajar.");
         ActualizarObjetivo("Atende a los clientes, busca las bebidas detras de la barra.");
 
         if (indicadorNevera != null) 
@@ -294,34 +308,175 @@ public class Act1Manager : MonoBehaviour
 
     void LimpiarTexto() => textoSubtitulos.text = "";
 
-    public void RecogerObjeto(bool esEnBarra)
+public void RecogerObjeto(bool esEnBarra)
+{
+    // Si todavía está en limpieza, no dejamos preparar pedidos
+    if (estadoActual == ActoState.Limpieza)
     {
-        if (esEnBarra && clientesAtendidosTotal == 1) // El segundo cliente
-        {
-            MostrarDialogo("Lucas: No queda nada acá... voy a tener que ir a buscar a la cocina.");
-            // Aquí habilitamos el Trigger de la cocina
-        }
-        else
-        {
-            tieneObjetoEnMano = true;
-            MostrarDialogo("Lucas: Ya tengo el pedido. A entregarlo.");
-        }
+        MostrarDialogo("Lucas: Todavía no abrí el bar. Primero tengo que acomodar las sillas.");
+        return;
     }
 
-    public bool TienePedidoEntregable() => tieneObjetoEnMano;
-
-    public void ClienteCompletado()
+    // Si no estamos en la etapa de servicio, tampoco debería permitir pedidos comunes
+    if (estadoActual != ActoState.Servicio)
     {
-        clientesAtendidosTotal++;
-
-        // Si es el segundo cliente (el que nos mandó a la cocina)
-        if (clientesAtendidosTotal == 2)
-        {
-            StartCoroutine(SecuenciaQuiebreRealidad());
-        }
+        MostrarDialogo("Lucas: Ahora no necesito preparar bebidas.");
+        return;
     }
 
-    IEnumerator SecuenciaQuiebreRealidad()
+    // Si ya tiene un pedido en mano, no debería agarrar otro
+    if (tieneObjetoEnMano)
+    {
+        MostrarDialogo("Lucas: Ya tengo un pedido en mano. Tengo que entregarlo primero.");
+        return;
+    }
+
+    // Después de Carlos, pero antes de hablar con Mariela
+    if (clientesAtendidosTotal == 1 && !marielaPidioHoney)
+    {
+        MostrarDialogo("Lucas: Primero debería ver qué quiere la otra clienta.");
+        return;
+    }
+
+    // Pedido especial de Mariela
+    if (esEnBarra && marielaPidioHoney)
+    {
+        MostrarDialogo("Lucas: Acá solo sale cerveza común... la Honey debe estar guardada en la cocina.");
+        HabilitarTriggerCocinaFinal();
+
+        if (indicadorCervezas != null)
+        {
+            indicadorCervezas.SetActive(false);
+        }
+
+        return;
+    }
+
+    // Pedido común de Carlos
+    tieneObjetoEnMano = true;
+    MostrarDialogo("Lucas: Ya tengo el pedido. A entregarlo.");
+}
+
+public bool TienePedidoEntregable()
+{
+    return tieneObjetoEnMano;
+}
+
+public void InteractuarCarlos()
+{
+    if (estadoActual != ActoState.Servicio)
+    {
+        MostrarDialogo("Lucas: Todavía no es momento.");
+        return;
+    }
+
+    if (clientesAtendidosTotal > 0)
+    {
+        MostrarDialogo("Carlos: Gracias, maestro.");
+        return;
+    }
+
+    if (!tieneObjetoEnMano)
+    {
+        MostrarDialogo("Carlos: ¿Te pido una cerveza, maestro?");
+
+        if (indicadorCervezas != null)
+        {
+            indicadorCervezas.SetActive(true);
+        }
+
+        return;
+    }
+
+    // Entrega del pedido de Carlos
+    tieneObjetoEnMano = false;
+    clientesAtendidosTotal = 1;
+
+    MostrarDialogo("Carlos: Gracias, maestro.");
+
+    if (indicadorCervezas != null)
+    {
+        indicadorCervezas.SetActive(false);
+    }
+
+    Debug.Log("[Act1Manager] Carlos atendido. Ahora puede pedir Mariela.");
+}
+
+public void InteractuarMariela()
+{
+    if (estadoActual != ActoState.Servicio)
+    {
+        MostrarDialogo("Lucas: Todavía no es momento.");
+        return;
+    }
+
+    // Mariela no puede avanzar antes de Carlos
+    if (clientesAtendidosTotal < 1)
+    {
+        MostrarDialogo("Lucas: Primero debería atender al cliente de la barra.");
+        return;
+    }
+
+    // Si Mariela todavía no pidió, hace el pedido
+    if (!marielaPidioHoney)
+    {
+        RegistrarPedidoMarielaHoney();
+        return;
+    }
+
+    // Si ya pidió pero Lucas todavía no fue a buscar lo correspondiente
+    if (!tieneObjetoEnMano)
+    {
+        MostrarDialogo("Lucas: Todavía no tengo lo que me pidió.");
+        return;
+    }
+
+    // Esto queda por si más adelante hacés que la botella Honey sea entregable
+    tieneObjetoEnMano = false;
+    clientesAtendidosTotal = 2;
+
+    MostrarDialogo("Mariela: Gracias...");
+
+    Debug.Log("[Act1Manager] Mariela atendida. Esperando evento correcto para avanzar.");
+}
+
+public void RegistrarPedidoMarielaHoney()
+{
+    // Mariela no debería pedir antes de que Carlos haya sido atendido
+    if (clientesAtendidosTotal < 1)
+    {
+        MostrarDialogo("Lucas: Primero tengo que atender al cliente de la barra.");
+        return;
+    }
+
+    marielaPidioHoney = true;
+
+    MostrarDialogo("Mariela: Una media pinta de cerveza Honey, bien fría... como antes.");
+
+    if (indicadorCervezas != null)
+    {
+        indicadorCervezas.SetActive(true);
+    }
+}
+
+public void ClienteCompletado()
+{
+    // Al entregar un pedido, Lucas deja de tener algo en la mano
+    tieneObjetoEnMano = false;
+
+    clientesAtendidosTotal++;
+
+    Debug.Log("[Act1Manager] Cliente completado. Total atendidos: " + clientesAtendidosTotal);
+
+    // Carlos = cliente 1
+    // Mariela = cliente 2
+    // Cuando Mariela recibe el pedido, ahora sí activamos el quiebre
+    if (clientesAtendidosTotal == 2)
+    {
+        Debug.Log("[Act1Manager] Mariela atendida. Iniciando quiebre de realidad.");
+        StartCoroutine(SecuenciaQuiebreRealidad());
+    }
+}    IEnumerator SecuenciaQuiebreRealidad()
     {   
         // 1. Segundo parpadeo (el que limpia el bar)
         if (effectoParpadeo != null) effectoParpadeo.IniciarParpadeo();
@@ -339,7 +494,7 @@ public class Act1Manager : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
         ParanoiaSystem.Instance.AddParanoia(15f);
-        ActualizarObjetivo("??? explora el bar en busca de los clientes");
+        ActualizarObjetivo("??? Explora el bar en busca de los clientes");
 
         // 3. Lucas reacciona
         MostrarDialogo("Lucas: ¿Qué...? ¿A dónde se fueron todos? No hace ninguna gracia...");
@@ -504,7 +659,7 @@ public class Act1Manager : MonoBehaviour
         
         if (interactionText != null) 
         {
-            MostrarDialogo("Lucas: ¿Qué mierda fue eso?");
+            MostrarDialogo("Lucas: ¿Qué acaba de pasar?");
             yield return new WaitForSeconds(3f);
             MostrarDialogo("Lucas: No puedo más... Necesito descansar...");
         }

@@ -53,13 +53,9 @@ public class PersecutionEnemy : EnemyCore
     {
         agent = GetComponent<NavMeshAgent>();
 
-        // Si no se asignó manualmente el Animator desde el Inspector,
-        // intenta buscarlo automáticamente en este mismo GameObject.
         if (animator == null)
             animator = GetComponent<Animator>();
 
-        // Si no se asignó manualmente el AudioSource desde el Inspector,
-        // intenta buscarlo automáticamente en este mismo GameObject.
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
 
@@ -67,12 +63,11 @@ public class PersecutionEnemy : EnemyCore
         if (playerGO != null)
         {
             player = playerGO.transform;
-            Debug.Log($"[PersecutionEnemy][Diagnóstico] Player encontrado correctamente: '{playerGO.name}' en '{playerGO.scene.name}'. Enemy: '{gameObject.name}'.", this);
+            Debug.Log($"[PersecutionEnemy][Diagnóstico] Player encontrado correctamente: '{playerGO.name}'.", this);
         }
         else
         {
             Debug.LogWarning("[PersecutionEnemy] No se encontró un GameObject con tag 'Player'.");
-            Debug.LogWarning($"[PersecutionEnemy][Diagnóstico] PlayerHealth.Instance es {(PlayerHealth.Instance != null ? "EXISTE" : "NULL")} al iniciar. Enemy: '{gameObject.name}'.", this);
         }
     }
 
@@ -81,6 +76,7 @@ public class PersecutionEnemy : EnemyCore
         if (health <= 0)
         {
             SetWalking(false);
+            if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
             return;
         }
 
@@ -90,26 +86,22 @@ public class PersecutionEnemy : EnemyCore
             return;
         }
 
-        // 1. Calculamos la distancia real primero
+        // 1. Calculamos la distancia real
         float distanciaAlJugador = Vector3.Distance(transform.position, player.position);
         LogNavigationDiagnostics(distanciaAlJugador, distanciaAlJugador <= agent.stoppingDistance);
 
         // ========================================================
-        // 👑 PRIORIDAD 1: EL ENEMIGO LLEGÓ A VOS (FRENADO ABSOLUTO)
+        // 👑 PRIORIDAD 1: EL ENEMIGO LLEGÓ A VOS (ATAQUE Y ENFOQUE)
         // ========================================================
         if (distanciaAlJugador <= agent.stoppingDistance)
         {
-            Debug.Log($"[PersecutionEnemy][Diagnóstico] ENTRA al bloque de ataque. distance={distanciaAlJugador:F3}, stoppingDistance={agent.stoppingDistance:F3}, enemy='{gameObject.name}'.", this);
-
-            // --- ACÁ METIMOS LAS LÍNEAS NUEVAS PARA TRABAR LA VELOCIDAD ---
+            // Frenamos el agente de forma limpia sin borrar el Path de navegación
             agent.isStopped = true;
-            agent.velocity = Vector3.zero;            // Clava los frenos físicos
-            if (agent.isOnNavMesh) agent.ResetPath(); // Borra la ruta para que no patine
+            agent.velocity = Vector3.zero; 
 
-            // Si llegó al jugador, ya no debería estar en animación de caminar.
             SetWalking(false);
 
-            // Forzamos a que mire a Lucas a la cara en la barra
+            // Rotación suave hacia Lucas
             Vector3 direccionLook = (player.position - transform.position).normalized;
             direccionLook.y = 0;
             if (direccionLook != Vector3.zero)
@@ -117,34 +109,23 @@ public class PersecutionEnemy : EnemyCore
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direccionLook), Time.deltaTime * 15f);
             }
 
-            // Lógica del sartenazo de daño
+            // Ejecución del sartenazo de daño bajo Cooldown
             if (Time.time >= nextAttackTime)
             {
-                Debug.Log($"[PersecutionEnemy][Diagnóstico] Cooldown listo. Ejecutando intento de ataque. Time={Time.time:F3}, nextAttackTime={nextAttackTime:F3}, enemy='{gameObject.name}'.", this);
+                nextAttackTime = Time.time + attackCooldown; // Se asigna el cooldown antes para blindar el frame
 
-                // Nueva parte: dispara animación y sonido de ataque
                 ReproducirAtaqueVisualYSonoro();
 
                 PlayerHealth playerHealth = PlayerHealth.Instance;
-                Debug.Log($"[PersecutionEnemy][Diagnóstico] PlayerHealth.Instance es {(playerHealth != null ? "EXISTE" : "NULL")}. Enemy: '{gameObject.name}'.", this);
-
                 if (playerHealth != null)
                 {
-                    Debug.Log($"[PersecutionEnemy][Diagnóstico] Llamando a RecibirDanio({damage}). Enemy: '{gameObject.name}'.", this);
                     playerHealth.RecibirDanio(damage);
                     Debug.Log($"[Ataque] La Sombra te encajó {damage} de daño.");
                 }
-
-                nextAttackTime = Time.time + attackCooldown;
-            }
-            else
-            {
-                Debug.Log($"[PersecutionEnemy][Diagnóstico] ENTRA al bloque de ataque, pero NO ejecuta ataque por cooldown. Time={Time.time:F3}, nextAttackTime={nextAttackTime:F3}, enemy='{gameObject.name}'.", this);
             }
 
             wasBeingIlluminated = false;
-
-            return; // Corta acá para que no haga nada más mientras te pega
+            return; 
         }
 
         // ========================================================
@@ -155,14 +136,11 @@ public class PersecutionEnemy : EnemyCore
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
 
-            // Si está congelada por la luz, no debería estar caminando.
             SetWalking(false);
 
-            // Nueva parte: sonido opcional cuando la luz la frena.
-            // Solo suena una vez al entrar en estado iluminado, no en cada frame.
             if (!wasBeingIlluminated)
             {
-                ReproducirSonido(freezeClip, freezeVolume);
+                ReproducirSonido(freezeClip, freezeVolume, false); // No cambiamos el pitch para el freeze tétrico
                 wasBeingIlluminated = true;
             }
 
@@ -177,9 +155,7 @@ public class PersecutionEnemy : EnemyCore
         agent.isStopped = false;
         agent.SetDestination(player.position);
 
-        // Nueva parte: animación y pasos mientras persigue.
         bool estaCaminando = agent.velocity.magnitude > minSpeedForFootsteps;
-
         SetWalking(estaCaminando);
 
         if (estaCaminando)
@@ -190,30 +166,40 @@ public class PersecutionEnemy : EnemyCore
 
     private void ReproducirAtaqueVisualYSonoro()
     {
-        // Dispara la animación de ataque si existe un Animator asignado.
-        if (string.IsNullOrEmpty(attackTriggerName))
+        if (!string.IsNullOrEmpty(attackTriggerName) && CanUseAnimator("SetTrigger", attackTriggerName))
         {
-            Debug.LogWarning($"[PersecutionEnemy][Diagnóstico] NO ejecuta SetTrigger porque attackTriggerName está vacío. Enemy: '{gameObject.name}'.", this);
-            return;
-        }
-
-        if (CanUseAnimator("SetTrigger", attackTriggerName))
-        {
-            Debug.Log($"[PersecutionEnemy][Diagnóstico] Ejecutando animator.SetTrigger('{attackTriggerName}') en Animator '{animator.name}' / GameObject '{animator.gameObject.name}'. Enemy: '{gameObject.name}'.", animator);
             animator.SetTrigger(attackTriggerName);
         }
 
-        // Reproduce el sonido de ataque si hay AudioSource y clip asignados.
-        if (audioSource != null && attackClip != null)
+        // Reproduce el sonido de ataque fijando un pitch normal/estable
+        ReproducirSonido(attackClip, attackVolume, false); 
+    }
+
+    private void ReproducirPasos()
+    {
+        if (footstepClip == null || audioSource == null) return;
+        if (Time.time < nextFootstepTime) return;
+
+        // A los pasos sí les metemos variación aleatoria para que no cansen el oído
+        ReproducirSonido(footstepClip, footstepVolume, true);
+        nextFootstepTime = Time.time + footstepInterval;
+    }
+
+    private void ReproducirSonido(AudioClip clip, float volume, bool usarVariacionPitch)
+    {
+        if (clip == null || audioSource == null) return;
+
+        // Modificamos el pitch de forma controlada según el tipo de sonido
+        if (randomizePitch && usarVariacionPitch)
         {
-            Debug.Log($"[PersecutionEnemy][Diagnóstico] Reproduciendo attackClip '{attackClip.name}' con AudioSource en '{audioSource.gameObject.name}'. Enemy: '{gameObject.name}'.", audioSource);
+            audioSource.pitch = Random.Range(pitchMin, pitchMax);
         }
         else
         {
-            Debug.LogWarning($"[PersecutionEnemy][Diagnóstico] NO reproduce attackClip. audioSource={(audioSource != null ? audioSource.gameObject.name : "NULL")}, attackClip={(attackClip != null ? attackClip.name : "NULL")}, enemy='{gameObject.name}'.", this);
+            audioSource.pitch = 1f; // Reseteo total para ataques y efectos críticos
         }
 
-        ReproducirSonido(attackClip, attackVolume);
+        audioSource.PlayOneShot(clip, volume);
     }
 
     private void LogNavigationDiagnostics(float distanciaAlJugador, bool entraAtaque)
@@ -224,24 +210,16 @@ public class PersecutionEnemy : EnemyCore
         nextDebugLogTime = Time.time + debugLogInterval;
 
         Debug.Log(
-            $"[PersecutionEnemy][Diagnóstico] Estado persecución | " +
-            $"enemy='{gameObject.name}' | " +
-            $"player='{player.name}' | " +
-            $"distance={distanciaAlJugador:F3} | " +
-            $"remainingDistance={agent.remainingDistance:F3} | " +
-            $"stoppingDistance={agent.stoppingDistance:F3} | " +
-            $"pathPending={agent.pathPending} | " +
-            $"hasPath={agent.hasPath} | " +
-            $"isStopped={agent.isStopped} | " +
-            $"entraAtaque={entraAtaque}",
+            $"[PersecutionEnemy] Estado: Perseguiendo | " +
+            $"distancia={distanciaAlJugador:F2} | " +
+            $"stoppingDistance={agent.stoppingDistance:F2} | " +
+            $"ataqueListo={Time.time >= nextAttackTime}", 
             this
         );
     }
 
     private void SetWalking(bool value)
     {
-        // Controla el parámetro booleano del Animator para caminar.
-        // El Animator debe tener un Bool con el mismo nombre que walkingBoolName.
         if (string.IsNullOrEmpty(walkingBoolName)) return;
         if (!CanUseAnimator("SetBool", walkingBoolName)) return;
 
@@ -250,54 +228,9 @@ public class PersecutionEnemy : EnemyCore
 
     private bool CanUseAnimator(string operation, string parameterName)
     {
-        if (animator == null)
-        {
-            Debug.LogWarning($"[PersecutionEnemy] No hay Animator asignado para {operation}('{parameterName}') en '{gameObject.name}'.", this);
+        if (animator == null || animator.runtimeAnimatorController == null || !animator.isActiveAndEnabled)
             return false;
-        }
-
-        if (animator.runtimeAnimatorController == null)
-        {
-            Debug.LogWarning($"[PersecutionEnemy] El Animator '{animator.name}' en '{animator.gameObject.name}' no tiene AnimatorController para {operation}('{parameterName}'). Enemy: '{gameObject.name}'.", animator);
-            return false;
-        }
-
-        if (!animator.isActiveAndEnabled)
-        {
-            Debug.LogWarning($"[PersecutionEnemy] El Animator '{animator.name}' en '{animator.gameObject.name}' no está activo/habilitado para {operation}('{parameterName}'). Enemy: '{gameObject.name}'.", animator);
-            return false;
-        }
 
         return true;
-    }
-
-    private void ReproducirPasos()
-    {
-        if (footstepClip == null) return;
-        if (audioSource == null) return;
-
-        // Evita que el paso suene todos los frames.
-        if (Time.time < nextFootstepTime) return;
-
-        ReproducirSonido(footstepClip, footstepVolume);
-        nextFootstepTime = Time.time + footstepInterval;
-    }
-
-    private void ReproducirSonido(AudioClip clip, float volume)
-    {
-        if (clip == null) return;
-        if (audioSource == null) return;
-
-        // Pequeña variación para que los pasos y ataques no suenen siempre idénticos.
-        if (randomizePitch)
-        {
-            audioSource.pitch = Random.Range(pitchMin, pitchMax);
-        }
-        else
-        {
-            audioSource.pitch = 1f;
-        }
-
-        audioSource.PlayOneShot(clip, volume);
     }
 }

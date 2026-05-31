@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI; // Si vas a usar una barra de UI para la batería
 
@@ -24,6 +25,14 @@ public class Flashlight : MonoBehaviour
     [Header ("Puuntos De Origen")]
     public Transform firePoint; //se colocca el objeto FirePoint
 
+    [Header("Particulas")]
+    [InspectorName("Particle System")]
+    [SerializeField] GameObject particlesObj;
+    private ParticleSystem particlesSys;
+
+    [SerializeField] private float particlesCooldown = 0.5f;
+    private float currParticleCooldown = 0;
+
     private bool isFocused = false;
 
     void Start()
@@ -32,6 +41,13 @@ public class Flashlight : MonoBehaviour
         if (flashlightLight == null) flashlightLight = GetComponent<Light>();
         flashlightLight.spotAngle = explorationAngle;
         flashlightLight.intensity = explorationIntensity;
+    
+        if (particlesObj != null)
+        {
+            particlesSys = particlesObj.GetComponent<ParticleSystem>();
+            particlesObj.SetActive(false);
+        }
+            
     }
 
     void Update()
@@ -40,6 +56,11 @@ public class Flashlight : MonoBehaviour
         HandleBattery();
         HandleCombat();
         UpdateLightVisuals();
+
+        if (currParticleCooldown < particlesCooldown)
+            currParticleCooldown += Time.deltaTime;
+        else
+            RestartParticles();
     }
 
     void HandleInput()
@@ -92,6 +113,9 @@ public class Flashlight : MonoBehaviour
                 EnemyCore enemy = hit.collider.GetComponent<EnemyCore>();
                 if (enemy != null)
                 {
+                    if (particlesObj != null)
+                        HandleParticles(hit);
+
                     enemy.TakeDamage(damagePerSecond);
                 }
             }
@@ -118,5 +142,24 @@ public class Flashlight : MonoBehaviour
     public void Recharge(float amount)
     {
         battery = Mathf.Clamp(battery + amount, 0, maxBattery);
+    }
+
+    private void HandleParticles(RaycastHit rayHit) 
+    {
+        particlesObj.SetActive(true);
+        particlesSys.Play();
+
+        currParticleCooldown = 0;
+        particlesObj.transform.parent = null;
+        particlesObj.transform.position = rayHit.point;
+        particlesObj.transform.localScale = Vector3.one;
+        particlesObj.transform.LookAt(gameObject.transform.parent.transform);
+    }
+
+    private void RestartParticles()
+    { 
+        particlesObj.transform.parent = null;
+        particlesSys.Stop();
+        particlesObj.SetActive(false);
     }
 }
