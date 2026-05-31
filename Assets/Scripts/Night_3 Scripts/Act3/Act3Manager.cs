@@ -35,7 +35,19 @@ public class Act3Manager : MonoBehaviour
     public bool tienePedido = false;
     public bool tienePedidoBuscado = false;
 
-    
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
 
     void Start()
     {
