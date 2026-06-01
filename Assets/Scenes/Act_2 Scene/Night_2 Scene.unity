@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 2
   m_LinearFogEnd: 150
-  m_AmbientSkyColor: {r: 0.006897471, g: 0.006898359, b: 0.047169805, a: 1}
+  m_AmbientSkyColor: {r: 0, g: 0, b: 0, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 6b79867ed84d37e4d91c0951688aa279, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -5634,22 +5634,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 174972438}
     m_Modifications:
-    - target: {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4531767547018094721, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_IsTrigger
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6422788020536371428, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6444704545846961720, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Constraints
-      value: 14
-      objectReference: {fileID: 0}
     - target: {fileID: -6689036041284674117, guid: acdef835a498d45d8bf448391e587e06, type: 3}
       propertyPath: m_Name
       value: Llave
@@ -5717,6 +5701,22 @@ PrefabInstance:
     - target: {fileID: 2774220344278030320, guid: acdef835a498d45d8bf448391e587e06, type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4531767547018094721, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6422788020536371428, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6444704545846961720, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Constraints
+      value: 14
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
