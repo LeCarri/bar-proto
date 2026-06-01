@@ -7,16 +7,16 @@ public class PlayerController : MonoBehaviour
     public float walkSpeed = 3.0f;
     public float gravity = -20f; // Un poco más fuerte para que no flote
     
-    [Header("Cámara")]
-    public Camera playerCamera;
+    [Header("Cámara (Cinemachine)")]
+    [Tooltip("Arrastrá acá el objeto vacío 'PivoteMirada' que creaste dentro de Lucas.")]
+    public Transform cameraPivot; 
+    [HideInInspector] public Camera playerCamera; // Para que SettingsManager no rompa
     public float lookSpeed = 2.0f;
     public float lookXLimit = 80.0f;
 
     private CharacterController characterController;
     private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0;
-
-    //HOLA
 
     void Awake() // Usamos Awake para asegurarnos de captar el componente antes que nada
     {
@@ -25,10 +25,18 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        if (playerCamera == null) playerCamera = GetComponentInChildren<Camera>();
+        // Si no asignaste el pivote en el inspector, busca un objeto hijo con cámara o el primero que encuentre
+        if (cameraPivot == null) 
+        {
+            Camera cam = GetComponentInChildren<Camera>();
+            if (cam != null) cameraPivot = cam.transform;
+        }
         
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        // Busca la Main Camera y se la da al script de settings para que no tire error
+        playerCamera = GetComponentInChildren<Camera>();
     }
 
     void Update()
@@ -36,10 +44,17 @@ public class PlayerController : MonoBehaviour
         // Si por alguna razón el componente desaparece, no ejecutamos nada más
         if (characterController == null) return;
 
-        // 1. ROTACIÓN
+        // 1. ROTACIÓN (Modificada para afectar al Pivote en lugar de a la cámara directa)
         rotationX += -Input.GetAxis("Mouse Y") * lookSpeed * Time.timeScale;
         rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+        
+        if (cameraPivot != null)
+        {
+            // Rotación vertical va al pivote vacío
+            cameraPivot.localRotation = Quaternion.Euler(rotationX, 0, 0);
+        }
+        
+        // Rotación horizontal (Gira todo el cuerpo de Lucas de izquierda a derecha)
         transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed * Time.timeScale, 0);
 
         // 2. MOVIMIENTO
