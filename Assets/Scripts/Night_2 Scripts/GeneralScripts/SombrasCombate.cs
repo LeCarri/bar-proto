@@ -50,6 +50,7 @@ public class SombrasCombate : MonoBehaviour
 
         if (ambienceCombate != null) ambienceCombate.Play();
 
+        if (sonidoAparicion != null) sonidoAparicion.Play();
         StartCoroutine(SpawnSecuencial());
     }
 
@@ -64,7 +65,7 @@ public class SombrasCombate : MonoBehaviour
             // Si el prefab tiene EnemyCore_Act2, lo activará automáticamente
             sombra.SetActive(true);
 
-            if (sonidoAparicion != null) sonidoAparicion.Play();
+            
 
             yield return new WaitForSeconds(delayEntreSombras);
         }
