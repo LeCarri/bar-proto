@@ -88,6 +88,7 @@ public class Act2Manager : MonoBehaviour
     [Header("Audio Ambiental")]
     public AudioSource ambientBar;
     public AudioSource musicBar;
+    public AudioSource audioBasement;
 
     [Header("Objetivos")]
     public TextMeshProUGUI textoObjetivo;
@@ -292,7 +293,7 @@ public class Act2Manager : MonoBehaviour
 
     IEnumerator SecuenciaDespuesZapatos()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(3f);
 
         estadoActual = Act2State.Sotano;
 
@@ -423,6 +424,7 @@ public class Act2Manager : MonoBehaviour
         if (sonidoEstatica != null) sonidoEstatica.Stop();
         if (ambientBar != null)     ambientBar.Stop();
         if (musicBar != null)       musicBar.Stop();
+        if (audioBasement != null) audioBasement.Stop();
 
         if (sombrasCombate != null) sombrasCombate.DesactivarTodo();
         if (efectoPsicosis != null) efectoPsicosis.DesactivarPsicosis();
