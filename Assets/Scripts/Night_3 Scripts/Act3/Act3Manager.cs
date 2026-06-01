@@ -22,6 +22,9 @@ public class Act3Manager : MonoBehaviour
     public GameObject lucesServicio;
     public GameObject lucesCombate;
 
+    [Header("Objetivos")]
+    public TextMeshProUGUI textoObjetivo;
+
     private Coroutine dialogoActual;
 
     public bool enSotano = false;
@@ -103,7 +106,7 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    // DI�LOGOS
+    // DIALOGOS
 
     public void MostrarDialogo(string mensaje)
     {
@@ -149,6 +152,19 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
+    //OBJETIVOS
+    public void ActualizarObjetivo(string nuevoObjetivo)
+    {
+        if (textoObjetivo != null)
+        {
+            textoObjetivo.text = "- " + nuevoObjetivo;
+        }
+    }
+
+
+
+
+
     // INICIO
 
     IEnumerator SecuenciaInicio()
@@ -170,6 +186,8 @@ public class Act3Manager : MonoBehaviour
             effectoParpadeo.IniciarParpadeo();
 
         clientesActo3.SetActive(true);
+
+        ActualizarObjetivo("Atiende a los clientes (0/2)");
     }
 
     // PEDIDOS
@@ -185,6 +203,10 @@ public class Act3Manager : MonoBehaviour
         tienePedido = true;
         tienePedidoBuscado = false;
 
+        ActualizarObjetivo(
+     "Pedido: " + pedidoActual
+ );
+
         Debug.Log("Pedido tomado: " + pedidoActual);
     }
 
@@ -199,9 +221,9 @@ public class Act3Manager : MonoBehaviour
 
             Debug.Log("Pedido correcto.");
 
-            MostrarDialogo(
-                "Tengo el pedido. Hora de entregarlo."
-            );
+            ActualizarObjetivo(
+     "Entregar pedido: " + pedidoActual
+ );
         }
     }
 
@@ -210,6 +232,12 @@ public class Act3Manager : MonoBehaviour
         tienePedido = false;
         tienePedidoBuscado = false;
         pedidoActual = "";
+
+        ActualizarObjetivo(
+            "Atiende a los clientes (" +
+            clientesAtendidos +
+            "/2)"
+        );
     }
 
     // CLIENTES
@@ -217,6 +245,12 @@ public class Act3Manager : MonoBehaviour
     public void ClienteCompletado()
     {
         clientesAtendidos++;
+
+        ActualizarObjetivo(
+            "Atiende a los clientes (" +
+            clientesAtendidos +
+            "/2)"
+        );
 
         Debug.Log("Clientes completos: " + clientesAtendidos);
 
@@ -242,6 +276,8 @@ public class Act3Manager : MonoBehaviour
         yield return new WaitForSeconds(3f);
 
         MostrarDialogo("Listo... voy a buscarlas.");
+
+        ActualizarObjetivo("Ve al sótano");
 
         yield return new WaitForSeconds(5f);
 
@@ -286,7 +322,7 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    // S�TANO
+    // SOTANO
 
     public void IrASotano()
     {

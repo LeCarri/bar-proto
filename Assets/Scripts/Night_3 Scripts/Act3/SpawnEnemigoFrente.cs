@@ -4,7 +4,7 @@ public class SpawnEnemigoFrente : MonoBehaviour
 {
     public GameObject enemigoPrefab;
 
-    public float distanciaFrente = 5f;
+    public float distanciaFrente = 10f;
     public float alturaSpawn = 0f;
 
     public void SpawnEnfrente()
