@@ -32,7 +32,6 @@ public class FiguraNino : MonoBehaviour
     public AudioClip clipVozSotano;
 
     private bool aparecido = false;
-    private bool desaparecido = false;
 
     void Start()
     {
@@ -64,7 +63,6 @@ public class FiguraNino : MonoBehaviour
 
     public IEnumerator DesapareceYVozSotano()
     {
-        desaparecido = true;
 
         // El niño desaparece instantáneamente (más perturbador)
         if (modeloNino != null) modeloNino.SetActive(false);

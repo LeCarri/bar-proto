@@ -68,6 +68,7 @@ public class Act2Manager : MonoBehaviour
     public SombrasCombate sombrasCombate;
     public FiguraNino figuraNino;
     public Collider triggerDesaparicion;
+    public Collider triggerAparicionJumpscare;
 
     private int sombrasDerrotadas = 0;
     public int totalSombras = 3;
@@ -312,7 +313,8 @@ public class Act2Manager : MonoBehaviour
     // =========================================================
     public void NotaLeida()
     {
-        MostrarDialogo("Lucas: \"La guardé donde nadie limpia\"... el baño.");
+    
+    MostrarDialogo("Lucas: \"La guardé donde nadie limpia\"... el baño.");
         estadoActual = Act2State.Bano;
         ActualizarObjetivo("Ir a buscar la llave del sotano al baño");
         // Activar la llave en el baño
@@ -324,7 +326,6 @@ public class Act2Manager : MonoBehaviour
     // =========================================================
     public void LlaveRecogida()
     {
-        llaveTenida = true;
         parpadeandoLuces = false;
 
         if (triggerCierreSotano == null)
@@ -332,11 +333,6 @@ public class Act2Manager : MonoBehaviour
 
         // Inmediatamente se activan las luces de psicosis
         CambiarIluminacion("Psicosis");
-
-        if (vigilanteMirror != null)
-            StartCoroutine(vigilanteMirror.AparicionEnEspejo());
-        else
-            Debug.LogError("[Act2Manager] vigilanteMirror no asignado — el Vigilante no aparecerá. Asignalo en el Inspector o ejecutá Auto-buscar referencias.");
 
         StartCoroutine(SecuenciaPsicosis());
 
