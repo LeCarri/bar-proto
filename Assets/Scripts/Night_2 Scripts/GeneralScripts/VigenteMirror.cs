@@ -33,7 +33,7 @@ public class VigenteMirror : MonoBehaviour
     public float duracionAparicion = 2.2f;
 
     [Tooltip("Segundos que el jugador ve algo antes del shake de cámara")]
-    public float delayAntesSusto = 0.8f;
+    public float delayAntesSusto = 0.2f;
 
     /// <summary>
     /// Coroutine llamada por Act2Manager.LlaveRecogida().

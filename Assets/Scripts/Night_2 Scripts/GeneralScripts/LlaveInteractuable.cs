@@ -41,8 +41,10 @@ public class LlaveInteractuable : MonoBehaviour, IInteractable
         if (sonidoRecoger != null)     sonidoRecoger.Play();
         if (modeloLlave != null)       modeloLlave.SetActive(false);
 
-        // El Act2Manager se encarga del resto (Vigilante + Psicosis)
-        Act2Manager.Instance?.LlaveRecogida();
+        if (Act2Manager.Instance != null)
+        {
+            Act2Manager.Instance.llaveTenida = true;
+        }
     }
     public bool CanInteract()
     {

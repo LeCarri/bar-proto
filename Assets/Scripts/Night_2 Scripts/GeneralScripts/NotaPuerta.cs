@@ -21,10 +21,7 @@ public class NotaPuerta : MonoBehaviour, IInteractable
     [Header("Audio")]
     [Tooltip("Sonido de papel al interactuar (crinkle sound)")]
     public AudioSource sonidoPapel;
-
-    [Header("Texto completo de la nota (para referencia del diseñador)")]
-    [TextArea(3, 5)]
-    public string textoNota = "La guardé donde nadie limpia.";
+    public GameObject NotaImagen;
 
     public void Interact()
     {
@@ -32,12 +29,17 @@ public class NotaPuerta : MonoBehaviour, IInteractable
         yaLeida = true;
 
         if (sonidoPapel != null) sonidoPapel.Play();
-
-        // Muestra el texto de la nota como diálogo y notifica al manager
-        Act2Manager.Instance?.MostrarDialogo("Nota (tu letra): \"" + textoNota + "\"");
+        if (NotaImagen != null) NotaImagen.gameObject.SetActive(true);
+        StartCoroutine(DesactivarNotaImagen());
 
         // Pequeña pausa antes de la reacción de Lucas
         Invoke(nameof(ReaccionLucas), 2.5f);
+    }
+
+    private System.Collections.IEnumerator DesactivarNotaImagen()
+    {
+        yield return new WaitForSeconds(3.5f);
+        if (NotaImagen != null) NotaImagen.gameObject.SetActive(false);
     }
 
     void ReaccionLucas()
