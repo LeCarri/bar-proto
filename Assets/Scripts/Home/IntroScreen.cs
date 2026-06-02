@@ -76,6 +76,9 @@ public class IntroScreen : MonoBehaviour
         yield return new WaitForSeconds(2f);
 
         // Cargar la siguiente escena
-        SceneManager.LoadScene(nextSceneName);
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.LoadSave();
+        else
+            SceneManager.LoadScene(nextSceneName);
     }
 }

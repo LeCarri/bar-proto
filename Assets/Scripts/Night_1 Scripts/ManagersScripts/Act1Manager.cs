@@ -77,7 +77,12 @@ public class Act1Manager : MonoBehaviour
     public GameObject indicadorNevera;
     public GameObject indicadorCervezas;
 
+    public static Act1Manager Instance;
 
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     public void ClienteAtendido()
     {
@@ -678,6 +683,11 @@ public void ClienteCompletado()
         }
 
         Debug.Log("Noche 1 terminada con éxito. Cargando Noche 2...");
-        SceneManager.LoadScene("Night_2"); 
+        SceneManager.LoadScene("Night_2 Scene"); 
+    }
+
+    public void EndNight() 
+    {
+        StartCoroutine(SecuenciaCierreNoche());
     }
 }

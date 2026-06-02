@@ -11,13 +11,13 @@ public class Act3Manager : MonoBehaviour
     public GameObject clientesActo3;
     public GameObject enemigos;
 
-    [Header("UI y Diálogos")]
+    [Header("UI y Diï¿½logos")]
     public TextMeshProUGUI textoSubtitulos;
 
     [Header("Efectos")]
     public EffectoParpadeo effectoParpadeo;
 
-    [Header("Sistemas de Iluminación")]
+    [Header("Sistemas de Iluminaciï¿½n")]
     public GameObject lucesNormales;
     public GameObject lucesServicio;
     public GameObject lucesCombate;
@@ -35,7 +35,19 @@ public class Act3Manager : MonoBehaviour
     public bool tienePedido = false;
     public bool tienePedidoBuscado = false;
 
-    
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
 
     void Start()
     {
@@ -91,7 +103,7 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    // DIÁLOGOS
+    // DIï¿½LOGOS
 
     public void MostrarDialogo(string mensaje)
     {
@@ -110,7 +122,7 @@ public class Act3Manager : MonoBehaviour
         textoSubtitulos.text = "";
     }
 
-    // ILUMINACIÓN
+    // ILUMINACIï¿½N
 
     public void CambiarIluminacion(string estado)
     {
@@ -147,7 +159,7 @@ public class Act3Manager : MonoBehaviour
         yield return new WaitForSeconds(1.5f);
 
         MostrarDialogo(
-            "Ya casi... una ronda más y bajo a buscarlas."
+            "Ya casi... una ronda mas y bajo a buscarlas. Tienen que estar por despertar"
         );
 
         yield return new WaitForSeconds(3f);
@@ -274,7 +286,7 @@ public class Act3Manager : MonoBehaviour
         }
     }
 
-    // SÓTANO
+    // Sï¿½TANO
 
     public void IrASotano()
     {

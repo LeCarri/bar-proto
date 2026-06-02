@@ -1,51 +1,54 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(NavMeshAgent))]
 public class PersecutionEnemy : EnemyCore
 {
     private NavMeshAgent agent;
     private Transform player;
 
-    [Header("Configuración de Ataque")]
-    [SerializeField] private float damage = 50f;           // El daño configurado
-    [SerializeField] private float attackCooldown = 1.5f;  // Tiempo de espera entre golpes
-    private float nextAttackTime = 0f;                     // Temporizador interno
+    [Header("Configuración de Combate")]
+    [SerializeField] private float damage = 25f;
+    [SerializeField] private float attackCooldown = 1.5f;
 
-    [Header("Configuración de Animación")]
+    [Tooltip("Distancia real a la que el enemigo puede atacar. Debe ser parecida o apenas mayor al Stopping Distance.")]
+    [SerializeField] private float attackRange = 10f;
+
+    private float nextAttackTime = 0f;
+
+    [Header("Componentes Visuales")]
     [SerializeField] private Animator animator;
-    [SerializeField] private string walkingBoolName = "IsWalking";
-    [SerializeField] private string attackTriggerName = "Attack";
 
-    [Header("Configuración de Audio")]
-    [SerializeField] private AudioSource audioSource;
+    [Header("Archivos de Audio")]
+    [SerializeField] private AudioClip footstepSequenceClip;
     [SerializeField] private AudioClip attackClip;
-    [SerializeField] private AudioClip footstepClip;
     [SerializeField] private AudioClip freezeClip;
 
-    [Header("Volúmenes de Audio")]
-    [Range(0f, 1f)]
-    [SerializeField] private float attackVolume = 0.9f;
+    [Header("Audio Sources")]
+    [Tooltip("AudioSource exclusivo para pasos en loop.")]
+    [SerializeField] private AudioSource footstepAudioSource;
 
-    [Range(0f, 1f)]
-    [SerializeField] private float footstepVolume = 0.45f;
+    [Tooltip("AudioSource exclusivo para ataque, freeze y sonidos cortos.")]
+    [SerializeField] private AudioSource sfxAudioSource;
 
-    [Range(0f, 1f)]
-    [SerializeField] private float freezeVolume = 0.5f;
+    [Header("Mezcla de Sonido")]
+    [Range(0f, 1f)] [SerializeField] private float footstepVolume = 1f;
+    [Range(0f, 1f)] [SerializeField] private float attackVolume = 1f;
+    [Range(0f, 1f)] [SerializeField] private float freezeVolume = 1f;
 
-    [Header("Configuración de Pasos")]
-    [SerializeField] private float footstepInterval = 0.55f;
-    [SerializeField] private float minSpeedForFootsteps = 0.15f;
-    private float nextFootstepTime = 0f;
+    [Header("Ajuste de Ritmo")]
+    [Tooltip("Modifica la velocidad del audio de pasos. Menos de 1 es más lento y pesado.")]
+    [Range(0.4f, 1.2f)] [SerializeField] private float footstepSpeed = 0.75f;
 
-    [Header("Variación de Pitch")]
-    [SerializeField] private bool randomizePitch = true;
-    [SerializeField] private float pitchMin = 0.9f;
-    [SerializeField] private float pitchMax = 1.1f;
+    [Header("Audio 3D")]
+    [Tooltip("Para probar sonidos, podés poner Spatial Blend en 0 desde el Inspector. Para juego final, dejalo en 1.")]
+    [Range(0f, 1f)] [SerializeField] private float spatialBlend = 1f;
 
-    [Header("Diagnóstico Temporal")]
-    [SerializeField] private bool debugAttackDiagnostics = true;
-    [SerializeField] private float debugLogInterval = 0.5f;
-    private float nextDebugLogTime = 0f;
+    [SerializeField] private float minAudioDistance = 2f;
+    [SerializeField] private float maxAudioDistance = 35f;
+
+    [Header("Debug")]
+    [SerializeField] private bool showDebugLogs = true;
 
     private bool wasBeingIlluminated = false;
 
@@ -54,183 +57,324 @@ public class PersecutionEnemy : EnemyCore
         agent = GetComponent<NavMeshAgent>();
 
         if (animator == null)
+        {
             animator = GetComponent<Animator>();
 
-        if (audioSource == null)
-            audioSource = GetComponent<AudioSource>();
+            if (animator == null)
+            {
+                animator = GetComponentInChildren<Animator>();
+            }
+        }
+
+        PrepararAudioSources();
 
         GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
+
         if (playerGO != null)
         {
             player = playerGO.transform;
-            Debug.Log($"[PersecutionEnemy][Diagnóstico] Player encontrado correctamente: '{playerGO.name}'.", this);
+
+            if (showDebugLogs)
+            {
+                Debug.Log($"[{gameObject.name}] Player encontrado: {playerGO.name}");
+            }
         }
         else
         {
-            Debug.LogWarning("[PersecutionEnemy] No se encontró un GameObject con tag 'Player'.");
+            Debug.LogError($"[{gameObject.name}] No se encontró ningún GameObject con tag 'Player'.");
         }
+
+        RevisarConfiguracionInicial();
     }
 
-    void Update()
+void Update()
+{
+    if (health <= 0 || player == null || agent == null || !agent.isOnNavMesh)
     {
-        if (health <= 0)
-        {
-            SetWalking(false);
-            if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
-            return;
-        }
+        FrenarEnemigoPorCompleto();
+        return;
+    }
 
-        if (agent == null || !agent.isOnNavMesh || player == null)
-        {
-            SetWalking(false);
-            return;
-        }
+    float distanciaAlJugador = Vector3.Distance(transform.position, player.position);
 
-        // 1. Calculamos la distancia real
-        float distanciaAlJugador = Vector3.Distance(transform.position, player.position);
-        LogNavigationDiagnostics(distanciaAlJugador, distanciaAlJugador <= agent.stoppingDistance);
+    // Primero revisamos si está siendo iluminado.
+    // Esto tiene prioridad sobre atacar.
+    if (isBeingIlluminated)
+    {
+        ProcesarEstadoCongelado();
+        return;
+    }
 
-        // ========================================================
-        // 👑 PRIORIDAD 1: EL ENEMIGO LLEGÓ A VOS (ATAQUE Y ENFOQUE)
-        // ========================================================
-        if (distanciaAlJugador <= agent.stoppingDistance)
-        {
-            // Frenamos el agente de forma limpia sin borrar el Path de navegación
-            agent.isStopped = true;
-            agent.velocity = Vector3.zero; 
+    // Después recién revisamos si está en rango de ataque.
+    if (distanciaAlJugador <= attackRange)
+    {
+        ProcesarEstadoAtaque();
+        return;
+    }
 
-            SetWalking(false);
-
-            // Rotación suave hacia Lucas
-            Vector3 direccionLook = (player.position - transform.position).normalized;
-            direccionLook.y = 0;
-            if (direccionLook != Vector3.zero)
-            {
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direccionLook), Time.deltaTime * 15f);
-            }
-
-            // Ejecución del sartenazo de daño bajo Cooldown
-            if (Time.time >= nextAttackTime)
-            {
-                nextAttackTime = Time.time + attackCooldown; // Se asigna el cooldown antes para blindar el frame
-
-                ReproducirAtaqueVisualYSonoro();
-
-                PlayerHealth playerHealth = PlayerHealth.Instance;
-                if (playerHealth != null)
-                {
-                    playerHealth.RecibirDanio(damage);
-                    Debug.Log($"[Ataque] La Sombra te encajó {damage} de daño.");
-                }
-            }
-
-            wasBeingIlluminated = false;
-            return; 
-        }
-
-        // ========================================================
-        // 🔦 PRIORIDAD 2: SI ESTÁ LEJOS Y LO ILUMINÁS, SE CONGELA
-        // ========================================================
-        if (isBeingIlluminated)
-        {
-            agent.isStopped = true;
-            agent.velocity = Vector3.zero;
-
-            SetWalking(false);
-
-            if (!wasBeingIlluminated)
-            {
-                ReproducirSonido(freezeClip, freezeVolume, false); // No cambiamos el pitch para el freeze tétrico
-                wasBeingIlluminated = true;
-            }
-
-            return;
-        }
-
-        // ========================================================
-        // 🏃‍♂️ PRIORIDAD 3: SI ESTÁ LEJOS Y A OSCURAS, PERSIGUE
-        // ========================================================
+    ProcesarEstadoPersecucion();
+}
+    private void ProcesarEstadoPersecucion()
+    {
         wasBeingIlluminated = false;
 
         agent.isStopped = false;
         agent.SetDestination(player.position);
 
-        bool estaCaminando = agent.velocity.magnitude > minSpeedForFootsteps;
-        SetWalking(estaCaminando);
+        bool estaMoviendose = agent.velocity.magnitude > 0.05f;
 
-        if (estaCaminando)
+        SetWalkingAnimation(estaMoviendose);
+        GestionarBuclePasos(estaMoviendose);
+    }
+
+    private void ProcesarEstadoCongelado()
+    {
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+
+        SetWalkingAnimation(false);
+        GestionarBuclePasos(false);
+
+        if (!wasBeingIlluminated)
         {
-            ReproducirPasos();
+            ReproducirSFX(freezeClip, freezeVolume, "Freeze");
+            wasBeingIlluminated = true;
         }
     }
 
-    private void ReproducirAtaqueVisualYSonoro()
+    private void ProcesarEstadoAtaque()
     {
-        if (!string.IsNullOrEmpty(attackTriggerName) && CanUseAnimator("SetTrigger", attackTriggerName))
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+
+        SetWalkingAnimation(false);
+        GestionarBuclePasos(false);
+
+        MirarAlJugador();
+
+        if (Time.time >= nextAttackTime)
         {
-            animator.SetTrigger(attackTriggerName);
+            nextAttackTime = Time.time + attackCooldown;
+
+            if (animator != null)
+            {
+                animator.ResetTrigger("Attack");
+                animator.SetTrigger("Attack");
+
+                if (showDebugLogs)
+                {
+                    Debug.Log($"[{gameObject.name}] Trigger Attack enviado.");
+                }
+            }
+
+            ReproducirSFX(attackClip, attackVolume, "Attack");
+
+            PlayerHealth playerHealth = PlayerHealth.Instance;
+
+            if (playerHealth != null)
+            {
+                playerHealth.RecibirDanio(damage);
+
+                if (showDebugLogs)
+                {
+                    Debug.Log($"[{gameObject.name}] Daño aplicado: {damage}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[{gameObject.name}] PlayerHealth.Instance es NULL.");
+            }
         }
 
-        // Reproduce el sonido de ataque fijando un pitch normal/estable
-        ReproducirSonido(attackClip, attackVolume, false); 
+        wasBeingIlluminated = false;
     }
 
-    private void ReproducirPasos()
+    private void GestionarBuclePasos(bool activar)
     {
-        if (footstepClip == null || audioSource == null) return;
-        if (Time.time < nextFootstepTime) return;
-
-        // A los pasos sí les metemos variación aleatoria para que no cansen el oído
-        ReproducirSonido(footstepClip, footstepVolume, true);
-        nextFootstepTime = Time.time + footstepInterval;
-    }
-
-    private void ReproducirSonido(AudioClip clip, float volume, bool usarVariacionPitch)
-    {
-        if (clip == null || audioSource == null) return;
-
-        // Modificamos el pitch de forma controlada según el tipo de sonido
-        if (randomizePitch && usarVariacionPitch)
+        if (footstepAudioSource == null)
         {
-            audioSource.pitch = Random.Range(pitchMin, pitchMax);
+            if (showDebugLogs)
+            {
+                Debug.LogWarning($"[{gameObject.name}] No hay Footstep AudioSource asignado.");
+            }
+
+            return;
+        }
+
+        if (footstepSequenceClip == null)
+        {
+            if (showDebugLogs)
+            {
+                Debug.LogWarning($"[{gameObject.name}] No hay clip de pasos asignado.");
+            }
+
+            return;
+        }
+
+        if (activar)
+        {
+            if (footstepAudioSource.clip != footstepSequenceClip)
+            {
+                footstepAudioSource.clip = footstepSequenceClip;
+            }
+
+            footstepAudioSource.loop = true;
+            footstepAudioSource.volume = footstepVolume;
+            footstepAudioSource.pitch = footstepSpeed;
+
+            if (!footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Play();
+
+                if (showDebugLogs)
+                {
+                    Debug.Log($"[{gameObject.name}] Reproduciendo pasos: {footstepSequenceClip.name}");
+                }
+            }
         }
         else
         {
-            audioSource.pitch = 1f; // Reseteo total para ataques y efectos críticos
+            if (footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Stop();
+
+                if (showDebugLogs)
+                {
+                    Debug.Log($"[{gameObject.name}] Pasos detenidos.");
+                }
+            }
+        }
+    }
+
+    private void ReproducirSFX(AudioClip clip, float volumen, string nombreDebug)
+    {
+        if (sfxAudioSource == null)
+        {
+            Debug.LogWarning($"[{gameObject.name}] No hay SFX AudioSource asignado. No se puede reproducir {nombreDebug}.");
+            return;
         }
 
-        audioSource.PlayOneShot(clip, volume);
+        if (clip == null)
+        {
+            Debug.LogWarning($"[{gameObject.name}] Falta asignar el clip de audio para {nombreDebug}.");
+            return;
+        }
+
+        sfxAudioSource.pitch = 1f;
+        sfxAudioSource.volume = 1f;
+        sfxAudioSource.PlayOneShot(clip, volumen);
+
+        if (showDebugLogs)
+        {
+            Debug.Log($"[{gameObject.name}] Reproduciendo SFX {nombreDebug}: {clip.name} | Volumen: {volumen}");
+        }
     }
 
-    private void LogNavigationDiagnostics(float distanciaAlJugador, bool entraAtaque)
+    private void MirarAlJugador()
     {
-        if (!debugAttackDiagnostics) return;
-        if (Time.time < nextDebugLogTime) return;
+        Vector3 direccionLook = player.position - transform.position;
+        direccionLook.y = 0f;
 
-        nextDebugLogTime = Time.time + debugLogInterval;
-
-        Debug.Log(
-            $"[PersecutionEnemy] Estado: Perseguiendo | " +
-            $"distancia={distanciaAlJugador:F2} | " +
-            $"stoppingDistance={agent.stoppingDistance:F2} | " +
-            $"ataqueListo={Time.time >= nextAttackTime}", 
-            this
-        );
+        if (direccionLook.sqrMagnitude > 0.01f)
+        {
+            Quaternion rotacionObjetivo = Quaternion.LookRotation(direccionLook.normalized);
+            transform.rotation = Quaternion.Slerp(transform.rotation, rotacionObjetivo, Time.deltaTime * 15f);
+        }
     }
 
-    private void SetWalking(bool value)
+    private void SetWalkingAnimation(bool value)
     {
-        if (string.IsNullOrEmpty(walkingBoolName)) return;
-        if (!CanUseAnimator("SetBool", walkingBoolName)) return;
-
-        animator.SetBool(walkingBoolName, value);
+        if (animator != null && animator.isActiveAndEnabled)
+        {
+            animator.SetBool("IsWalking", value);
+        }
     }
 
-    private bool CanUseAnimator(string operation, string parameterName)
+    private void FrenarEnemigoPorCompleto()
     {
-        if (animator == null || animator.runtimeAnimatorController == null || !animator.isActiveAndEnabled)
-            return false;
+        SetWalkingAnimation(false);
+        GestionarBuclePasos(false);
 
-        return true;
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
+    }
+
+    private void PrepararAudioSources()
+    {
+        if (footstepAudioSource == null)
+        {
+            footstepAudioSource = gameObject.AddComponent<AudioSource>();
+            footstepAudioSource.playOnAwake = false;
+        }
+
+        if (sfxAudioSource == null)
+        {
+            sfxAudioSource = gameObject.AddComponent<AudioSource>();
+            sfxAudioSource.playOnAwake = false;
+        }
+
+        ConfigurarAudioSource3D(footstepAudioSource, true);
+        ConfigurarAudioSource3D(sfxAudioSource, false);
+    }
+
+private void ConfigurarAudioSource3D(AudioSource source, bool esLoop)
+{
+    if (source == null) return;
+
+    source.playOnAwake = false;
+    source.loop = esLoop;
+    source.spatialBlend = spatialBlend;
+
+    // Linear hace que el sonido 3D no se apague tan brusco.
+    // Para pasos suele funcionar mejor que Logarithmic.
+    source.rolloffMode = AudioRolloffMode.Linear;
+
+    source.minDistance = minAudioDistance;
+    source.maxDistance = maxAudioDistance;
+    source.volume = 1f;
+    source.pitch = 1f;
+    source.mute = false;
+
+    // Muy importante: si estaba sonando al iniciar, lo cortamos.
+    if (source.isPlaying)
+    {
+        source.Stop();
+    }
+}    private void RevisarConfiguracionInicial()
+    {
+        if (!showDebugLogs) return;
+
+        if (animator == null)
+        {
+            Debug.LogWarning($"[{gameObject.name}] No hay Animator asignado.");
+        }
+
+        if (footstepSequenceClip == null)
+        {
+            Debug.LogWarning($"[{gameObject.name}] Falta Footstep Sequence Clip.");
+        }
+
+        if (attackClip == null)
+        {
+            Debug.LogWarning($"[{gameObject.name}] Falta Attack Clip.");
+        }
+
+        if (freezeClip == null)
+        {
+            Debug.LogWarning($"[{gameObject.name}] Falta Freeze Clip.");
+        }
+
+        if (footstepAudioSource != null)
+        {
+            Debug.Log($"[{gameObject.name}] Footstep AudioSource listo. SpatialBlend: {footstepAudioSource.spatialBlend}, MaxDistance: {footstepAudioSource.maxDistance}");
+        }
+
+        if (sfxAudioSource != null)
+        {
+            Debug.Log($"[{gameObject.name}] SFX AudioSource listo. SpatialBlend: {sfxAudioSource.spatialBlend}, MaxDistance: {sfxAudioSource.maxDistance}");
+        }
     }
 }

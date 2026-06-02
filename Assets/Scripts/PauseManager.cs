@@ -173,6 +173,9 @@ public class PauseManager : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.SaveData();
+
         Time.timeScale = 1f;
         isPaused = false;
         Cursor.visible = true;
@@ -182,6 +185,9 @@ public class PauseManager : MonoBehaviour
 
     public void QuitGame()
     {
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.SaveData();
+
         Time.timeScale = 1f;
         Application.Quit();
 

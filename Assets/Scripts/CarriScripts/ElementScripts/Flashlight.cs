@@ -146,6 +146,7 @@ public class Flashlight : MonoBehaviour
 
     private void HandleParticles(RaycastHit rayHit) 
     {
+        if (particlesObj == null) return;
         particlesObj.SetActive(true);
         particlesSys.Play();
 
@@ -157,7 +158,9 @@ public class Flashlight : MonoBehaviour
     }
 
     private void RestartParticles()
-    { 
+    {
+
+        if (particlesObj == null) return;
         particlesObj.transform.parent = null;
         particlesSys.Stop();
         particlesObj.SetActive(false);
