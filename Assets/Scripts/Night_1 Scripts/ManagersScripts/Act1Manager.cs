@@ -121,6 +121,11 @@ void Start()
         indicadorCervezas.SetActive(false);
     }
 
+    if (botellaEspecial != null)
+    {
+        botellaEspecial.SetActive(false);
+    }
+
     if (fadeCanvasGroup != null)
     {
         // Forzamos que el objeto esté activo y sea negro al 100%

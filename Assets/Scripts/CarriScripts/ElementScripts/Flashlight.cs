@@ -90,24 +90,27 @@ public class Flashlight : MonoBehaviour
         }
     }
 
-    void HandleCombat()
+   void HandleCombat()
     {
+        // Agregamos la verificación de que firePoint no sea nulo
         if (isFocused && firePoint != null)
         {
             RaycastHit hit;
-            Camera mainCam = Camera.main; 
-            if (mainCam == null) return;
 
-            // El origen es la punta de la linterna (firePoint)
-            // La dirección es hacia donde apunta el centro de la cámara
+            // 🔥 CONFIGURACIÓN REALISTA: Todo atado al objeto físico de la linterna
+            // El origen es la punta física (firePoint)
             Vector3 rayOrigin = firePoint.position;
-            Vector3 rayDirection = mainCam.transform.forward; 
+            
+            // La dirección es HACIA DONDE APUNTA el firePoint (su eje azul Z)
+            Vector3 rayDirection = firePoint.forward; 
 
-            // Visualización del gizmo del rayccacst
+            // Visualización del gizmo en la pestaña Escena (Línea amarilla)
             Debug.DrawRay(rayOrigin, rayDirection * range, Color.yellow);
 
+            // Ejecutamos el Raycast siguiendo la orientación de la linterna
             if (Physics.Raycast(rayOrigin, rayDirection, out hit, range, enemyLayer))
             {
+                // Línea roja indicando el impacto real en el enemigo
                 Debug.DrawLine(rayOrigin, hit.point, Color.red);
             
                 EnemyCore enemy = hit.collider.GetComponent<EnemyCore>();
