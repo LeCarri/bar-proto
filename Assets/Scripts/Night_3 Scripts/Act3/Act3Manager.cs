@@ -11,6 +11,9 @@ public class Act3Manager : MonoBehaviour
     public GameObject clientesActo3;
     public GameObject enemigos;
 
+    public GameObject panelInteraccion;
+    public TextMeshProUGUI textoInteraccion;
+
     [Header("UI y Di�logos")]
     public TextMeshProUGUI textoSubtitulos;
 
@@ -62,18 +65,64 @@ public class Act3Manager : MonoBehaviour
 
     void Update()
     {
+        Ray ray = new Ray(
+            Camera.main.transform.position,
+            Camera.main.transform.forward
+        );
+
+        RaycastHit hit;
+
+        bool mirandoAlgo = false;
+
+        if (Physics.Raycast(ray, out hit, 10f))
+        {
+            // CLIENTE
+            SimpleInteract cliente =
+                hit.collider.GetComponentInParent<SimpleInteract>();
+
+            if (cliente != null)
+            {
+                mirandoAlgo = true;
+
+                panelInteraccion.SetActive(true);
+                textoInteraccion.text = "Hablar";
+            }
+
+            // PEDIDO
+            PedidoPickup pedido =
+                hit.collider.GetComponentInParent<PedidoPickup>();
+
+            if (pedido != null)
+            {
+                mirandoAlgo = true;
+
+                panelInteraccion.SetActive(true);
+                textoInteraccion.text = "Recoger";
+            }
+
+            // PUERTA
+            PuertaSotano puerta =
+                hit.collider.GetComponentInParent<PuertaSotano>();
+
+            if (puerta != null)
+            {
+                mirandoAlgo = true;
+
+                panelInteraccion.SetActive(true);
+                textoInteraccion.text = "Abrir";
+            }
+        }
+
+        if (!mirandoAlgo)
+        {
+            panelInteraccion.SetActive(false);
+        }
+
+        // INTERACTUAR
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Ray ray = new Ray(
-                Camera.main.transform.position,
-                Camera.main.transform.forward
-            );
-
-            RaycastHit hit;
-
             if (Physics.Raycast(ray, out hit, 10f))
             {
-                // PUERTA
                 PuertaSotano puerta =
                     hit.collider.GetComponentInParent<PuertaSotano>();
 
@@ -83,7 +132,6 @@ public class Act3Manager : MonoBehaviour
                     return;
                 }
 
-                // CLIENTE
                 SimpleInteract cliente =
                     hit.collider.GetComponentInParent<SimpleInteract>();
 
@@ -93,7 +141,6 @@ public class Act3Manager : MonoBehaviour
                     return;
                 }
 
-                // PEDIDO
                 PedidoPickup pedido =
                     hit.collider.GetComponentInParent<PedidoPickup>();
 

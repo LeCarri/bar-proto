@@ -6,15 +6,31 @@ public class SotanoManager : MonoBehaviour
 {
     public static SotanoManager Instance;
 
+    [Header("Objetivos")]
+    public TextMeshProUGUI textoObjetivo;
+
     [Header("UI")]
     public TextMeshProUGUI textoSubtitulos;
 
     public GameObject pantallaNegra;
     public GameObject paranoia;
 
+    public GameObject panelInteraccion;
+    public TextMeshProUGUI textoInteraccion;
+
     private Coroutine dialogoActual;
 
     public int interaccionesCompletadas = 0;
+
+
+    public void ActualizarObjetivo(string nuevoObjetivo)
+    {
+        if (textoObjetivo != null)
+        {
+            textoObjetivo.text = "- " + nuevoObjetivo;
+        }
+    }
+
 
     void Awake()
     {
@@ -39,15 +55,36 @@ public class SotanoManager : MonoBehaviour
 
     void Update()
     {
+        Ray ray = new Ray(
+            Camera.main.transform.position,
+            Camera.main.transform.forward
+        );
+
+        RaycastHit hit;
+
+        bool mirandoAlgo = false;
+
+        if (Physics.Raycast(ray, out hit, 10f))
+        {
+            SimpleInteract interactuable =
+                hit.collider.GetComponentInParent<SimpleInteract>();
+
+            if (interactuable != null)
+            {
+                mirandoAlgo = true;
+
+                panelInteraccion.SetActive(true);
+                textoInteraccion.text = "Hablar";
+            }
+        }
+
+        if (!mirandoAlgo)
+        {
+            panelInteraccion.SetActive(false);
+        }
+
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Ray ray = new Ray(
-                Camera.main.transform.position,
-                Camera.main.transform.forward
-            );
-
-            RaycastHit hit;
-
             if (Physics.Raycast(ray, out hit, 10f))
             {
                 SimpleInteract interactuable =
@@ -62,9 +99,9 @@ public class SotanoManager : MonoBehaviour
         }
     }
 
-    
+
     // DIÁLOGOS
-    
+
 
     public void MostrarDialogo(string mensaje)
     {
@@ -93,6 +130,8 @@ public class SotanoManager : MonoBehaviour
     IEnumerator InicioSotano()
     {
         yield return new WaitForSeconds(1f);
+
+        ActualizarObjetivo("vuelve con ellas.");
 
         MostrarDialogo(
             "solo un poco mas."
