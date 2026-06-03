@@ -21,34 +21,48 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
-        // Raycast desde el centro exacto de la cámara
+        // 1. Control de seguridad: Si la cámara principal no está lista, evitamos calcular en este frame
+        if (Camera.main == null) return;
+
+        // Calculamos el rayo usando el Viewport de forma matemática (0.5, 0.5 es el centro exacto)
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
         bool hitSomething = false;
 
-        // Visualización en la ventana Scene
-        Debug.DrawRay(ray.origin, ray.direction * interactionDistance, Color.red);
-
+        // 2. Filtro rígido IF/ELSE para matar la intermitencia de frames
         if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer))
         {
-            Debug.DrawRay(ray.origin, ray.direction * interactionDistance, Color.green);
-
+            // Buscamos si el objeto con el que chocamos tiene la interfaz de interacción
             IInteractable interactable = hit.collider.GetComponent<IInteractable>();
 
             if (interactable != null && interactable.CanInteract())
             {
+                // Marcamos que encontramos algo válido para congelar el estado de la UI
                 hitSomething = true;
                 ShowInteractionUI(interactable.GetDescription());
+
+                // Dibujamos la línea de debug verde fija desde la cámara hasta el punto exacto de impacto
+                Debug.DrawLine(ray.origin, hit.point, Color.green);
 
                 if (Input.GetKeyDown(KeyCode.E))
                 {
                     interactable.Interact();
-                    //Debug.Log("Tocaste: " + hit.collider.name);
                 }
             }
+            else
+            {
+                // Si chocamos contra la capa pero el objeto no es interactuable, la línea se queda roja fija en el impacto
+                Debug.DrawLine(ray.origin, hit.point, Color.red);
+            }
+        }
+        else
+        {
+            // Si el rayo se pierde en el aire del bar, se dibuja en rojo clavado a la distancia máxima (no al infinito)
+            Debug.DrawRay(ray.origin, ray.direction * interactionDistance, Color.red);
         }
         
+        // 3. Solo apagamos el cartel si en este frame realmente no estamos mirando nada de la capa interactuable
         if (!hitSomething)
         {
             HideInteractionUI();
