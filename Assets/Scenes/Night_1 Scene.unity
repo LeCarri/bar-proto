@@ -22616,7 +22616,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7058900763340401169, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7783841349094393964, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: fuenteAudio
@@ -121203,7 +121203,6 @@ GameObject:
   - component: {fileID: 1819378420}
   - component: {fileID: 1819378419}
   - component: {fileID: 1819378418}
-  - component: {fileID: 1819378421}
   - component: {fileID: 1819378422}
   - component: {fileID: 1819378423}
   - component: {fileID: 1819378424}
@@ -121288,33 +121287,6 @@ Transform:
   - {fileID: 816550526}
   m_Father: {fileID: 1230374150}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!54 &1819378421
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1819378414}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 112
-  m_CollisionDetection: 0
 --- !u!114 &1819378422
 MonoBehaviour:
   m_ObjectHideFlags: 0
