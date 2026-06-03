@@ -2,7 +2,6 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class FinalEndingSequence : MonoBehaviour
 {
@@ -14,6 +13,10 @@ public class FinalEndingSequence : MonoBehaviour
     [SerializeField] private MonoBehaviour playerMovementScript;
     [SerializeField] private MonoBehaviour playerLookScript;
     [SerializeField] private Camera playerCamera;
+
+    [Header("HUDs del juego a desactivar")]
+    [Tooltip("Arrastrá acá ParanoiaCanvas, ContenedorObjetivos y ParpadeoYDialogos.")]
+    [SerializeField] private GameObject[] hudsToDisable;
 
     [Header("Opcional - apagar al final")]
     [SerializeField] private GameObject playerFlashlightObject;
@@ -58,16 +61,15 @@ public class FinalEndingSequence : MonoBehaviour
     [SerializeField] private AudioClip doorKnocksClip;
     [SerializeField] private AudioClip gunshotClip;
 
-    [Header("Pantalla de victoria diseñada")]
-    [Tooltip("Arrastrá acá el prefab azul VictoryScreen desde Project, no desde la jerarquía.")]
-    [SerializeField] private GameObject victoryScreenPrefab;
+    [Header("Panel final tipo intro")]
+    [Tooltip("Arrastrá acá el IntroPanel que ya tiene el script IntroScreen.")]
+    [SerializeField] private GameObject finalIntroPanel;
 
-    [SerializeField] private float victoryFadeDuration = 2f;
-    [SerializeField] private string mainMenuSceneName = "Home";
+    [Tooltip("Solo se usa si el IntroScreen no cambia de escena solo.")]
+    [SerializeField] private bool forceLoadHomeAfterDelay = false;
 
-    [Header("Opcional - créditos")]
-    [Tooltip("Si tu botón de créditos ya funciona con su propio script, podés dejar esto vacío.")]
-    [SerializeField] private GameObject creditsPanelPrefab;
+    [SerializeField] private float forceLoadHomeDelay = 8f;
+    [SerializeField] private string homeSceneName = "Home";
 
     [Header("Tiempos finales")]
     [SerializeField] private float secondsAfterCameraMove = 1.5f;
@@ -77,10 +79,6 @@ public class FinalEndingSequence : MonoBehaviour
     private bool endingStarted = false;
     private Coroutine policeLightsCoroutine;
     private Coroutine dialogCoroutine;
-
-    private GameObject spawnedVictoryScreen;
-    private CanvasGroup spawnedVictoryCanvasGroup;
-    private GameObject spawnedCreditsPanel;
 
     private void Awake()
     {
@@ -102,6 +100,9 @@ public class FinalEndingSequence : MonoBehaviour
         }
 
         HideDialog();
+
+        if (finalIntroPanel != null)
+            finalIntroPanel.SetActive(false);
 
         if (redPoliceLight != null)
             redPoliceLight.intensity = 0f;
@@ -160,29 +161,39 @@ public class FinalEndingSequence : MonoBehaviour
 
     private IEnumerator EndingRoutine()
     {
+        DisableGameplayHUDs();
+
         BlockPlayer();
 
+        // 1. Pantalla negra inicial.
         yield return StartCoroutine(FadeCanvasGroup(blackScreen, 0f, 1f, fadeToFirstBlackDuration));
 
+        // 2. Golpes en la puerta.
         PlayDoorKnocks();
 
         yield return new WaitForSeconds(firstBlackDuration);
 
+        // 3. Cámara final.
         ActivateFinalCamera();
 
+        // 4. Sirena y luces policiales.
         PlaySirens();
         policeLightsCoroutine = StartCoroutine(PoliceLightsRoutine());
 
+        // 5. Sale la pantalla negra.
         yield return StartCoroutine(FadeCanvasGroup(blackScreen, 1f, 0f, fadeFromBlackDuration));
 
+        // 6. Diálogo final mientras se aleja la cámara.
         dialogCoroutine = StartCoroutine(DialogRoutine());
 
+        // 7. Cámara alejándose.
         yield return StartCoroutine(MoveFinalCameraRoutine());
 
         yield return new WaitForSeconds(secondsAfterCameraMove);
 
         HideDialog();
 
+        // 8. Pantalla negra final.
         yield return StartCoroutine(FadeCanvasGroup(blackScreen, 0f, 1f, finalFadeToBlackDuration));
 
         StopPoliceLights();
@@ -190,15 +201,27 @@ public class FinalEndingSequence : MonoBehaviour
 
         yield return new WaitForSeconds(secondsBeforeGunshot);
 
+        // 9. Disparo.
         PlayGunshot();
 
         yield return new WaitForSeconds(secondsAfterGunshot);
 
-        PlayFinalMusic();
-
-        yield return StartCoroutine(ShowDesignedVictoryScreen());
+        // 10. Se activa el panel final tipo intro.
+        ShowFinalIntroPanel();
 
         Debug.Log("[FinalEndingSequence] Secuencia final terminada.");
+    }
+
+    private void DisableGameplayHUDs()
+    {
+        if (hudsToDisable == null)
+            return;
+
+        foreach (GameObject hud in hudsToDisable)
+        {
+            if (hud != null)
+                hud.SetActive(false);
+        }
     }
 
     private void BlockPlayer()
@@ -352,63 +375,10 @@ public class FinalEndingSequence : MonoBehaviour
         }
     }
 
-    private IEnumerator ShowDesignedVictoryScreen()
+    private void ShowFinalIntroPanel()
     {
-        if (victoryScreenPrefab == null)
-        {
-            Debug.LogError("[FinalEndingSequence] Falta asignar Victory Screen Prefab en el Inspector.");
-            yield break;
-        }
-
-        Debug.Log("[FinalEndingSequence] Instanciando VictoryScreen diseñado.");
-
-        spawnedVictoryScreen = Instantiate(victoryScreenPrefab);
-        spawnedVictoryScreen.name = "VictoryScreen_Final";
-        spawnedVictoryScreen.SetActive(true);
-
-        ForceObjectAndChildrenActive(spawnedVictoryScreen);
-        ForceCanvasVisible(spawnedVictoryScreen);
-        ForceRectTransformSafe(spawnedVictoryScreen);
-        ForceCanvasGroupsVisible(spawnedVictoryScreen);
-
-        spawnedVictoryCanvasGroup = spawnedVictoryScreen.GetComponent<CanvasGroup>();
-
-        if (spawnedVictoryCanvasGroup == null)
-            spawnedVictoryCanvasGroup = spawnedVictoryScreen.AddComponent<CanvasGroup>();
-
-        spawnedVictoryCanvasGroup.alpha = 0f;
-        spawnedVictoryCanvasGroup.interactable = true;
-        spawnedVictoryCanvasGroup.blocksRaycasts = true;
-
-        FixVictoryButtons(spawnedVictoryScreen);
-
-        if (blackScreen != null)
-        {
-            blackScreen.alpha = 1f;
-            blackScreen.interactable = false;
-            blackScreen.blocksRaycasts = false;
-        }
-
-        float timer = 0f;
-
-        while (timer < victoryFadeDuration)
-        {
-            timer += Time.deltaTime;
-
-            float t = timer / victoryFadeDuration;
-            t = Mathf.Clamp01(t);
-
-            spawnedVictoryCanvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
-
-            if (blackScreen != null)
-                blackScreen.alpha = Mathf.Lerp(1f, 0f, t);
-
-            yield return null;
-        }
-
-        spawnedVictoryCanvasGroup.alpha = 1f;
-        spawnedVictoryCanvasGroup.interactable = true;
-        spawnedVictoryCanvasGroup.blocksRaycasts = true;
+        if (finalMusicAudioSource != null)
+            finalMusicAudioSource.Play();
 
         if (blackScreen != null)
         {
@@ -418,150 +388,52 @@ public class FinalEndingSequence : MonoBehaviour
             blackScreen.gameObject.SetActive(false);
         }
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        Debug.Log("[FinalEndingSequence] VictoryScreen diseñado mostrado correctamente.");
-    }
-
-    private void ForceObjectAndChildrenActive(GameObject root)
-    {
-        if (root == null)
-            return;
-
-        root.SetActive(true);
-
-        Transform[] children = root.GetComponentsInChildren<Transform>(true);
-
-        foreach (Transform child in children)
-            child.gameObject.SetActive(true);
-    }
-
-    private void ForceCanvasVisible(GameObject root)
-    {
-        Canvas[] canvases = root.GetComponentsInChildren<Canvas>(true);
-
-        if (canvases.Length == 0)
+        if (finalIntroPanel == null)
         {
-            Canvas canvas = root.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.overrideSorting = true;
-            canvas.sortingOrder = 9999;
+            Debug.LogError("[FinalEndingSequence] Falta asignar Final Intro Panel en el Inspector.");
 
-            root.AddComponent<CanvasScaler>();
-            root.AddComponent<GraphicRaycaster>();
+            if (forceLoadHomeAfterDelay)
+                StartCoroutine(ForceLoadHomeRoutine());
+
             return;
         }
+
+        finalIntroPanel.SetActive(true);
+        finalIntroPanel.transform.SetAsLastSibling();
+
+        Canvas[] canvases = finalIntroPanel.GetComponentsInChildren<Canvas>(true);
 
         foreach (Canvas canvas in canvases)
         {
             canvas.enabled = true;
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.overrideSorting = true;
             canvas.sortingOrder = 9999;
         }
-    }
 
-    private void ForceRectTransformSafe(GameObject root)
-    {
-        RectTransform rect = root.GetComponent<RectTransform>();
+        CanvasGroup[] groups = finalIntroPanel.GetComponentsInChildren<CanvasGroup>(true);
 
-        if (rect == null)
-            return;
-
-        rect.SetParent(null, false);
-        rect.localScale = Vector3.one;
-        rect.localRotation = Quaternion.identity;
-
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-        rect.anchoredPosition = Vector2.zero;
-    }
-
-    private void ForceCanvasGroupsVisible(GameObject root)
-    {
-        CanvasGroup[] canvasGroups = root.GetComponentsInChildren<CanvasGroup>(true);
-
-        foreach (CanvasGroup group in canvasGroups)
+        foreach (CanvasGroup group in groups)
         {
             group.alpha = 1f;
             group.interactable = true;
             group.blocksRaycasts = true;
-            group.ignoreParentGroups = false;
-        }
-    }
-
-    private void FixVictoryButtons(GameObject root)
-    {
-        Button[] buttons = root.GetComponentsInChildren<Button>(true);
-
-        foreach (Button button in buttons)
-        {
-            string buttonName = button.gameObject.name.ToLower();
-            string buttonText = GetButtonText(button).ToLower();
-
-            if (buttonName.Contains("menu") || buttonText.Contains("menú") || buttonText.Contains("menu"))
-            {
-                button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(ReturnToMainMenu);
-                Debug.Log("[FinalEndingSequence] Botón de volver al menú conectado.");
-            }
-
-            if (buttonName.Contains("credit") || buttonText.Contains("crédit") || buttonText.Contains("credit"))
-            {
-                button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(ShowCredits);
-                Debug.Log("[FinalEndingSequence] Botón de créditos conectado.");
-            }
-        }
-    }
-
-    private string GetButtonText(Button button)
-    {
-        TMP_Text tmp = button.GetComponentInChildren<TMP_Text>(true);
-
-        if (tmp != null)
-            return tmp.text;
-
-        Text text = button.GetComponentInChildren<Text>(true);
-
-        if (text != null)
-            return text.text;
-
-        return "";
-    }
-
-    private void ShowCredits()
-    {
-        Debug.Log("[FinalEndingSequence] Botón Créditos presionado.");
-
-        if (creditsPanelPrefab == null)
-        {
-            Debug.LogWarning("[FinalEndingSequence] No hay Credits Panel Prefab asignado.");
-            return;
         }
 
-        if (spawnedCreditsPanel != null)
-        {
-            spawnedCreditsPanel.SetActive(true);
-            return;
-        }
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
-        spawnedCreditsPanel = Instantiate(creditsPanelPrefab);
-        spawnedCreditsPanel.name = "CreditsPanel_Final";
+        Debug.Log("[FinalEndingSequence] Final Intro Panel activado.");
 
-        ForceObjectAndChildrenActive(spawnedCreditsPanel);
-        ForceCanvasVisible(spawnedCreditsPanel);
-        ForceRectTransformSafe(spawnedCreditsPanel);
-        ForceCanvasGroupsVisible(spawnedCreditsPanel);
+        if (forceLoadHomeAfterDelay)
+            StartCoroutine(ForceLoadHomeRoutine());
     }
 
-    private void ReturnToMainMenu()
+    private IEnumerator ForceLoadHomeRoutine()
     {
+        yield return new WaitForSeconds(forceLoadHomeDelay);
+
         Time.timeScale = 1f;
-        SceneManager.LoadScene(mainMenuSceneName);
+        SceneManager.LoadScene(homeSceneName);
     }
 
     private void PlayDoorKnocks()
@@ -597,19 +469,6 @@ public class FinalEndingSequence : MonoBehaviour
     {
         if (sirenAudioSource != null)
             sirenAudioSource.Stop();
-    }
-
-    private void PlayFinalMusic()
-    {
-        if (finalMusicAudioSource != null)
-        {
-            finalMusicAudioSource.loop = true;
-            finalMusicAudioSource.Play();
-        }
-        else
-        {
-            Debug.LogWarning("[FinalEndingSequence] Falta FinalMusicAudioSource.");
-        }
     }
 
     private IEnumerator PoliceLightsRoutine()
