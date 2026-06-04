@@ -21,6 +21,15 @@ public class ClienteAct3 : MonoBehaviour
         // PRIMERA INTERACCIÓN
         if (!pedidoTomado)
         {
+            // Si ya hay un pedido activo, no deja tomar otro
+            if (Act3Manager.Instance.tienePedido)
+            {
+                Act3Manager.Instance.MostrarDialogo(
+                    "Primero debería entregar el pedido actual."
+                );
+                return;
+            }
+
             Debug.Log("Mostrando pedido");
 
             ClienteDialogueSystem.Instance.MostrarDialogo(
@@ -48,6 +57,12 @@ public class ClienteAct3 : MonoBehaviour
                 Act3Manager.Instance.EntregarPedido();
 
                 Act3Manager.Instance.ClienteCompletado();
+            }
+            else
+            {
+                Act3Manager.Instance.MostrarDialogo(
+                    "Todavía no tengo tu pedido."
+                );
             }
         }
     }
