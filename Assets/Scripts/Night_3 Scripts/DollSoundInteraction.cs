@@ -1,37 +1,38 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class DollSoundInteraction : MonoBehaviour, IInteractable
 {
     [Header("Configuración")]
-    [SerializeField] private string playerTag = "Player";
-    [SerializeField] private KeyCode interactKey = KeyCode.E;
-    [SerializeField] private string interactionDescription = "Presiona [E] para escuchar";
+    [SerializeField] private string interactionDescription = "Presiona [E] para tocar la muñeca";
 
     [Header("Audio")]
     [SerializeField] private AudioSource dollAudioSource;
     [SerializeField] private AudioClip interactionClip;
-    [SerializeField] private AudioClip exitClip;
 
-    [Header("Opciones")]
-    [SerializeField] private bool canInteractOnlyOnce = true;
-    [SerializeField] private bool playAgainWhenPlayerLeaves = true;
-    [SerializeField] private float exitSoundDelay = 0.2f;
+    [Header("Diálogo")]
+    [Tooltip("Panel de diálogo existente. Usá el mismo que funciona en el portarretrato, por ejemplo: FondoDialogo.")]
+    [SerializeField] private GameObject panelDialogo;
 
-    private bool playerInside = false;
-    private bool alreadyInteracted = false;
-    private bool exitSoundPlayed = false;
+    [Tooltip("Texto TMP del diálogo existente. Usá el mismo que funciona en el portarretrato, por ejemplo: Dialogue.")]
+    [SerializeField] private TMP_Text textoDialogo;
+
+    [TextArea(1, 3)]
+    [SerializeField] private string fraseLucas = "La muñeca de mi hija...";
+
+    [SerializeField] private float delayFrase = 0.25f;
+    [SerializeField] private float tiempoFraseVisible = 3f;
+
+    private Coroutine rutinaDialogo;
 
     private void Awake()
     {
         if (dollAudioSource == null)
-        {
             dollAudioSource = GetComponent<AudioSource>();
-        }
 
         if (dollAudioSource == null)
-        {
             dollAudioSource = GetComponentInChildren<AudioSource>();
-        }
 
         if (dollAudioSource != null)
         {
@@ -41,31 +42,15 @@ public class DollSoundInteraction : MonoBehaviour, IInteractable
         }
     }
 
-    private void Update()
-    {
-        if (!playerInside)
-            return;
-
-        if (canInteractOnlyOnce && alreadyInteracted)
-            return;
-
-        if (Input.GetKeyDown(interactKey))
-        {
-            PlayInteractionSound();
-        }
-    }
-
     public void Interact()
     {
-        if (!CanInteract())
-            return;
-
-        PlayInteractionSound();
+        ReproducirRisa();
+        MostrarFraseLucas();
     }
 
     public bool CanInteract()
     {
-        return !canInteractOnlyOnce || !alreadyInteracted;
+        return true;
     }
 
     public string GetDescription()
@@ -73,39 +58,8 @@ public class DollSoundInteraction : MonoBehaviour, IInteractable
         return interactionDescription;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void ReproducirRisa()
     {
-        if (!other.CompareTag(playerTag))
-            return;
-
-        playerInside = true;
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag(playerTag))
-            return;
-
-        playerInside = false;
-
-        if (!playAgainWhenPlayerLeaves)
-            return;
-
-        if (!alreadyInteracted)
-            return;
-
-        if (exitSoundPlayed)
-            return;
-
-        exitSoundPlayed = true;
-
-        Invoke(nameof(PlayExitSound), exitSoundDelay);
-    }
-
-    private void PlayInteractionSound()
-    {
-        alreadyInteracted = true;
-
         if (dollAudioSource == null)
         {
             Debug.LogWarning("[DollSoundInteraction] Falta asignar Doll Audio Source.");
@@ -126,28 +80,42 @@ public class DollSoundInteraction : MonoBehaviour, IInteractable
         dollAudioSource.Stop();
         dollAudioSource.PlayOneShot(clipToPlay);
 
-        Debug.Log("[DollSoundInteraction] Sonido de muñeca reproducido al interactuar.");
+        Debug.Log("[DollSoundInteraction] La muñeca se rió.");
     }
 
-    private void PlayExitSound()
+    private void MostrarFraseLucas()
     {
-        if (dollAudioSource == null)
-            return;
+        if (rutinaDialogo != null)
+            StopCoroutine(rutinaDialogo);
 
-        AudioClip clipToPlay = exitClip;
+        rutinaDialogo = StartCoroutine(DialogoRoutine());
+    }
 
-        if (clipToPlay == null)
-            clipToPlay = interactionClip;
+    private IEnumerator DialogoRoutine()
+    {
+        yield return new WaitForSeconds(delayFrase);
 
-        if (clipToPlay == null)
-            clipToPlay = dollAudioSource.clip;
+        if (panelDialogo != null)
+            panelDialogo.SetActive(true);
 
-        if (clipToPlay == null)
-            return;
+        if (textoDialogo != null)
+        {
+            textoDialogo.gameObject.SetActive(true);
+            textoDialogo.text = fraseLucas;
+            textoDialogo.enabled = true;
+            textoDialogo.alpha = 1f;
+        }
 
-        dollAudioSource.Stop();
-        dollAudioSource.PlayOneShot(clipToPlay);
+        Debug.Log("[DollSoundInteraction] Mostrando diálogo de muñeca: " + fraseLucas);
 
-        Debug.Log("[DollSoundInteraction] Sonido de muñeca reproducido al alejarse.");
+        yield return new WaitForSeconds(tiempoFraseVisible);
+
+        if (textoDialogo != null)
+            textoDialogo.text = "";
+
+        if (panelDialogo != null)
+            panelDialogo.SetActive(false);
+
+        rutinaDialogo = null;
     }
 }
