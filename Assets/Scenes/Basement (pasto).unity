@@ -31722,7 +31722,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &203844587
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64893,6 +64893,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6422788020536371428, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6444704545846961720, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Constraints
+      value: 14
+      objectReference: {fileID: 0}
     - target: {fileID: 296295093561450055, guid: 6e4c78d8fd5eb4e129a7a00d811a0afc, type: 3}
       propertyPath: m_Size.x
       value: 4.1152506
@@ -64989,18 +65001,6 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 6ec8f4eefb5934e7e80f60a0fcbf2c3b, type: 2}
-    - target: {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6422788020536371428, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6444704545846961720, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Constraints
-      value: 14
-      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6422788020536371428, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
     - {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
@@ -95323,15 +95323,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9c56d7ea42144811a9ece666e7bac2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DollSoundInteraction
-  playerTag: Player
-  interactKey: 101
   interactionDescription: Presiona [E] para escuchar
   dollAudioSource: {fileID: 2033696372}
   interactionClip: {fileID: 8300000, guid: 71a8fa8e806514d37b746d65c9e225ac, type: 3}
-  exitClip: {fileID: 8300000, guid: 71a8fa8e806514d37b746d65c9e225ac, type: 3}
-  canInteractOnlyOnce: 1
-  playAgainWhenPlayerLeaves: 1
-  exitSoundDelay: 0.2
+  panelDialogo: {fileID: 0}
+  textoDialogo: {fileID: 0}
+  fraseLucas: "La mu\xF1eca de mi hija..."
+  delayFrase: 0.25
+  tiempoFraseVisible: 3
 --- !u!4 &1643295662
 Transform:
   m_ObjectHideFlags: 0
@@ -118289,15 +118288,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9c56d7ea42144811a9ece666e7bac2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DollSoundInteraction
-  playerTag: Player
-  interactKey: 101
   interactionDescription: Presiona [E] para escuchar
   dollAudioSource: {fileID: 2033696372}
   interactionClip: {fileID: 8300000, guid: 71a8fa8e806514d37b746d65c9e225ac, type: 3}
-  exitClip: {fileID: 8300000, guid: 71a8fa8e806514d37b746d65c9e225ac, type: 3}
-  canInteractOnlyOnce: 1
-  playAgainWhenPlayerLeaves: 1
-  exitSoundDelay: 0.2
+  panelDialogo: {fileID: 0}
+  textoDialogo: {fileID: 0}
+  fraseLucas: "La mu\xF1eca de mi hija..."
+  delayFrase: 0.25
+  tiempoFraseVisible: 3
 --- !u!4 &2100567141 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4356081577673768, guid: 04233d19d5893ef47b80d081a6822bdd, type: 3}
