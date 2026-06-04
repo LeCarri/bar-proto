@@ -74,7 +74,7 @@ public class SotanoManager : MonoBehaviour
                 mirandoAlgo = true;
 
                 panelInteraccion.SetActive(true);
-                textoInteraccion.text = "Hablar";
+                textoInteraccion.text = "Interactuar";
             }
         }
 
@@ -100,7 +100,7 @@ public class SotanoManager : MonoBehaviour
     }
 
 
-    // DIÁLOGOS
+    // DIï¿½LOGOS
 
 
     public void MostrarDialogo(string mensaje)
@@ -124,17 +124,17 @@ public class SotanoManager : MonoBehaviour
     }
 
    
-    // INICIO DEL SÓTANO
+    // INICIO DEL Sï¿½TANO
     
 
     IEnumerator InicioSotano()
     {
         yield return new WaitForSeconds(1f);
 
-        ActualizarObjetivo("vuelve con ellas.");
+        ActualizarObjetivo("Vuelve con ellas.");
 
         MostrarDialogo(
-            "solo un poco mas."
+            "Solo un poco mas."
         );
     }
 
@@ -169,7 +169,7 @@ public class SotanoManager : MonoBehaviour
 
     IEnumerator AvanzarSotano()
     {
-        MostrarDialogo("Perdón por la tardanza... el turno se hizo eterno. Ya podemos irnos");
+        MostrarDialogo("Perdon por la tardanza... el turno se hizo eterno. Ya podemos irnos");
 
         yield return new WaitForSeconds(4f);
 
