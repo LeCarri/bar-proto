@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using Unity.Cinemachine;
 
 /// <summary>
 /// Efecto "Dolly Zoom" / corredor infinito.
@@ -14,7 +15,7 @@ public class PasilloEfecto : MonoBehaviour
 {
     [Header("Cámara")]
     [Tooltip("Arrastrar aquí la Main Camera del jugador")]
-    public Camera camaraPrincipal;
+    public CinemachineCamera cinemachineCam;
 
     [Header("Configuración del Efecto")]
     public float fovNormal = 60f;
@@ -43,13 +44,9 @@ public class PasilloEfecto : MonoBehaviour
 
     void Start()
     {
-        if (camaraPrincipal == null)
-            camaraPrincipal = Camera.main;
-
-        if (camaraPrincipal != null)
+        if (cinemachineCam != null)
         {
-            fovOriginal = camaraPrincipal.fieldOfView;
-            posOriginalCamara = camaraPrincipal.transform.localPosition;
+            fovOriginal = cinemachineCam.Lens.FieldOfView;
         }
     }
 
@@ -91,13 +88,13 @@ public class PasilloEfecto : MonoBehaviour
             tiempoTranscurrido += Time.deltaTime;
 
             // Expande el FOV gradualmente hasta el máximo
-            if (camaraPrincipal != null)
+            if (cinemachineCam != null)
             {
                 float fovObjetivo = Mathf.Lerp(fovNormal, fovMaximo, tiempoTranscurrido / duracionEfecto);
-                camaraPrincipal.fieldOfView = Mathf.Lerp(
-                    camaraPrincipal.fieldOfView,
-                    fovObjetivo,
-                    Time.deltaTime * velocidadFOV
+                cinemachineCam.Lens.FieldOfView = Mathf.Lerp(
+                cinemachineCam.Lens.FieldOfView,
+                fovObjetivo,
+                Time.deltaTime * velocidadFOV
                 );
 
             }
@@ -112,20 +109,22 @@ public class PasilloEfecto : MonoBehaviour
         }
 
         // Mantener en máximo hasta que se desactive manualmente
-        if (camaraPrincipal != null)
-            camaraPrincipal.fieldOfView = fovMaximo;
+        if (cinemachineCam != null)
+            cinemachineCam.Lens.FieldOfView = fovMaximo;
     }
 
     IEnumerator RestaurarFOV()
     {
         float t = 0f;
-        float fovInicio = camaraPrincipal != null ? camaraPrincipal.fieldOfView : fovMaximo;
+        float fovInicio = cinemachineCam.Lens.FieldOfView;
 
         while (t < 1f)
         {
             t += Time.deltaTime * 2f;
-            if (camaraPrincipal != null)
-                camaraPrincipal.fieldOfView = Mathf.Lerp(fovInicio, fovOriginal, t);
+
+            cinemachineCam.Lens.FieldOfView =
+                Mathf.Lerp(fovInicio, fovOriginal, t);
+
             yield return null;
         }
     }
