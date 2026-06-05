@@ -32,8 +32,6 @@ public class VigenteMirror : MonoBehaviour
     [Tooltip("Cuántos segundos se queda visible el Vigilante en el espejo")]
     public float duracionAparicion = 2.2f;
 
-    [Tooltip("Segundos que el jugador ve algo antes del shake de cámara")]
-    public float delayAntesSusto = 0.2f;
 
     /// <summary>
     /// Coroutine llamada por Act2Manager.LlaveRecogida().
@@ -43,15 +41,12 @@ public class VigenteMirror : MonoBehaviour
         // Aparece el Vigilante en el espejo
         if (modeloVigilante != null) modeloVigilante.SetActive(true);
         if (sonidoVigilante != null) sonidoVigilante.Play();
-
-        yield return new WaitForSeconds(delayAntesSusto);
-
         // Susto suave + shake de cámara
         if (sonidoSusto != null) sonidoSusto.Play();
         if (sacudidaCamara != null)
-            yield return StartCoroutine(sacudidaCamara.Shake(0.4f, 0.18f));
+            yield return StartCoroutine(sacudidaCamara.Shake(1f, 4f));
 
-        yield return new WaitForSeconds(duracionAparicion - delayAntesSusto);
+        yield return new WaitForSeconds(duracionAparicion);
 
         // Desaparece
         if (modeloVigilante != null) modeloVigilante.SetActive(false);

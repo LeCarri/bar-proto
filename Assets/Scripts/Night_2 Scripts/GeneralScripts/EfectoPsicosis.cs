@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using Unity.Cinemachine;
 
 /// <summary>
 /// Controla el estado visual de "psicosis" del Acto 2:
@@ -14,7 +15,7 @@ using System.Collections;
 public class EfectoPsicosis : MonoBehaviour
 {
     [Header("Cámara")]
-    public Camera camaraPrincipal;
+    public CinemachineCamera cinemachineCam;
     public float fovNormal = 60f;
     public float fovPsicosis = 75f;
     [Tooltip("Velocidad de interpolación del FOV")]
@@ -34,33 +35,33 @@ public class EfectoPsicosis : MonoBehaviour
     [Tooltip("Sonido de estática/ruido que suena durante la psicosis")]
     public AudioSource sonidoEstatica;
 
-    [Header("Linterna (Acto 2 mode)")]
-    [Tooltip("Referencia a Flashlight_Act2 para aumentar el consumo de batería")]
-    public Flashlight_Act2 linterna;
-    public float multiplicadorConsumoBateria = 2.5f;
-
     private bool psicosisActiva = false;
     private float fovOriginal;
     private Coroutine coroutinaPulso;
 
     void Start()
     {
-        if (camaraPrincipal == null) camaraPrincipal = Camera.main;
-        if (camaraPrincipal != null) fovOriginal = camaraPrincipal.fieldOfView;
+        if (cinemachineCam != null)
+        {
+            fovOriginal = cinemachineCam.Lens.FieldOfView;
+        }
 
         if (overlayPsicosis != null) overlayPsicosis.alpha = 0f;
     }
 
     void Update()
     {
-        if (camaraPrincipal == null) return;
+        if (cinemachineCam == null) return;
 
         float fovObjetivo = psicosisActiva ? fovPsicosis : fovNormal;
-        camaraPrincipal.fieldOfView = Mathf.Lerp(
-            camaraPrincipal.fieldOfView,
+        // Solución: Usar cinemachineCam.Lens.FieldOfView en vez de cinemachineCam.fieldOfView
+        var lens = cinemachineCam.Lens;
+        lens.FieldOfView = Mathf.Lerp(
+            lens.FieldOfView,
             fovObjetivo,
             Time.deltaTime * velocidadFOV
         );
+        cinemachineCam.Lens = lens;
     }
 
     /// <summary>
@@ -71,10 +72,6 @@ public class EfectoPsicosis : MonoBehaviour
         psicosisActiva = true;
 
         if (sonidoEstatica != null) sonidoEstatica.Play();
-
-        // Aumenta el consumo de batería de la linterna en este estado de pánico
-        if (linterna != null)
-            linterna.consumptionRate *= multiplicadorConsumoBateria;
 
         if (overlayPsicosis != null)
         {
@@ -90,10 +87,6 @@ public class EfectoPsicosis : MonoBehaviour
         psicosisActiva = false;
 
         if (sonidoEstatica != null) sonidoEstatica.Stop();
-
-        // Restaurar consumo normal de batería
-        if (linterna != null)
-            linterna.consumptionRate /= multiplicadorConsumoBateria;
 
         if (coroutinaPulso != null) StopCoroutine(coroutinaPulso);
         StartCoroutine(ApagarOverlay());

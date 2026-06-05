@@ -1,40 +1,32 @@
 using UnityEngine;
+using Unity.Cinemachine;
 using System.Collections;
 
 public class CameraShake : MonoBehaviour
 {
-    [Tooltip("Transform a sacudir. Asigná la Main Camera aquí. Si se deja vacío, sacude este mismo GameObject.")]
-    public Transform camaraObjetivo;
+    [SerializeField]
+    private CinemachineCamera cineCam;
 
-    void Start()
+    private CinemachineBasicMultiChannelPerlin noise;
+
+    void Awake()
     {
-        // Fallback automático: busca la cámara principal si no se asignó nada
-        if (camaraObjetivo == null && Camera.main != null)
-            camaraObjetivo = Camera.main.transform;
+        if (cineCam == null)
+            cineCam = FindFirstObjectByType<CinemachineCamera>();
+
+        if (cineCam != null)
+            noise = cineCam.GetComponent<CinemachineBasicMultiChannelPerlin>();
     }
 
     public IEnumerator Shake(float duracion, float magnitud)
     {
-        Transform objetivo = camaraObjetivo != null ? camaraObjetivo : transform;
+        if (noise == null)
+            yield break;
 
-        Vector3 posicionOriginal = objetivo.localPosition;
-        float tiempoTranscurrido = 0f;
+        noise.AmplitudeGain = magnitud;
 
-        while (tiempoTranscurrido < duracion)
-        {
-            float x = Random.Range(-1f, 1f) * magnitud;
-            float y = Random.Range(-1f, 1f) * magnitud;
+        yield return new WaitForSeconds(duracion);
 
-            objetivo.localPosition = new Vector3(
-                posicionOriginal.x + x,
-                posicionOriginal.y + y,
-                posicionOriginal.z
-            );
-
-            tiempoTranscurrido += Time.deltaTime;
-            yield return null;
-        }
-
-        objetivo.localPosition = posicionOriginal;
+        noise.AmplitudeGain = 0f;
     }
 }
