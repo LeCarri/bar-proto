@@ -507,4 +507,9 @@ public class FinalEndingSequence : MonoBehaviour
         if (bluePoliceLight != null)
             bluePoliceLight.intensity = 0f;
     }
+    
+    public void VolverAlMenuPrincipal()
+    {
+        SceneManager.LoadScene("Home");
+    }
 }

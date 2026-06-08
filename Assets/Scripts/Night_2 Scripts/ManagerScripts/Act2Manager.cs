@@ -110,8 +110,17 @@ public class Act2Manager : MonoBehaviour
         if (textoSubtitulos != null) textoSubtitulos.text = "";
 
         estadoActual = Act2State.Inicio;
+        
+        if (fadeCanvasGroup != null)
+        {
+            // Forzamos que el objeto esté activo y sea negro al 100%
+            fadeCanvasGroup.gameObject.SetActive(true);
+            fadeCanvasGroup.alpha = 1f;
 
-        StartCoroutine(FundirDesdeNegro());
+            Debug.Log("Iniciando fundido de entrada...");
+            StartCoroutine(FundirDesdeNegro());
+        }
+        
 
         CambiarIluminacion("Normal");
 
@@ -163,27 +172,25 @@ public class Act2Manager : MonoBehaviour
     // =========================================================
     IEnumerator FundirDesdeNegro()
     {
-        float duracion = 2.5f;
-        float t = 0f;
+        // Aseguramos que empiece totalmente negro
+        fadeCanvasGroup.alpha = 1f;
 
-        // Empieza completamente oscuro
-        if (fadeCanvasGroup != null)
-            fadeCanvasGroup.alpha = 1f;
+        yield return new WaitForSeconds(0.5f); // Un breve momento de suspenso en negro
 
-        while (t < duracion)
+        float duracionFade = 2.0f; // Qué tan lento querés que aclare
+        float tiempo = 0;
+
+        while (tiempo < duracionFade)
         {
-            t += Time.deltaTime;
-            if (fadeCanvasGroup != null)
-                fadeCanvasGroup.alpha = Mathf.Lerp(1f, 0f, t / duracion);
+            tiempo += Time.deltaTime;
+            // Va de 1 (negro) a 0 (transparente)
+            fadeCanvasGroup.alpha = Mathf.Lerp(1, 0, tiempo / duracionFade);
             yield return null;
         }
 
-        // Asegura que quede completamente transparente al final
-        if (fadeCanvasGroup != null)
-            fadeCanvasGroup.alpha = 0f;
-
-        Debug.Log("Capítulo iniciado.");
-        yield return new WaitForSeconds(2f);
+        fadeCanvasGroup.alpha = 0f;
+        // Desactivamos el Raycast para que no bloquee el click del mouse al jugar
+        fadeCanvasGroup.blocksRaycasts = false;
 
     }
 
@@ -276,7 +283,7 @@ public class Act2Manager : MonoBehaviour
         MostrarDialogo("Lucas: ¿Qué hace esto acá? Alguien entró... tiene que haber sido alguien...");
 
         if (sacudidaCamara != null)
-            StartCoroutine(sacudidaCamara.Shake(0.5f, 0.15f));
+            StartCoroutine(sacudidaCamara.Shake(0.5f, 5f));
 
         StartCoroutine(SecuenciaDespuesZapatos());
     }
@@ -363,7 +370,7 @@ public class Act2Manager : MonoBehaviour
         if (efectoPsicosis != null) efectoPsicosis.ActivarPsicosis();
 
         if (sacudidaCamara != null)
-            StartCoroutine(sacudidaCamara.Shake(1f, 0.3f));
+            StartCoroutine(sacudidaCamara.Shake(1.5f, 25f));
 
         Paranoia(40f);
 
@@ -407,7 +414,7 @@ public class Act2Manager : MonoBehaviour
         // Sonido metálico de la llave rompiéndose
         if (sonidoLlaveCrack != null) sonidoLlaveCrack.Play();
         if (sacudidaCamara != null)
-            StartCoroutine(sacudidaCamara.Shake(0.5f, 0.2f));
+            StartCoroutine(sacudidaCamara.Shake(0.5f, 10f));
 
         parpadeandoLuces2 = false;
 
@@ -461,20 +468,19 @@ public class Act2Manager : MonoBehaviour
 
     IEnumerator FundirANegro()
     {
-        float duracion = 2.5f;
-        float t = 0f;
-
-        while (t < duracion)
+        float duracionFade = 2.5f;
+        float tiempoFade = 0;
+        while (tiempoFade < duracionFade)
         {
-            t += Time.deltaTime;
-            if (fadeCanvasGroup != null)
-                fadeCanvasGroup.alpha = Mathf.Lerp(0f, 1f, t / duracion);
+            tiempoFade += Time.deltaTime;
+            fadeCanvasGroup.alpha = Mathf.Lerp(0, 1, tiempoFade / duracionFade);
             yield return null;
         }
 
+
         Debug.Log("Acto 2 finalizado.");
         yield return new WaitForSeconds(5f);
-        SceneManager.LoadScene("Night_3 Scene"); // Descomentar cuando exista el Acto 3
+        SceneManager.LoadScene("Night_3 Scene");
     }
 
     // =========================================================
