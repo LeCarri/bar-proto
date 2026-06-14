@@ -16,44 +16,36 @@ public class ClienteAct3 : MonoBehaviour
 
     public void Interact()
     {
-        Debug.Log("ENTRÓ A INTERACT");
+        Debug.Log("ENTRï¿½ A INTERACT");
 
-        // PRIMERA INTERACCIÓN
+        // PRIMERA INTERACCIï¿½N
         if (!pedidoTomado)
         {
             // Si ya hay un pedido activo, no deja tomar otro
             if (Act3Manager.Instance.tienePedido)
             {
                 Act3Manager.Instance.MostrarDialogo(
-                    "Primero debería entregar el pedido actual."
+                    "No puedo dejar esto a medias... primero tengo que terminar con el otro pedido."
                 );
                 return;
             }
 
             Debug.Log("Mostrando pedido");
 
-            ClienteDialogueSystem.Instance.MostrarDialogo(
-                nombreCliente,
-                dialogoPedido
-            );
-
+            Act3Manager.Instance.MostrarDialogo(nombreCliente + ": " + dialogoPedido);
             Act3Manager.Instance.TomarPedido(itemPedido);
 
             pedidoTomado = true;
         }
 
-        // SEGUNDA INTERACCIÓN
+        // SEGUNDA INTERACCIï¿½N
         else
         {
             Debug.Log("Intentando entregar");
 
             if (Act3Manager.Instance.TienePedidoEntregable())
             {
-                ClienteDialogueSystem.Instance.MostrarDialogo(
-                    nombreCliente,
-                    respuesta
-                );
-
+            Act3Manager.Instance.MostrarDialogo(nombreCliente + ": " + respuesta);      
                 Act3Manager.Instance.EntregarPedido();
 
                 Act3Manager.Instance.ClienteCompletado();
@@ -61,7 +53,7 @@ public class ClienteAct3 : MonoBehaviour
             else
             {
                 Act3Manager.Instance.MostrarDialogo(
-                    "Todavía no tengo tu pedido."
+                    "TodavÃ­a no... falta algo."
                 );
             }
         }

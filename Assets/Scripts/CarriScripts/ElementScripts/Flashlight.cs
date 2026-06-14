@@ -86,7 +86,7 @@ public class Flashlight : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit, range, enemyLayer))
             {
-                EnemyCore enemy = hit.collider.GetComponent<EnemyCore>();
+                EnemyCore enemy = hit.collider.GetComponentInParent<EnemyCore>();
                 
                 if (enemy != null)
                 {

@@ -11,9 +11,13 @@ public class Act3Manager : MonoBehaviour
     public GameObject clientesActo3;
     public GameObject enemigos;
 
-    public GameObject panelInteraccion;
-    public TextMeshProUGUI textoInteraccion;
+public GameObject panelInteraccion;
+public TextMeshProUGUI textoInteraccion;
 
+[Header("Textos de Interacción")]
+public string textoCliente = "Interactuar";
+public string textoPedido = "Recoger";
+public string textoPuerta = "Abrir";
     [Header("UI y Di�logos")]
     public TextMeshProUGUI textoSubtitulos;
 
@@ -85,7 +89,7 @@ public class Act3Manager : MonoBehaviour
                 mirandoAlgo = true;
 
                 panelInteraccion.SetActive(true);
-                textoInteraccion.text = "Hablar";
+                textoInteraccion.text = textoCliente;
             }
 
             // PEDIDO
@@ -97,7 +101,7 @@ public class Act3Manager : MonoBehaviour
                 mirandoAlgo = true;
 
                 panelInteraccion.SetActive(true);
-                textoInteraccion.text = "Recoger";
+                textoInteraccion.text = textoPedido;
             }
 
             // PUERTA
@@ -109,7 +113,7 @@ public class Act3Manager : MonoBehaviour
                 mirandoAlgo = true;
 
                 panelInteraccion.SetActive(true);
-                textoInteraccion.text = "Abrir";
+                textoInteraccion.text = textoPuerta;
             }
         }
 
@@ -234,7 +238,7 @@ public class Act3Manager : MonoBehaviour
 
         clientesActo3.SetActive(true);
 
-        ActualizarObjetivo("Atiende a los clientes (0/2)");
+        ActualizarObjetivo("Atiende a las entidades de la barra (0/2)");
     }
 
     // PEDIDOS
@@ -262,8 +266,7 @@ public class Act3Manager : MonoBehaviour
         Debug.Log("Objeto recogido: " + objeto);
         Debug.Log("Pedido actual: " + pedidoActual);
 
-        if (tienePedido && objeto == pedidoActual)
-        {
+    if (tienePedido && objeto.Trim().ToLower() == pedidoActual.Trim().ToLower())        {
             tienePedidoBuscado = true;
 
             Debug.Log("Pedido correcto.");
@@ -281,7 +284,7 @@ public class Act3Manager : MonoBehaviour
         pedidoActual = "";
 
         ActualizarObjetivo(
-            "Atiende a los clientes (" +
+            "Atiende a las entidades de la barra (" +
             clientesAtendidos +
             "/2)"
         );
@@ -294,12 +297,12 @@ public class Act3Manager : MonoBehaviour
         clientesAtendidos++;
 
         ActualizarObjetivo(
-            "Atiende a los clientes (" +
+            "Atiende a las entidades de la barra (" +
             clientesAtendidos +
             "/2)"
         );
 
-        Debug.Log("Clientes completos: " + clientesAtendidos);
+        Debug.Log("Entidades completas: " + clientesAtendidos);
 
         if (clientesAtendidos == 2)
         {

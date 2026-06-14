@@ -9,14 +9,15 @@ public class EnemyCore : MonoBehaviour
     public float deathSpeed = 20f; // Qué tan rápido se desvanece
     protected bool isBeingIlluminated = false;
 
-    public void TakeDamage(float amount)
-    {
-        health -= amount * Time.deltaTime;
-        isBeingIlluminated = true; // Flag para efectos visuales si usamos
+public void TakeDamage(float amount)
+{
+    health -= amount;
+    isBeingIlluminated = true;
 
-        if (health <= 0) Die();
-    }
+    Debug.Log("Daño recibido. Vida actual: " + health);
 
+    if (health <= 0) Die();
+}
     protected virtual void Die()
     {
         Act1Manager manager = Object.FindAnyObjectByType<Act1Manager>();
