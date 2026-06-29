@@ -49,6 +49,7 @@ public class Act1Manager : MonoBehaviour
     public bool tieneObjetoEnMano = false;
     public int clientesAtendidosTotal = 0;
     public bool marielaPidioHoney = false;
+    public bool carlosPidioCerveza = false; 
 
     [Header("Final de Acto")]
     public GameObject objetoMujer;      
@@ -341,14 +342,23 @@ public void RecogerObjeto(bool esEnBarra)
         return;
     }
 
-    // Después de Carlos, pero antes de hablar con Mariela
+    // --- 🔥 BLOQUEO ABSOLUTO ANTES DE LOS PEDIDOS ---
+
+    // CASO 1: Si Carlos todavía NO pidió, no te deja tocar ninguna bebida de la barra
+    if (!carlosPidioCerveza)
+    {
+        MostrarDialogo("Lucas: Primero debería atender al cliente para ver qué quiere tomar.");
+        return;
+    }
+
+    // CASO 2: Carlos ya fue atendido, pero Mariela todavía no pidió su Honey
     if (clientesAtendidosTotal == 1 && !marielaPidioHoney)
     {
         MostrarDialogo("Lucas: Primero debería ver qué quiere la otra clienta.");
         return;
     }
 
-    // Pedido especial de Mariela
+    // CASO 3: Pedido especial de Mariela (se activa cuando marielaPidioHoney es true)
     if (esEnBarra && marielaPidioHoney)
     {
         MostrarDialogo("Lucas: Acá solo sale cerveza común... la Honey debe estar guardada en la cocina.");
@@ -362,7 +372,7 @@ public void RecogerObjeto(bool esEnBarra)
         return;
     }
 
-    // Pedido común de Carlos
+    // Si pasó los filtros y carlosPidioCerveza es true, agarra la bebida común
     tieneObjetoEnMano = true;
     MostrarDialogo("Lucas: Ya tengo el pedido. A entregarlo.");
 }
@@ -388,6 +398,9 @@ public void InteractuarCarlos()
 
     if (!tieneObjetoEnMano)
     {
+        // 🔥 NUEVO: Cambiamos la variable para habilitar la interacción con las bebidas
+        carlosPidioCerveza = true; 
+        
         MostrarDialogo("Carlos: ¿Te pido una cerveza, maestro?");
 
         if (indicadorCervezas != null)
