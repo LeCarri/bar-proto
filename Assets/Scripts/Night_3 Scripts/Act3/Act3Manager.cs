@@ -45,6 +45,10 @@ public string textoPuerta = "Abrir";
     public bool tienePedido = false;
     public bool tienePedidoBuscado = false;
 
+    [Header("Objeto especial")]
+    public GameObject objetoEspecial;
+    public string pedidoQueLoActiva = "Llave";
+
     void Awake()
     {
         if (Instance == null)
@@ -62,6 +66,11 @@ public string textoPuerta = "Abrir";
     void Start()
     {
         ParanoiaSystem.Instance.AddParanoia(50f);
+
+        if (objetoEspecial != null)
+        {
+            objetoEspecial.SetActive(false);
+        }
 
         StartCoroutine(MantenerParanoiaMinima());
         StartCoroutine(SecuenciaInicio());
@@ -254,9 +263,22 @@ public string textoPuerta = "Abrir";
         tienePedido = true;
         tienePedidoBuscado = false;
 
+        if (objetoEspecial != null)
+        {
+            if (pedidoActual.Trim().ToLower() ==
+                pedidoQueLoActiva.Trim().ToLower())
+            {
+                objetoEspecial.SetActive(true);
+            }
+            else
+            {
+                objetoEspecial.SetActive(false);
+            }
+        }
+
         ActualizarObjetivo(
-     "Pedido: " + pedidoActual
- );
+            "Pedido: " + pedidoActual
+        );
 
         Debug.Log("Pedido tomado: " + pedidoActual);
     }
@@ -282,6 +304,11 @@ public string textoPuerta = "Abrir";
         tienePedido = false;
         tienePedidoBuscado = false;
         pedidoActual = "";
+
+        if (objetoEspecial != null)
+        {
+            objetoEspecial.SetActive(false);
+        }
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (" +
