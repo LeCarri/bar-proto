@@ -9,19 +9,37 @@ public class EnemyCore : MonoBehaviour
     public float deathSpeed = 20f; // Qué tan rápido se desvanece
     protected bool isBeingIlluminated = false;
 
-public void TakeDamage(float amount)
-{
-    health -= amount;
-    isBeingIlluminated = true;
+    // 🛡️ CANDADO DE SEGURIDAD ABSOLUTO
+    private bool isDead = false;
 
-    Debug.Log("Daño recibido. Vida actual: " + health);
+    public void TakeDamage(float amount)
+    {
+        // Si ya empezó el proceso de muerte, ignoramos cualquier daño extra en este frame
+        if (isDead) return;
 
-    if (health <= 0) Die();
-}
+        health -= amount;
+        isBeingIlluminated = true;
+
+        Debug.Log("Daño recibido. Vida actual: " + health);
+
+        if (health <= 0) 
+        {
+            isDead = true; // Cerramos el candado inmediatamente antes de procesar la muerte
+            Die();
+        }
+    }
+
     protected virtual void Die()
     {
         Act1Manager manager = Object.FindAnyObjectByType<Act1Manager>();
-        if (manager != null) manager.EnemigoEliminado();
+        if (manager != null) 
+        {
+            manager.EnemigoEliminado();
+        }
+
+        // Desactivamos el Collider para evitar falsas colisiones antes de ser destruido
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
 
         Destroy(gameObject);
     }

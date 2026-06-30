@@ -321,62 +321,85 @@ void Start()
 
 public void RecogerObjeto(bool esEnBarra)
 {
-    // Si todavía está en limpieza, no dejamos preparar pedidos
+    // 1. VALIDACIONES BÁSICAS GENERALES
     if (estadoActual == ActoState.Limpieza)
     {
         MostrarDialogo("Lucas: Todavía no abrí el bar. Primero tengo que acomodar las sillas.");
         return;
     }
 
-    // Si no estamos en la etapa de servicio, tampoco debería permitir pedidos comunes
     if (estadoActual != ActoState.Servicio)
     {
         MostrarDialogo("Lucas: Ahora no necesito preparar bebidas.");
         return;
     }
 
-    // Si ya tiene un pedido en mano, no debería agarrar otro
     if (tieneObjetoEnMano)
     {
         MostrarDialogo("Lucas: Ya tengo un pedido en mano. Tengo que entregarlo primero.");
         return;
     }
 
-    // --- 🔥 BLOQUEO ABSOLUTO ANTES DE LOS PEDIDOS ---
-
-    // CASO 1: Si Carlos todavía NO pidió, no te deja tocar ninguna bebida de la barra
-    if (!carlosPidioCerveza)
+    // ==========================================
+    // MOMENTO 1: EL PEDIDO DE CARLOS (clientesAtendidosTotal == 0)
+    // ==========================================
+    if (clientesAtendidosTotal == 0)
     {
-        MostrarDialogo("Lucas: Primero debería atender al cliente para ver qué quiere tomar.");
-        return;
-    }
-
-    // CASO 2: Carlos ya fue atendido, pero Mariela todavía no pidió su Honey
-    if (clientesAtendidosTotal == 1 && !marielaPidioHoney)
-    {
-        MostrarDialogo("Lucas: Primero debería ver qué quiere la otra clienta.");
-        return;
-    }
-
-    // CASO 3: Pedido especial de Mariela (se activa cuando marielaPidioHoney es true)
-    if (esEnBarra && marielaPidioHoney)
-    {
-        MostrarDialogo("Lucas: Acá solo sale cerveza común... la Honey debe estar guardada en la cocina.");
-        HabilitarTriggerCocinaFinal();
-
-        if (indicadorCervezas != null)
+        // Si intenta ir a la cocina antes de tiempo, rebota
+        if (!esEnBarra)
         {
-            indicadorCervezas.SetActive(false);
+            MostrarDialogo("Lucas: No tengo nada que buscar en la cocina ahora.");
+            return;
         }
 
+        // Si interactúa con el surtidor pero no habló con Carlos (doble check seguro)
+        if (!carlosPidioCerveza && textoSubtitulos != null && !textoSubtitulos.text.Contains("¿Te pido una cerveza"))
+        {
+            MostrarDialogo("Lucas: Primero debería atender al cliente para ver qué quiere tomar.");
+            return;
+        }
+
+        // Le da la cerveza de Carlos
+        carlosPidioCerveza = true; 
+        tieneObjetoEnMano = true;
+        MostrarDialogo("Lucas: Ya tengo la cerveza para Carlos. A entregársela.");
         return;
     }
 
-    // Si pasó los filtros y carlosPidioCerveza es true, agarra la bebida común
-    tieneObjetoEnMano = true;
-    MostrarDialogo("Lucas: Ya tengo el pedido. A entregarlo.");
-}
+    // ==========================================
+    // MOMENTO 2: EL PEDIDO DE MARIELA (clientesAtendidosTotal == 1)
+    // ==========================================
+    if (clientesAtendidosTotal == 1)
+    {
+        // Caso A: Carlos ya fue atendido, pero todavía no hablaste con Mariela
+        if (!marielaPidioHoney)
+        {
+            MostrarDialogo("Lucas: Primero debería ver qué quiere la otra clienta.");
+            return;
+        }
 
+        // Caso B: Mariela ya pidió la Honey, pero el jugador interactúa con la BARRA
+        if (marielaPidioHoney && esEnBarra)
+        {
+            MostrarDialogo("Lucas: Acá solo sale cerveza común... la Honey debe estar guardada en la cocina.");
+            HabilitarTriggerCocinaFinal(); // Activa el punto de suministro de la cocina
+
+            if (indicadorCervezas != null)
+            {
+                indicadorCervezas.SetActive(false);
+            }
+            return;
+        }
+
+        // Caso C: Mariela ya pidió y el jugador interactúa con la COCINA
+        if (marielaPidioHoney && !esEnBarra)
+        {
+            tieneObjetoEnMano = true;
+            MostrarDialogo("Lucas: Acá está la Honey. Vamos a llevársela a Mariela.");
+            return;
+        }
+    }
+}
 public bool TienePedidoEntregable()
 {
     return tieneObjetoEnMano;
@@ -390,30 +413,29 @@ public void InteractuarCarlos()
         return;
     }
 
+    // Si ya lo atendiste, solo te agradece
     if (clientesAtendidosTotal > 0)
     {
         MostrarDialogo("Carlos: Gracias, maestro.");
         return;
     }
 
+    // Momento de tomar el pedido
     if (!tieneObjetoEnMano)
     {
-        // 🔥 NUEVO: Cambiamos la variable para habilitar la interacción con las bebidas
         carlosPidioCerveza = true; 
-        
         MostrarDialogo("Carlos: ¿Te pido una cerveza, maestro?");
 
-        if (indicadorCervezas != null)
+        if (indicadorCervezas != null) 
         {
             indicadorCervezas.SetActive(true);
         }
-
         return;
     }
 
-    // Entrega del pedido de Carlos
+    // Momento de entregarle la cerveza
     tieneObjetoEnMano = false;
-    clientesAtendidosTotal = 1;
+    clientesAtendidosTotal = 1; // Pasa el turno a Mariela
 
     MostrarDialogo("Carlos: Gracias, maestro.");
 

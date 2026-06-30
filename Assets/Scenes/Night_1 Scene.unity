@@ -71312,6 +71312,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4553475438102995778, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1639280716}
+    - targetCorrespondingSourceObject: {fileID: 4553475438102995778, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1639280718}
   m_SourcePrefab: {fileID: 100100000, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
 --- !u!43 &1021529081
 Mesh:
@@ -78504,6 +78507,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1150703968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1150703956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2920f69bf46ee23459e795f33cc77756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyCore
+  health: 100
+  deathSpeed: 20
 --- !u!1 &1153632251
 GameObject:
   m_ObjectHideFlags: 0
@@ -97525,6 +97542,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4553475438102995778, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1502828888}
+    - targetCorrespondingSourceObject: {fileID: 4553475438102995778, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1502828889}
   m_SourcePrefab: {fileID: 100100000, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
 --- !u!43 &1432344471
 Mesh:
@@ -98445,6 +98465,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4553475438102995778, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1150703966}
+    - targetCorrespondingSourceObject: {fileID: 4553475438102995778, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1150703968}
   m_SourcePrefab: {fileID: 100100000, guid: 12bde9d35619e45f28bfa8eead535ce2, type: 3}
 --- !u!1001 &1446148060
 PrefabInstance:
@@ -103765,6 +103788,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1502828889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1502828878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2920f69bf46ee23459e795f33cc77756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyCore
+  health: 100
+  deathSpeed: 20
 --- !u!1001 &1502977673
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -112892,6 +112929,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1639280718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639280706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2920f69bf46ee23459e795f33cc77756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyCore
+  health: 100
+  deathSpeed: 20
 --- !u!1 &1639439721
 GameObject:
   m_ObjectHideFlags: 0
