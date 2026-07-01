@@ -24,6 +24,7 @@ public class SaveManager : MonoBehaviour
     private void Start()
     {
         save = new SaveData();
+        SceneManager.sceneLoaded += SaveOnLoadScene;
     }
 
     public void SaveData() 
@@ -35,6 +36,15 @@ public class SaveManager : MonoBehaviour
         string jsonSave = JsonUtility.ToJson(save, true);
         File.WriteAllText(filePath, jsonSave);
 
+    }
+
+    public void SaveOnLoadScene(Scene scene, LoadSceneMode mode) 
+    {
+        if (scene.name == "Home")
+            return;
+
+        SaveData();
+        Debug.Log(save.currentAct);
     }
 
     public void LoadData() 
