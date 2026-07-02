@@ -424,8 +424,7 @@ public class FinalEndingSequence : MonoBehaviour
 
         Debug.Log("[FinalEndingSequence] Final Intro Panel activado.");
 
-        if (forceLoadHomeAfterDelay)
-            StartCoroutine(ForceLoadHomeRoutine());
+        StartCoroutine(ForceLoadHomeRoutine());
     }
 
     private IEnumerator ForceLoadHomeRoutine()
@@ -433,7 +432,7 @@ public class FinalEndingSequence : MonoBehaviour
         yield return new WaitForSeconds(forceLoadHomeDelay);
 
         Time.timeScale = 1f;
-        SceneManager.LoadScene(homeSceneName);
+        SceneManager.LoadScene("Home");
     }
 
     private void PlayDoorKnocks()

@@ -60,8 +60,10 @@ public class SaveManager : MonoBehaviour
     public void LoadSave() 
     {
         LoadData();
- 
+
+        SceneManager.UnloadSceneAsync("Home");
         SceneManager.LoadScene(save.currentAct);
+        Debug.Log("Se cargaron los datos");
     }
 
     public int GetSavedAct() 
