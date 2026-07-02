@@ -375,80 +375,66 @@ public class FinalEndingSequence : MonoBehaviour
         }
     }
 
-private void ShowFinalIntroPanel()
-{
-    if (SaveManager.Instance != null)
+    private void ShowFinalIntroPanel()
     {
-        SaveManager.Instance.WipeData();
-    }
+        if (finalMusicAudioSource != null)
+            finalMusicAudioSource.Play();
 
-    if (finalMusicAudioSource != null)
-        finalMusicAudioSource.Play();
+        if (blackScreen != null)
+        {
+            blackScreen.alpha = 0f;
+            blackScreen.interactable = false;
+            blackScreen.blocksRaycasts = false;
+            blackScreen.gameObject.SetActive(false);
+        }
 
-    if (blackScreen != null)
-    {
-        blackScreen.alpha = 0f;
-        blackScreen.interactable = false;
-        blackScreen.blocksRaycasts = false;
-        blackScreen.gameObject.SetActive(false);
-    }
+        if (finalIntroPanel == null)
+        {
+            Debug.LogError("[FinalEndingSequence] Falta asignar Final Intro Panel en el Inspector.");
 
-    if (finalIntroPanel == null)
-    {
-        Debug.LogError("[FinalEndingSequence] Falta asignar Final Intro Panel en el Inspector.");
+            if (forceLoadHomeAfterDelay)
+                StartCoroutine(ForceLoadHomeRoutine());
+
+            return;
+        }
+
+        finalIntroPanel.SetActive(true);
+        finalIntroPanel.transform.SetAsLastSibling();
+
+        Canvas[] canvases = finalIntroPanel.GetComponentsInChildren<Canvas>(true);
+
+        foreach (Canvas canvas in canvases)
+        {
+            canvas.enabled = true;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 9999;
+        }
+
+        CanvasGroup[] groups = finalIntroPanel.GetComponentsInChildren<CanvasGroup>(true);
+
+        foreach (CanvasGroup group in groups)
+        {
+            group.alpha = 1f;
+            group.interactable = true;
+            group.blocksRaycasts = true;
+        }
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        Debug.Log("[FinalEndingSequence] Final Intro Panel activado.");
+
         StartCoroutine(ForceLoadHomeRoutine());
-        return;
     }
 
-    MonoBehaviour[] behaviours = finalIntroPanel.GetComponentsInChildren<MonoBehaviour>(true);
-
-    foreach (MonoBehaviour behaviour in behaviours)
+    private IEnumerator ForceLoadHomeRoutine()
     {
-        if (behaviour != null && behaviour.GetType().Name == "IntroScreen")
-            behaviour.enabled = false;
+        yield return new WaitForSeconds(forceLoadHomeDelay);
+
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Home");
     }
 
-    finalIntroPanel.SetActive(true);
-    finalIntroPanel.transform.SetAsLastSibling();
-
-    Canvas[] canvases = finalIntroPanel.GetComponentsInChildren<Canvas>(true);
-
-    foreach (Canvas canvas in canvases)
-    {
-        canvas.enabled = true;
-        canvas.overrideSorting = true;
-        canvas.sortingOrder = 9999;
-    }
-
-    CanvasGroup[] groups = finalIntroPanel.GetComponentsInChildren<CanvasGroup>(true);
-
-    foreach (CanvasGroup group in groups)
-    {
-        group.alpha = 1f;
-        group.interactable = true;
-        group.blocksRaycasts = true;
-    }
-
-    Cursor.lockState = CursorLockMode.None;
-    Cursor.visible = true;
-
-    Debug.Log("[FinalEndingSequence] Final Intro Panel activado.");
-
-    StartCoroutine(ForceLoadHomeRoutine());
-}
-private IEnumerator ForceLoadHomeRoutine()
-{
-    yield return new WaitForSeconds(forceLoadHomeDelay);
-
-    Time.timeScale = 1f;
-
-    if (SaveManager.Instance != null)
-    {
-        SaveManager.Instance.WipeData();
-    }
-
-    SceneManager.LoadScene(homeSceneName);
-}
     private void PlayDoorKnocks()
     {
         if (sfxAudioSource != null && doorKnocksClip != null)
@@ -523,13 +509,6 @@ private IEnumerator ForceLoadHomeRoutine()
     
     public void VolverAlMenuPrincipal()
     {
-    Time.timeScale = 1f;
-
-    if (SaveManager.Instance != null)
-    {
-        SaveManager.Instance.WipeData();
-    }
-
-    SceneManager.LoadScene("Home");
+        SceneManager.LoadScene("Home");
     }
 }
