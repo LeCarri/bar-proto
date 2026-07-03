@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.IO;
-using System.Collections;
 using UnityEngine.SceneManagement;
 
 public class SaveManager : MonoBehaviour
@@ -13,70 +12,95 @@ public class SaveManager : MonoBehaviour
     private void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
         else
+        {
             Destroy(gameObject);
+            return;
+        }
 
         filePath = Path.Combine(Application.persistentDataPath, "Save.data");
-        DontDestroyOnLoad(gameObject);
+        save = new SaveData();
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        save = new SaveData();
         SceneManager.sceneLoaded += SaveOnLoadScene;
     }
 
-    public void SaveData() 
+    private void OnDisable()
     {
-        save.currentAct = SceneManager.GetActiveScene().buildIndex;
-        if (save.currentAct == 0)
-            save.currentAct = 1;
-
-        string jsonSave = JsonUtility.ToJson(save, true);
-        File.WriteAllText(filePath, jsonSave);
-
+        SceneManager.sceneLoaded -= SaveOnLoadScene;
     }
 
-    public void SaveOnLoadScene(Scene scene, LoadSceneMode mode) 
+    public void SaveData()
+    {
+        if (save == null)
+            save = new SaveData();
+
+        int escenaActual = SceneManager.GetActiveScene().buildIndex;
+
+        if (escenaActual == 0)
+            escenaActual = 1;
+
+        save.currentAct = escenaActual;
+        WriteSave();
+    }
+
+    private void WriteSave()
+    {
+        string jsonSave = JsonUtility.ToJson(save, true);
+        File.WriteAllText(filePath, jsonSave);
+    }
+
+    public void SaveOnLoadScene(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == "Home")
             return;
 
         SaveData();
-        Debug.Log(save.currentAct);
+        Debug.Log("Escena guardada: " + save.currentAct);
     }
 
-    public void LoadData() 
+    public void LoadData()
     {
-        if (!File.Exists(filePath)) return;
+        if (!File.Exists(filePath))
+        {
+            save = new SaveData();
+            return;
+        }
 
         string jsonSave = File.ReadAllText(filePath);
         save = JsonUtility.FromJson<SaveData>(jsonSave);
 
-        //Debug.Log(jsonSave);
+        if (save == null)
+            save = new SaveData();
     }
 
-    public void LoadSave() 
+    public void LoadSave()
     {
         LoadData();
-
-        SceneManager.UnloadSceneAsync("Home");
         SceneManager.LoadScene(save.currentAct);
         Debug.Log("Se cargaron los datos");
     }
 
-    public int GetSavedAct() 
+    public int GetSavedAct()
     {
         LoadData();
-
         return save.currentAct;
     }
 
-    public void WipeData() 
+    public void WipeData()
     {
+        save = new SaveData();
         save.currentAct = 1;
-        SaveData();
+
+        WriteSave();
+
+        Debug.Log("SAVE RESETEADO A ESCENA 1");
 
         if (UIConitnueHandler.Instance != null)
             UIConitnueHandler.Instance.UpdateText();
