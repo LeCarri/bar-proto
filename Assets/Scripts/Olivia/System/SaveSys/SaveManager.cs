@@ -84,6 +84,7 @@ public class SaveManager : MonoBehaviour
     {
         LoadData();
         SceneManager.LoadScene(save.currentAct);
+        Debug.Log("Se cargaron los datos");
     }
 
     public int GetSavedAct()
