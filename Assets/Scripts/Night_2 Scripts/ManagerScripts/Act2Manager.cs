@@ -203,7 +203,7 @@ public class Act2Manager : MonoBehaviour
 
         MostrarDialogo("Lucas: No pude dormir nada ayer... estoy que me desmayo...");
         yield return new WaitForSeconds(3f);
-        ActualizarObjetivo("Preparate para el servicio...");
+        ActualizarObjetivo("Prepárate para el servicio...");
         Paranoia(10f);
 
         yield return new WaitForSeconds(4f);
@@ -245,7 +245,7 @@ public class Act2Manager : MonoBehaviour
 
         yield return new WaitForSeconds(3f);
 
-        ActualizarObjetivo("Atende a los... Clientes??..");
+        ActualizarObjetivo("Atiende a los Clientes.");
 
         Paranoia(15f);
     }
@@ -255,7 +255,7 @@ public class Act2Manager : MonoBehaviour
     {
         estadoActual = Act2State.Pasillo;
 
-        ActualizarObjetivo("Anda a la cocina por la Bebida especial");
+        ActualizarObjetivo("Busca la bebida especial en la cocina.");
     }
 
     // =========================================================
@@ -280,7 +280,7 @@ public class Act2Manager : MonoBehaviour
         StartCoroutine(ParpadeoLucesServicio());
 
         Paranoia(30f);
-        MostrarDialogo("Lucas: ¿Qué hace esto acá? Alguien entró... tiene que haber sido alguien...");
+        MostrarDialogo("Lucas: No deberían estar acá.... ¿Qué hacen estos zapatos en la cocina?");
 
         if (sacudidaCamara != null)
             StartCoroutine(sacudidaCamara.Shake(0.5f, 5f));
@@ -376,7 +376,7 @@ public class Act2Manager : MonoBehaviour
 
         yield return new WaitForSeconds(3f);
 
-        ActualizarObjetivo("SOBREVIVI Y LLEGA AL SOTANO");
+        ActualizarObjetivo("SOBREVIVE Y LLEGA AL SOTANO");
 
         yield return new WaitForSeconds(2f);
 
@@ -443,7 +443,7 @@ public class Act2Manager : MonoBehaviour
         // Recuperación de paranoia
         Paranoia(-50f);
 
-        MostrarDialogo("Lucas: ¿Fue un sueño?... No, la llave... la llave estaba acá...");
+        MostrarDialogo("Lucas: ¿Mi imaginación de nuevo?... No. La llave estaba acá.");
 
         yield return new WaitForSeconds(4f);
 
@@ -459,7 +459,7 @@ public class Act2Manager : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        MostrarDialogo("Lucas: No me animo a entrar...");
+        MostrarDialogo("Lucas: No. Esta noche no.");
 
         yield return new WaitForSeconds(1f);
 
