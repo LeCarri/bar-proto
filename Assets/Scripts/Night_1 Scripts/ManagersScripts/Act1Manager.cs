@@ -234,7 +234,7 @@ void Start()
         // 4. Cambiamos de estado y Lucas habla
         estadoActual = ActoState.Servicio;
         MostrarDialogo("¿Clientes? Bueno, a trabajar.");
-        ActualizarObjetivo("Atende a los clientes, busca las bebidas detras de la barra.");
+        ActualizarObjetivo("Atiende a los clientes, busca las bebidas detrás de la barra.");
 
         if (indicadorNevera != null) 
         {
@@ -374,14 +374,14 @@ public void RecogerObjeto(bool esEnBarra)
         // Caso A: Carlos ya fue atendido, pero todavía no hablaste con Mariela
         if (!marielaPidioHoney)
         {
-            MostrarDialogo("Lucas: Primero debería ver qué quiere la otra clienta.");
+            MostrarDialogo("Lucas: Mejor veo qué necesita la otra clienta.");
             return;
         }
 
         // Caso B: Mariela ya pidió la Honey, pero el jugador interactúa con la BARRA
         if (marielaPidioHoney && esEnBarra)
         {
-            MostrarDialogo("Lucas: Acá solo sale cerveza común... la Honey debe estar guardada en la cocina.");
+            MostrarDialogo("Lucas: Acá solo está la cerveza común. La Honey debe estar en la cocina.");
             HabilitarTriggerCocinaFinal(); // Activa el punto de suministro de la cocina
 
             if (indicadorCervezas != null)
@@ -395,7 +395,7 @@ public void RecogerObjeto(bool esEnBarra)
         if (marielaPidioHoney && !esEnBarra)
         {
             tieneObjetoEnMano = true;
-            MostrarDialogo("Lucas: Acá está la Honey. Vamos a llevársela a Mariela.");
+            MostrarDialogo("Lucas: Acá está. Ya puedo entregársela.");
             return;
         }
     }
@@ -539,10 +539,10 @@ public void ClienteCompletado()
 
         yield return new WaitForSeconds(2f);
         ParanoiaSystem.Instance.AddParanoia(15f);
-        ActualizarObjetivo("??? Explora el bar en busca de los clientes");
+        ActualizarObjetivo("Revisa la barra, algo raro está pasando...");
 
         // 3. Lucas reacciona
-        MostrarDialogo("Lucas: ¿Qué...? ¿A dónde se fueron todos? No hace ninguna gracia...");
+        MostrarDialogo("Lucas: Esto no tiene sentido... ¿Dónde están los clientes?");
 
         // 4. Habilitamos el trigger de regreso a la barra para la aparición
         if (triggerRegresoBarra != null) triggerRegresoBarra.SetActive(true);
@@ -628,7 +628,7 @@ public void ClienteCompletado()
     IEnumerator SecuenciaTutorialLinterna()
     {
         // Espera los 5 segundos que me pediste desde que empezó el caos
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(3f);
 
         // Lanza el diálogo instructivo en pantalla
         MostrarDialogo("Puedes presionar la [F] para encender la linterna.");
@@ -672,7 +672,7 @@ public void ClienteCompletado()
         ParanoiaSystem.Instance.AddParanoia(-60f);
 
         // 2. Lanzar el diálogo (Si tenés un sistema de subtítulos)
-        Debug.Log("Lucas: 'Uff... qué carajo fue eso... estoy agotado...'");
+        Debug.Log("Lucas: 'Uff... qué fue eso... estoy agotado...'");
         
         // 3. Empezar el fundido a negro
         StartCoroutine(SecuenciaCierreNoche());
