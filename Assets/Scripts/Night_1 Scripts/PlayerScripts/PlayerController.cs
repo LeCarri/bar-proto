@@ -12,6 +12,9 @@ public class PlayerController : MonoBehaviour
     public float runFOV = 68f;
     public float fovTransitionSpeed = 6f;
 
+    [Header("Audio")]
+    public AudioSource audioPasos;
+
     [Header("Cámara (Cinemachine)")]
     [Tooltip("Arrastrá acá el objeto vacío 'PivoteMirada' que creaste dentro de Lucas.")]
     public Transform cameraPivot; 
@@ -87,6 +90,21 @@ public class PlayerController : MonoBehaviour
     float targetFOV = isRunning ? runFOV : normalFOV;
     playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFOV, Time.deltaTime * fovTransitionSpeed);
 }
+        bool caminando =
+        (inputX != 0 || inputY != 0);
+
+        if (audioPasos != null)
+        {
+            if (caminando)
+            {
+                if (!audioPasos.isPlaying)
+                    audioPasos.Play();
+            }
+            else
+            {
+                audioPasos.Stop();
+            }
+        }
         characterController.Move(moveDirection * Time.deltaTime);
     }
 
