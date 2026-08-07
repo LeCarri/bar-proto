@@ -2,29 +2,32 @@ using System.Collections;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine;
-using Unity.VisualScripting;
 
 public class Act3Manager : MonoBehaviour
 {
     public static Act3Manager Instance;
 
+    [Header("Escena")]
     public GameObject clientesActo3;
     public GameObject enemigos;
+    public GameObject vigilante;
 
-public GameObject panelInteraccion;
-public TextMeshProUGUI textoInteraccion;
+    [Header("Interacción")]
+    public GameObject panelInteraccion;
+    public TextMeshProUGUI textoInteraccion;
 
-[Header("Textos de Interacción")]
-public string textoCliente = "Interactuar";
-public string textoPedido = "Recoger";
-public string textoPuerta = "Abrir";
-    [Header("UI y Di�logos")]
+    [Header("Textos de Interacción")]
+    public string textoCliente = "Interactuar";
+    public string textoPedido = "Recoger";
+    public string textoPuerta = "Abrir";
+
+    [Header("UI y Diálogos")]
     public TextMeshProUGUI textoSubtitulos;
 
     [Header("Efectos")]
     public EffectoParpadeo effectoParpadeo;
 
-    [Header("Sistemas de Iluminaci�n")]
+    [Header("Sistemas de Iluminación")]
     public GameObject lucesNormales;
     public GameObject lucesServicio;
     public GameObject lucesCombate;
@@ -34,13 +37,30 @@ public string textoPuerta = "Abrir";
 
     private Coroutine dialogoActual;
 
+    [Header("Progreso")]
     public bool enSotano = false;
     public int clientesAtendidos = 0;
 
-    public GameObject vigilante;
-   
+    // =========================================================
+    // LIMPIEZA INICIAL
+    // =========================================================
 
+    [Header("Limpieza Inicial")]
+    public bool tieneElementosLimpieza = false;
+
+    public int manchasParedLimpiadas = 0;
+    public int manchasPisoLimpiadas = 0;
+
+    public int totalManchasPared = 5;
+    public int totalManchasPiso = 5;
+
+    private bool limpiezaTerminada = false;
+
+    // =========================================================
     // PEDIDOS
+    // =========================================================
+
+    [Header("Pedidos")]
     public string pedidoActual = "";
     public bool tienePedido = false;
     public bool tienePedidoBuscado = false;
@@ -48,6 +68,11 @@ public string textoPuerta = "Abrir";
     [Header("Objeto especial")]
     public GameObject objetoEspecial;
     public string pedidoQueLoActiva = "Llave";
+
+
+    // =========================================================
+    // AWAKE
+    // =========================================================
 
     void Awake()
     {
@@ -63,21 +88,53 @@ public string textoPuerta = "Abrir";
     }
 
 
+    // =========================================================
+    // START
+    // =========================================================
+
     void Start()
     {
-        ParanoiaSystem.Instance.AddParanoia(50f);
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(50f);
+        }
 
         if (objetoEspecial != null)
         {
             objetoEspecial.SetActive(false);
         }
 
+        if (clientesActo3 != null)
+        {
+            clientesActo3.SetActive(false);
+        }
+
+        tieneElementosLimpieza = false;
+
+        manchasParedLimpiadas = 0;
+        manchasPisoLimpiadas = 0;
+
+        limpiezaTerminada = false;
+
+        ActualizarObjetivo("Busca los elementos de limpieza");
+
         StartCoroutine(MantenerParanoiaMinima());
-        StartCoroutine(SecuenciaInicio());
+
+        // IMPORTANTE:
+        // SecuenciaInicio() YA NO empieza automáticamente.
+        // Primero hay que terminar la limpieza.
     }
+
+
+    // =========================================================
+    // UPDATE / INTERACCIONES
+    // =========================================================
 
     void Update()
     {
+        if (Camera.main == null)
+            return;
+
         Ray ray = new Ray(
             Camera.main.transform.position,
             Camera.main.transform.forward
@@ -97,8 +154,11 @@ public string textoPuerta = "Abrir";
             {
                 mirandoAlgo = true;
 
-                panelInteraccion.SetActive(true);
-                textoInteraccion.text = textoCliente;
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = textoCliente;
             }
 
             // PEDIDO
@@ -109,8 +169,11 @@ public string textoPuerta = "Abrir";
             {
                 mirandoAlgo = true;
 
-                panelInteraccion.SetActive(true);
-                textoInteraccion.text = textoPedido;
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = textoPedido;
             }
 
             // PUERTA
@@ -121,21 +184,32 @@ public string textoPuerta = "Abrir";
             {
                 mirandoAlgo = true;
 
-                panelInteraccion.SetActive(true);
-                textoInteraccion.text = textoPuerta;
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = textoPuerta;
             }
         }
 
         if (!mirandoAlgo)
         {
-            panelInteraccion.SetActive(false);
+            if (panelInteraccion != null)
+            {
+                panelInteraccion.SetActive(false);
+            }
         }
 
-        // INTERACTUAR
+
+        // =====================================================
+        // INTERACTUAR CON E
+        // =====================================================
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (Physics.Raycast(ray, out hit, 10f))
             {
+                // PUERTA
                 PuertaSotano puerta =
                     hit.collider.GetComponentInParent<PuertaSotano>();
 
@@ -145,6 +219,7 @@ public string textoPuerta = "Abrir";
                     return;
                 }
 
+                // CLIENTE
                 SimpleInteract cliente =
                     hit.collider.GetComponentInParent<SimpleInteract>();
 
@@ -154,6 +229,7 @@ public string textoPuerta = "Abrir";
                     return;
                 }
 
+                // PEDIDO
                 PedidoPickup pedido =
                     hit.collider.GetComponentInParent<PedidoPickup>();
 
@@ -166,53 +242,93 @@ public string textoPuerta = "Abrir";
         }
     }
 
-    // DIALOGOS
+
+    // =========================================================
+    // DIÁLOGOS
+    // =========================================================
 
     public void MostrarDialogo(string mensaje)
     {
-        if (textoSubtitulos == null) return;
+        if (textoSubtitulos == null)
+            return;
 
         if (dialogoActual != null)
+        {
             StopCoroutine(dialogoActual);
+        }
 
         textoSubtitulos.text = mensaje;
+
         dialogoActual = StartCoroutine(LimpiarTextoCoroutine());
     }
+
 
     IEnumerator LimpiarTextoCoroutine()
     {
         yield return new WaitForSeconds(4f);
-        textoSubtitulos.text = "";
+
+        if (textoSubtitulos != null)
+        {
+            textoSubtitulos.text = "";
+        }
+
+        dialogoActual = null;
     }
 
-    // ILUMINACI�N
+
+    // =========================================================
+    // ILUMINACIÓN
+    // =========================================================
 
     public void CambiarIluminacion(string estado)
     {
-        if (lucesNormales != null) lucesNormales.SetActive(false);
-        if (lucesServicio != null) lucesServicio.SetActive(false);
-        if (lucesCombate != null) lucesCombate.SetActive(false);
+        if (lucesNormales != null)
+            lucesNormales.SetActive(false);
+
+        if (lucesServicio != null)
+            lucesServicio.SetActive(false);
+
+        if (lucesCombate != null)
+            lucesCombate.SetActive(false);
+
 
         switch (estado)
         {
             case "Normal":
-                lucesNormales.SetActive(true);
+
+                if (lucesNormales != null)
+                    lucesNormales.SetActive(true);
+
                 break;
+
 
             case "Servicio":
-                lucesServicio.SetActive(true);
+
+                if (lucesServicio != null)
+                    lucesServicio.SetActive(true);
+
                 break;
+
 
             case "Combate":
-                lucesCombate.SetActive(true);
+
+                if (lucesCombate != null)
+                    lucesCombate.SetActive(true);
+
                 break;
 
+
             case "Apagado":
+
                 break;
         }
     }
 
-    //OBJETIVOS
+
+    // =========================================================
+    // OBJETIVOS
+    // =========================================================
+
     public void ActualizarObjetivo(string nuevoObjetivo)
     {
         if (textoObjetivo != null)
@@ -222,15 +338,161 @@ public string textoPuerta = "Abrir";
     }
 
 
+    // =========================================================
+    // LIMPIEZA INICIAL
+    // =========================================================
+
+    public void RecogerElementosLimpieza()
+    {
+        if (tieneElementosLimpieza)
+            return;
+
+        tieneElementosLimpieza = true;
+
+        Debug.Log("Elementos de limpieza recogidos.");
+
+        MostrarDialogo(
+            "Bien... será mejor limpiar todo esto antes de empezar."
+        );
+
+        ActualizarObjetivoLimpieza();
+    }
 
 
+    public void ManchaParedLimpiada()
+    {
+        if (!tieneElementosLimpieza)
+        {
+            MostrarDialogo(
+                "Necesito buscar los elementos de limpieza primero."
+            );
 
-    // INICIO
+            return;
+        }
+
+        if (limpiezaTerminada)
+            return;
+
+        manchasParedLimpiadas++;
+
+        if (manchasParedLimpiadas > totalManchasPared)
+        {
+            manchasParedLimpiadas = totalManchasPared;
+        }
+
+        Debug.Log(
+            "Manchas de pared: " +
+            manchasParedLimpiadas +
+            "/" +
+            totalManchasPared
+        );
+
+        ActualizarObjetivoLimpieza();
+
+        ComprobarLimpieza();
+    }
+
+
+    public void ManchaPisoLimpiada()
+    {
+        if (!tieneElementosLimpieza)
+        {
+            MostrarDialogo(
+                "Necesito buscar los elementos de limpieza primero."
+            );
+
+            return;
+        }
+
+        if (limpiezaTerminada)
+            return;
+
+        manchasPisoLimpiadas++;
+
+        if (manchasPisoLimpiadas > totalManchasPiso)
+        {
+            manchasPisoLimpiadas = totalManchasPiso;
+        }
+
+        Debug.Log(
+            "Manchas de piso: " +
+            manchasPisoLimpiadas +
+            "/" +
+            totalManchasPiso
+        );
+
+        ActualizarObjetivoLimpieza();
+
+        ComprobarLimpieza();
+    }
+
+
+    void ActualizarObjetivoLimpieza()
+    {
+        if (textoObjetivo == null)
+            return;
+
+        textoObjetivo.text =
+            "- Manchas de pared: " +
+            manchasParedLimpiadas +
+            "/" +
+            totalManchasPared +
+            "\n" +
+            "- Manchas de piso: " +
+            manchasPisoLimpiadas +
+            "/" +
+            totalManchasPiso;
+    }
+
+
+    void ComprobarLimpieza()
+    {
+        if (limpiezaTerminada)
+            return;
+
+        bool paredTerminada =
+            manchasParedLimpiadas >= totalManchasPared;
+
+        bool pisoTerminado =
+            manchasPisoLimpiadas >= totalManchasPiso;
+
+
+        if (paredTerminada && pisoTerminado)
+        {
+            limpiezaTerminada = true;
+
+            Debug.Log("Limpieza terminada.");
+
+            StartCoroutine(FinalizarLimpieza());
+        }
+    }
+
+
+    IEnumerator FinalizarLimpieza()
+    {
+        ActualizarObjetivo("Limpieza completada");
+
+        MostrarDialogo(
+            "Listo... ya está todo limpio."
+        );
+
+        yield return new WaitForSeconds(3f);
+
+        
+        StartCoroutine(SecuenciaInicio());
+    }
+
+
+    // =========================================================
+    // INICIO DEL ACTO 3
+    // =========================================================
 
     IEnumerator SecuenciaInicio()
     {
         if (effectoParpadeo != null)
+        {
             effectoParpadeo.IniciarParpadeo();
+        }
 
         yield return new WaitForSeconds(1.5f);
 
@@ -243,19 +505,30 @@ public string textoPuerta = "Abrir";
         CambiarIluminacion("Servicio");
 
         if (effectoParpadeo != null)
+        {
             effectoParpadeo.IniciarParpadeo();
+        }
 
-        clientesActo3.SetActive(true);
+        if (clientesActo3 != null)
+        {
+            clientesActo3.SetActive(true);
+        }
 
-        ActualizarObjetivo("Atiende a las entidades de la barra (0/2)");
+        ActualizarObjetivo(
+            "Atiende a las entidades de la barra (0/2)"
+        );
     }
 
+
+    // =========================================================
     // PEDIDOS
+    // =========================================================
 
     public bool TienePedidoEntregable()
     {
         return tienePedido && tienePedidoBuscado;
     }
+
 
     public void TomarPedido(string pedido)
     {
@@ -263,10 +536,14 @@ public string textoPuerta = "Abrir";
         tienePedido = true;
         tienePedidoBuscado = false;
 
+
+        // OBJETO ESPECIAL
         if (objetoEspecial != null)
         {
-            if (pedidoActual.Trim().ToLower() ==
-                pedidoQueLoActiva.Trim().ToLower())
+            if (
+                pedidoActual.Trim().ToLower() ==
+                pedidoQueLoActiva.Trim().ToLower()
+            )
             {
                 objetoEspecial.SetActive(true);
             }
@@ -276,28 +553,44 @@ public string textoPuerta = "Abrir";
             }
         }
 
+
         ActualizarObjetivo(
             "Pedido: " + pedidoActual
         );
 
-        Debug.Log("Pedido tomado: " + pedidoActual);
+        Debug.Log(
+            "Pedido tomado: " + pedidoActual
+        );
     }
+
 
     public void RecogerPedido(string objeto)
     {
-        Debug.Log("Objeto recogido: " + objeto);
-        Debug.Log("Pedido actual: " + pedidoActual);
+        Debug.Log(
+            "Objeto recogido: " + objeto
+        );
 
-    if (tienePedido && objeto.Trim().ToLower() == pedidoActual.Trim().ToLower())        {
+        Debug.Log(
+            "Pedido actual: " + pedidoActual
+        );
+
+
+        if (
+            tienePedido &&
+            objeto.Trim().ToLower() ==
+            pedidoActual.Trim().ToLower()
+        )
+        {
             tienePedidoBuscado = true;
 
             Debug.Log("Pedido correcto.");
 
             ActualizarObjetivo(
-     "Entregar pedido: " + pedidoActual
- );
+                "Entregar pedido: " + pedidoActual
+            );
         }
     }
+
 
     public void EntregarPedido()
     {
@@ -305,10 +598,12 @@ public string textoPuerta = "Abrir";
         tienePedidoBuscado = false;
         pedidoActual = "";
 
+
         if (objetoEspecial != null)
         {
             objetoEspecial.SetActive(false);
         }
+
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (" +
@@ -317,11 +612,15 @@ public string textoPuerta = "Abrir";
         );
     }
 
+
+    // =========================================================
     // CLIENTES
+    // =========================================================
 
     public void ClienteCompletado()
     {
         clientesAtendidos++;
+
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (" +
@@ -329,7 +628,12 @@ public string textoPuerta = "Abrir";
             "/2)"
         );
 
-        Debug.Log("Entidades completas: " + clientesAtendidos);
+
+        Debug.Log(
+            "Entidades completas: " +
+            clientesAtendidos
+        );
+
 
         if (clientesAtendidos == 2)
         {
@@ -337,85 +641,147 @@ public string textoPuerta = "Abrir";
         }
     }
 
+
+    // =========================================================
     // AVANZAR NOCHE
+    // =========================================================
 
     IEnumerator AvanzarNoche()
     {
-        Debug.Log("Los dos clientes fueron atendidos");
+        Debug.Log(
+            "Los dos clientes fueron atendidos"
+        );
+
 
         yield return new WaitForSeconds(4f);
 
-        if (effectoParpadeo != null)
-            effectoParpadeo.IniciarParpadeo();
 
-        clientesActo3.SetActive(false);
+        if (effectoParpadeo != null)
+        {
+            effectoParpadeo.IniciarParpadeo();
+        }
+
+
+        if (clientesActo3 != null)
+        {
+            clientesActo3.SetActive(false);
+        }
+
 
         yield return new WaitForSeconds(3f);
 
-        MostrarDialogo("Listo... voy a buscarlas.");
 
-        ActualizarObjetivo("Ve al sótano");
+        MostrarDialogo(
+            "Listo... voy a buscarlas."
+        );
+
+
+        ActualizarObjetivo(
+            "Ve al sótano"
+        );
+
 
         yield return new WaitForSeconds(5f);
 
+
         CambiarIluminacion("Apagado");
+
 
         yield return new WaitForSeconds(1.5f);
 
-        enemigos.SetActive(true);
+
+        if (enemigos != null)
+        {
+            enemigos.SetActive(true);
+        }
 
 
-        //aparicion vigilante
-        Transform cam = Camera.main.transform;
+        // =====================================================
+        // APARICIÓN DEL VIGILANTE
+        // =====================================================
 
-        Vector3 posicion =
-            cam.position + cam.forward * 5f;
+        if (vigilante != null && Camera.main != null)
+        {
+            Transform cam =
+                Camera.main.transform;
 
-        posicion.y = vigilante.transform.position.y;
 
-        vigilante.transform.position = posicion;
+            Vector3 posicion =
+                cam.position +
+                cam.forward * 5f;
 
-        Vector3 direccion =
-            cam.position - vigilante.transform.position;
 
-        direccion.y = 0f;
+            posicion.y =
+                vigilante.transform.position.y;
 
-        vigilante.transform.rotation =
-            Quaternion.LookRotation(direccion);
 
-        vigilante.transform.Rotate(0, 90, 0);
+            vigilante.transform.position =
+                posicion;
 
-        vigilante.SetActive(true);
+
+            Vector3 direccion =
+                cam.position -
+                vigilante.transform.position;
+
+
+            direccion.y = 0f;
+
+
+            vigilante.transform.rotation =
+                Quaternion.LookRotation(direccion);
+
+
+            vigilante.transform.Rotate(
+                0,
+                90,
+                0
+            );
+
+
+            vigilante.SetActive(true);
+        }
     }
 
+
+    // =========================================================
     // PARANOIA
+    // =========================================================
 
     IEnumerator MantenerParanoiaMinima()
     {
         while (true)
         {
-            ParanoiaSystem.Instance.AddParanoia(1f);
+            if (ParanoiaSystem.Instance != null)
+            {
+                ParanoiaSystem.Instance.AddParanoia(1f);
+            }
+
             yield return new WaitForSeconds(5f);
         }
     }
 
-    // SOTANO
+
+    // =========================================================
+    // SÓTANO
+    // =========================================================
 
     public void IrASotano()
     {
         enSotano = true;
-        SceneManager.LoadScene("Basement (pasto)");
+
+        SceneManager.LoadScene(
+            "Basement (pasto)"
+        );
     }
 
-    //estando en el sotano
 
     public void sotano()
     {
-       if (enSotano == true)
+        if (enSotano == true)
         {
-            Debug.Log("sotanooooooo");
+            Debug.Log(
+                "sotanooooooo"
+            );
         }
     }
-
-
 }
