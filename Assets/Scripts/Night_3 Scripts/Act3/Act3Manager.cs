@@ -7,10 +7,19 @@ public class Act3Manager : MonoBehaviour
 {
     public static Act3Manager Instance;
 
+    
+    // ESCENA
+    
+
     [Header("Escena")]
     public GameObject clientesActo3;
     public GameObject enemigos;
     public GameObject vigilante;
+
+
+    
+    // INTERACCIÓN
+    
 
     [Header("Interacción")]
     public GameObject panelInteraccion;
@@ -21,31 +30,59 @@ public class Act3Manager : MonoBehaviour
     public string textoPedido = "Recoger";
     public string textoPuerta = "Abrir";
 
+
+    
+    // UI Y DIÁLOGOS
+    
+
     [Header("UI y Diálogos")]
     public TextMeshProUGUI textoSubtitulos;
 
+    private Coroutine dialogoActual;
+
+
+    
+    // EFECTOS
+    
+
     [Header("Efectos")]
     public EffectoParpadeo effectoParpadeo;
+
+
+    
+    // ILUMINACIÓN
+    
 
     [Header("Sistemas de Iluminación")]
     public GameObject lucesNormales;
     public GameObject lucesServicio;
     public GameObject lucesCombate;
 
+
+    
+    // TEXTO OBJETIVOS
+    
+
     [Header("Objetivos")]
     public TextMeshProUGUI textoObjetivo;
 
-    private Coroutine dialogoActual;
+
+   
+    // PROGRESO
+    
 
     [Header("Progreso")]
     public bool enSotano = false;
     public int clientesAtendidos = 0;
 
-    // =========================================================
+
+
     // LIMPIEZA INICIAL
-    // =========================================================
+
 
     [Header("Limpieza Inicial")]
+    public GameObject ElementosLimpieza;
+
     public bool tieneElementosLimpieza = false;
 
     public int manchasParedLimpiadas = 0;
@@ -56,23 +93,29 @@ public class Act3Manager : MonoBehaviour
 
     private bool limpiezaTerminada = false;
 
-    // =========================================================
+
+    
     // PEDIDOS
-    // =========================================================
+    
 
     [Header("Pedidos")]
     public string pedidoActual = "";
     public bool tienePedido = false;
     public bool tienePedidoBuscado = false;
 
+
+    
+    // OBJETO ESPECIAL
+    
+
     [Header("Objeto especial")]
     public GameObject objetoEspecial;
     public string pedidoQueLoActiva = "Llave";
 
 
-    // =========================================================
+    
     // AWAKE
-    // =========================================================
+    
 
     void Awake()
     {
@@ -88,9 +131,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
+    
     // START
-    // =========================================================
+    
 
     void Start()
     {
@@ -119,16 +162,12 @@ public class Act3Manager : MonoBehaviour
         ActualizarObjetivo("Busca los elementos de limpieza");
 
         StartCoroutine(MantenerParanoiaMinima());
-
-        // IMPORTANTE:
-        // SecuenciaInicio() YA NO empieza automáticamente.
-        // Primero hay que terminar la limpieza.
     }
 
 
-    // =========================================================
+    
     // UPDATE / INTERACCIONES
-    // =========================================================
+    
 
     void Update()
     {
@@ -143,6 +182,10 @@ public class Act3Manager : MonoBehaviour
         RaycastHit hit;
 
         bool mirandoAlgo = false;
+
+
+        // MOSTRAR TEXTO DE INTERACCIÓN
+
 
         if (Physics.Raycast(ray, out hit, 10f))
         {
@@ -161,6 +204,7 @@ public class Act3Manager : MonoBehaviour
                     textoInteraccion.text = textoCliente;
             }
 
+
             // PEDIDO
             PedidoPickup pedido =
                 hit.collider.GetComponentInParent<PedidoPickup>();
@@ -176,6 +220,7 @@ public class Act3Manager : MonoBehaviour
                     textoInteraccion.text = textoPedido;
             }
 
+
             // PUERTA
             PuertaSotano puerta =
                 hit.collider.GetComponentInParent<PuertaSotano>();
@@ -190,7 +235,26 @@ public class Act3Manager : MonoBehaviour
                 if (textoInteraccion != null)
                     textoInteraccion.text = textoPuerta;
             }
+
+
+            // ELEMENTOS DE LIMPIEZA
+            ElementosLimpieza limpieza =
+                hit.collider.GetComponentInParent<ElementosLimpieza>();
+
+            if (limpieza != null)
+            {
+                mirandoAlgo = true;
+
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "Recoger";
+            }
         }
+
+        // OCULTAR TEXTO
+
 
         if (!mirandoAlgo)
         {
@@ -201,15 +265,27 @@ public class Act3Manager : MonoBehaviour
         }
 
 
-        // =====================================================
+        
         // INTERACTUAR CON E
-        // =====================================================
+        
 
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (Physics.Raycast(ray, out hit, 10f))
             {
+
+                // ELEMENTOS DE LIMPIEZA
+                ElementosLimpieza limpieza =
+                    hit.collider.GetComponentInParent<ElementosLimpieza>();
+
+                if (limpieza != null)
+                {
+                    limpieza.Interact();
+                    return;
+                }
+
                 // PUERTA
+
                 PuertaSotano puerta =
                     hit.collider.GetComponentInParent<PuertaSotano>();
 
@@ -219,7 +295,11 @@ public class Act3Manager : MonoBehaviour
                     return;
                 }
 
+
+                
                 // CLIENTE
+                
+
                 SimpleInteract cliente =
                     hit.collider.GetComponentInParent<SimpleInteract>();
 
@@ -229,7 +309,11 @@ public class Act3Manager : MonoBehaviour
                     return;
                 }
 
+
+                
                 // PEDIDO
+                
+
                 PedidoPickup pedido =
                     hit.collider.GetComponentInParent<PedidoPickup>();
 
@@ -238,14 +322,15 @@ public class Act3Manager : MonoBehaviour
                     pedido.Interact();
                     return;
                 }
+
             }
         }
     }
 
 
-    // =========================================================
+    
     // DIÁLOGOS
-    // =========================================================
+    
 
     public void MostrarDialogo(string mensaje)
     {
@@ -276,9 +361,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
+    
     // ILUMINACIÓN
-    // =========================================================
+    
 
     public void CambiarIluminacion(string estado)
     {
@@ -325,9 +410,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
+    
     // OBJETIVOS
-    // =========================================================
+    
 
     public void ActualizarObjetivo(string nuevoObjetivo)
     {
@@ -338,9 +423,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
+    
     // LIMPIEZA INICIAL
-    // =========================================================
+    
 
     public void RecogerElementosLimpieza()
     {
@@ -478,14 +563,13 @@ public class Act3Manager : MonoBehaviour
 
         yield return new WaitForSeconds(3f);
 
-        
         StartCoroutine(SecuenciaInicio());
     }
 
 
-    // =========================================================
+    
     // INICIO DEL ACTO 3
-    // =========================================================
+    
 
     IEnumerator SecuenciaInicio()
     {
@@ -496,23 +580,28 @@ public class Act3Manager : MonoBehaviour
 
         yield return new WaitForSeconds(1.5f);
 
+
         MostrarDialogo(
             "Ya casi... una ronda mas y bajo a buscarlas. Tienen que estar por despertar"
         );
 
         yield return new WaitForSeconds(3f);
 
+
         CambiarIluminacion("Servicio");
+
 
         if (effectoParpadeo != null)
         {
             effectoParpadeo.IniciarParpadeo();
         }
 
+
         if (clientesActo3 != null)
         {
             clientesActo3.SetActive(true);
         }
+
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (0/2)"
@@ -520,9 +609,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
+    
     // PEDIDOS
-    // =========================================================
+    
 
     public bool TienePedidoEntregable()
     {
@@ -537,7 +626,10 @@ public class Act3Manager : MonoBehaviour
         tienePedidoBuscado = false;
 
 
-        // OBJETO ESPECIAL
+        
+        // PEDIDO ESPECIAL
+        
+
         if (objetoEspecial != null)
         {
             if (
@@ -557,6 +649,7 @@ public class Act3Manager : MonoBehaviour
         ActualizarObjetivo(
             "Pedido: " + pedidoActual
         );
+
 
         Debug.Log(
             "Pedido tomado: " + pedidoActual
@@ -584,6 +677,7 @@ public class Act3Manager : MonoBehaviour
             tienePedidoBuscado = true;
 
             Debug.Log("Pedido correcto.");
+
 
             ActualizarObjetivo(
                 "Entregar pedido: " + pedidoActual
@@ -613,9 +707,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
-    // CLIENTES
-    // =========================================================
+    
+    // CONTEO DE CLIENTES
+    
 
     public void ClienteCompletado()
     {
@@ -642,9 +736,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
+    
     // AVANZAR NOCHE
-    // =========================================================
+    
 
     IEnumerator AvanzarNoche()
     {
@@ -696,9 +790,9 @@ public class Act3Manager : MonoBehaviour
         }
 
 
-        // =====================================================
+        
         // APARICIÓN DEL VIGILANTE
-        // =====================================================
+        
 
         if (vigilante != null && Camera.main != null)
         {
@@ -743,9 +837,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
+    
     // PARANOIA
-    // =========================================================
+    
 
     IEnumerator MantenerParanoiaMinima()
     {
@@ -761,9 +855,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // =========================================================
+    
     // SÓTANO
-    // =========================================================
+    
 
     public void IrASotano()
     {
@@ -774,14 +868,4 @@ public class Act3Manager : MonoBehaviour
         );
     }
 
-
-    public void sotano()
-    {
-        if (enSotano == true)
-        {
-            Debug.Log(
-                "sotanooooooo"
-            );
-        }
-    }
 }
