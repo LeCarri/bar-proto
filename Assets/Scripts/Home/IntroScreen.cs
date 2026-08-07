@@ -79,6 +79,6 @@ public class IntroScreen : MonoBehaviour
         if (SaveManager.Instance != null)
             SaveManager.Instance.LoadSave();
         else
-            SceneManager.LoadScene(nextSceneName);
+            SceneManager.LoadScene("IntroScene");
     }
 }
