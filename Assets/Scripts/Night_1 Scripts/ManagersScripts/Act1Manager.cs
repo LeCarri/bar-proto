@@ -78,6 +78,10 @@ public class Act1Manager : MonoBehaviour
     public GameObject indicadorNevera;
     public GameObject indicadorCervezas;
 
+    [Header("Items ScriptableObjects")]
+    public ItemSO itemCerveza;
+    public ItemSO itemHoney;
+
     public static Act1Manager Instance;
 
     private void Awake()
@@ -362,6 +366,8 @@ public void RecogerObjeto(bool esEnBarra)
         // Le da la cerveza de Carlos
         carlosPidioCerveza = true; 
         tieneObjetoEnMano = true;
+        ControladorMano3D.Instance.EquiparItem(itemCerveza);
+        
         MostrarDialogo("Lucas: Ya tengo la cerveza para Carlos. A entregársela.");
         return;
     }
@@ -395,6 +401,7 @@ public void RecogerObjeto(bool esEnBarra)
         if (marielaPidioHoney && !esEnBarra)
         {
             tieneObjetoEnMano = true;
+            ControladorMano3D.Instance.EquiparItem(itemHoney);
             MostrarDialogo("Lucas: Acá está. Ya puedo entregársela.");
             return;
         }
@@ -413,15 +420,15 @@ public void InteractuarCarlos()
         return;
     }
 
-    // Si ya lo atendiste, solo te agradece
+    // 1. Si ya lo atendiste por completo, solo te agradece
     if (clientesAtendidosTotal > 0)
     {
         MostrarDialogo("Carlos: Gracias, maestro.");
         return;
     }
 
-    // Momento de tomar el pedido
-    if (!tieneObjetoEnMano)
+    // 2. Si todavía NO hizo el pedido, lo toma
+    if (!carlosPidioCerveza)
     {
         carlosPidioCerveza = true; 
         MostrarDialogo("Carlos: ¿Te pido una cerveza, maestro?");
@@ -433,8 +440,22 @@ public void InteractuarCarlos()
         return;
     }
 
-    // Momento de entregarle la cerveza
+    // 3. Si YA hizo el pedido, pero Lucas no trae nada en la mano
+    if (!tieneObjetoEnMano)
+    {
+        MostrarDialogo("Carlos: Sigo esperando mi cerveza, maestro.");
+        return;
+    }
+
+    // 4. Si YA hizo el pedido Y Lucas tiene la cerveza en la mano -> ENTREGAR
     tieneObjetoEnMano = false;
+
+    if (ControladorMano3D.Instance != null)
+    {
+        ControladorMano3D.Instance.VaciarMano();
+    }
+
+    carlosPidioCerveza = false;
     clientesAtendidosTotal = 1; // Pasa el turno a Mariela
 
     MostrarDialogo("Carlos: Gracias, maestro.");
@@ -462,22 +483,35 @@ public void InteractuarMariela()
         return;
     }
 
-    // Si Mariela todavía no pidió, hace el pedido
+    // Si ya fue atendida
+    if (clientesAtendidosTotal >= 2)
+    {
+        MostrarDialogo("Mariela: Gracias...");
+        return;
+    }
+
+    // Si Mariela todavía no pidió
     if (!marielaPidioHoney)
     {
         RegistrarPedidoMarielaHoney();
         return;
     }
 
-    // Si ya pidió pero Lucas todavía no fue a buscar lo correspondiente
+    // Si ya pidió pero Lucas no tiene el objeto en la mano
     if (!tieneObjetoEnMano)
     {
         MostrarDialogo("Lucas: Todavía no tengo lo que me pidió.");
         return;
     }
 
-    // Esto queda por si más adelante hacés que la botella Honey sea entregable
+    // Si ya pidió Y Lucas tiene la Honey en la mano -> ENTREGAR
     tieneObjetoEnMano = false;
+
+    if (ControladorMano3D.Instance != null)
+    {
+        ControladorMano3D.Instance.VaciarMano();
+    }
+
     clientesAtendidosTotal = 2;
 
     MostrarDialogo("Mariela: Gracias...");
@@ -506,16 +540,24 @@ public void RegistrarPedidoMarielaHoney()
 
 public void ClienteCompletado()
 {
-    // Al entregar un pedido, Lucas deja de tener algo en la mano
+    // 1. Limpiamos el objeto 3D de la mano del jugador
+    if (ControladorMano3D.Instance != null)
+    {
+        Debug.Log("[Act1Manager] Llamando a VaciarMano()...");
+        ControladorMano3D.Instance.VaciarMano();
+    }
+    else
+    {
+        Debug.LogError("¡OJO! ControladorMano3D.Instance es NULL al intentar completar el cliente.");
+    }
+
+    // 2. Al entregar un pedido, Lucas deja de tener algo en la mano
     tieneObjetoEnMano = false;
 
     clientesAtendidosTotal++;
 
     Debug.Log("[Act1Manager] Cliente completado. Total atendidos: " + clientesAtendidosTotal);
 
-    // Carlos = cliente 1
-    // Mariela = cliente 2
-    // Cuando Mariela recibe el pedido, ahora sí activamos el quiebre
     if (clientesAtendidosTotal == 2)
     {
         Debug.Log("[Act1Manager] Mariela atendida. Iniciando quiebre de realidad.");

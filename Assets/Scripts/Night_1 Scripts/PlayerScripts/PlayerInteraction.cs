@@ -7,6 +7,9 @@ public class PlayerInteraction : MonoBehaviour
     public float interactionDistance = 3f;
     public LayerMask interactableLayer;
 
+    [Header("Referencias del Jugador")]
+    [SerializeField] private ControladorMano3D mano3D; // Referencia directa o mediante Singleton
+
     [Header("UI")]
     [SerializeField] private GameObject interactionPanel;
     [SerializeField] private TextMeshProUGUI interactionText;
@@ -17,6 +20,12 @@ public class PlayerInteraction : MonoBehaviour
     void Awake()
     {
         HideInteractionUI();
+
+        // Si no la asignamos manualmente en el Inspector, la buscamos en el mismo GameObject
+        if (mano3D == null)
+        {
+            mano3D = GetComponent<ControladorMano3D>();
+        }
     }
 
     void Update()
@@ -47,6 +56,7 @@ public class PlayerInteraction : MonoBehaviour
 
                 if (Input.GetKeyDown(KeyCode.E))
                 {
+                    // Le pasamos la referencia de la mano (o este script) al interactuable
                     interactable.Interact();
                 }
             }
@@ -58,7 +68,7 @@ public class PlayerInteraction : MonoBehaviour
         }
         else
         {
-            // Si el rayo se pierde en el aire del bar, se dibuja en rojo clavado a la distancia máxima (no al infinito)
+            // Si el rayo se pierde en el aire del bar, se dibuja en rojo clavado a la distancia máxima
             Debug.DrawRay(ray.origin, ray.direction * interactionDistance, Color.red);
         }
         
