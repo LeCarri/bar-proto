@@ -187,7 +187,13 @@ public class Act3Manager : MonoBehaviour
         // MOSTRAR TEXTO DE INTERACCIÓN
 
 
-        if (Physics.Raycast(ray, out hit, 10f))
+        Physics.Raycast(
+    ray,
+    out hit,
+    10f,
+    Physics.DefaultRaycastLayers,
+    QueryTriggerInteraction.Collide
+);
         {
             // CLIENTE
             SimpleInteract cliente =
@@ -202,6 +208,21 @@ public class Act3Manager : MonoBehaviour
 
                 if (textoInteraccion != null)
                     textoInteraccion.text = textoCliente;
+            }
+
+            // MANCHA DE SANGRE
+            ManchaSangre mancha =
+                hit.collider.GetComponentInParent<ManchaSangre>();
+
+            if (mancha != null)
+            {
+                mirandoAlgo = true;
+
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "Mantener E para limpiar";
             }
 
 
@@ -296,9 +317,27 @@ public class Act3Manager : MonoBehaviour
                 }
 
 
-                
+                // MANCHA DE SANGRE
+                ManchaSangre mancha =
+                    hit.collider.GetComponentInParent<ManchaSangre>();
+
+                if (mancha != null)
+                {
+                    if (Input.GetKey(KeyCode.E))
+                    {
+                        mancha.EmpezarLimpieza();
+                    }
+                    else
+                    {
+                        mancha.DetenerLimpieza();
+                    }
+
+                    return;
+                }
+
+
                 // CLIENTE
-                
+
 
                 SimpleInteract cliente =
                     hit.collider.GetComponentInParent<SimpleInteract>();
@@ -448,10 +487,8 @@ public class Act3Manager : MonoBehaviour
     {
         if (!tieneElementosLimpieza)
         {
-            MostrarDialogo(
-                "Necesito buscar los elementos de limpieza primero."
-            );
-
+            Debug.Log("NO SE PUEDE LIMPIAR: todavía no tiene los elementos de limpieza.");
+            MostrarDialogo("Necesito buscar los elementos de limpieza primero.");
             return;
         }
 
@@ -466,7 +503,8 @@ public class Act3Manager : MonoBehaviour
         }
 
         Debug.Log(
-            "Manchas de pared: " +
+            "MANCHA DE PARED LIMPIADA | " +
+            "Contador: " +
             manchasParedLimpiadas +
             "/" +
             totalManchasPared
