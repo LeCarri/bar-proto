@@ -33,12 +33,19 @@ public class ManchaSangre : MonoBehaviour
         if (limpiada)
             return;
 
+        // Mantener E para limpiar
         if (limpiando)
         {
+            // Si se suelta E, detener limpieza
+            if (!Input.GetKey(KeyCode.E))
+            {
+                DetenerLimpieza();
+                return;
+            }
+
             tiempoActual += Time.deltaTime;
 
             float progreso = tiempoActual / tiempoLimpieza;
-
             progreso = Mathf.Clamp01(progreso);
 
             if (material != null)
@@ -73,6 +80,7 @@ public class ManchaSangre : MonoBehaviour
             return;
         }
 
+        // Empieza la limpieza
         limpiando = true;
     }
 
@@ -90,10 +98,6 @@ public class ManchaSangre : MonoBehaviour
         {
             if (esManchaPared)
             {
-                Act3Manager.Instance.MostrarDialogo(
-                    "Mancha de pared limpiada."
-                );
-
                 Act3Manager.Instance.ManchaParedLimpiada();
             }
             else

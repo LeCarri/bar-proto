@@ -7,9 +7,9 @@ public class Act3Manager : MonoBehaviour
 {
     public static Act3Manager Instance;
 
-    
+
     // ESCENA
-    
+
 
     [Header("Escena")]
     public GameObject clientesActo3;
@@ -17,9 +17,9 @@ public class Act3Manager : MonoBehaviour
     public GameObject vigilante;
 
 
-    
+
     // INTERACCIÓN
-    
+
 
     [Header("Interacción")]
     public GameObject panelInteraccion;
@@ -31,9 +31,9 @@ public class Act3Manager : MonoBehaviour
     public string textoPuerta = "Abrir";
 
 
-    
+
     // UI Y DIÁLOGOS
-    
+
 
     [Header("UI y Diálogos")]
     public TextMeshProUGUI textoSubtitulos;
@@ -41,17 +41,17 @@ public class Act3Manager : MonoBehaviour
     private Coroutine dialogoActual;
 
 
-    
+
     // EFECTOS
-    
+
 
     [Header("Efectos")]
     public EffectoParpadeo effectoParpadeo;
 
 
-    
+
     // ILUMINACIÓN
-    
+
 
     [Header("Sistemas de Iluminación")]
     public GameObject lucesNormales;
@@ -59,17 +59,17 @@ public class Act3Manager : MonoBehaviour
     public GameObject lucesCombate;
 
 
-    
+
     // TEXTO OBJETIVOS
-    
+
 
     [Header("Objetivos")]
     public TextMeshProUGUI textoObjetivo;
 
 
-   
+
     // PROGRESO
-    
+
 
     [Header("Progreso")]
     public bool enSotano = false;
@@ -94,9 +94,9 @@ public class Act3Manager : MonoBehaviour
     private bool limpiezaTerminada = false;
 
 
-    
+
     // PEDIDOS
-    
+
 
     [Header("Pedidos")]
     public string pedidoActual = "";
@@ -104,18 +104,18 @@ public class Act3Manager : MonoBehaviour
     public bool tienePedidoBuscado = false;
 
 
-    
+
     // OBJETO ESPECIAL
-    
+
 
     [Header("Objeto especial")]
     public GameObject objetoEspecial;
     public string pedidoQueLoActiva = "Llave";
 
 
-    
+
     // AWAKE
-    
+
 
     void Awake()
     {
@@ -131,9 +131,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // START
-    
+
 
     void Start()
     {
@@ -165,9 +165,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // UPDATE / INTERACCIONES
-    
+
 
     void Update()
     {
@@ -187,13 +187,13 @@ public class Act3Manager : MonoBehaviour
         // MOSTRAR TEXTO DE INTERACCIÓN
 
 
-        Physics.Raycast(
-    ray,
-    out hit,
-    10f,
-    Physics.DefaultRaycastLayers,
-    QueryTriggerInteraction.Collide
-);
+        if (Physics.Raycast(
+            ray,
+            out hit,
+            10f,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Collide
+        ))
         {
             // CLIENTE
             SimpleInteract cliente =
@@ -272,7 +272,24 @@ public class Act3Manager : MonoBehaviour
                 if (textoInteraccion != null)
                     textoInteraccion.text = "Recoger";
             }
+
+
+            // OBJETO ESPECIAL
+            ObjetosEspeciales objeto =
+                hit.collider.GetComponentInParent<ObjetosEspeciales>();
+
+            if (objeto != null)
+            {
+                mirandoAlgo = true;
+
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "Investigar";
+            }
         }
+
 
         // OCULTAR TEXTO
 
@@ -286,13 +303,19 @@ public class Act3Manager : MonoBehaviour
         }
 
 
-        
+
         // INTERACTUAR CON E
-        
+
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if (Physics.Raycast(ray, out hit, 10f))
+            if (Physics.Raycast(
+                ray,
+                out hit,
+                10f,
+                Physics.DefaultRaycastLayers,
+                QueryTriggerInteraction.Collide
+            ))
             {
 
                 // ELEMENTOS DE LIMPIEZA
@@ -304,6 +327,7 @@ public class Act3Manager : MonoBehaviour
                     limpieza.Interact();
                     return;
                 }
+
 
                 // PUERTA
 
@@ -336,8 +360,19 @@ public class Act3Manager : MonoBehaviour
                 }
 
 
-                // CLIENTE
+                // OBJETO ESPECIAL
 
+                ObjetosEspeciales objeto =
+                    hit.collider.GetComponentInParent<ObjetosEspeciales>();
+
+                if (objeto != null)
+                {
+                    objeto.Interactuar();
+                    return;
+                }
+
+
+                // CLIENTE
 
                 SimpleInteract cliente =
                     hit.collider.GetComponentInParent<SimpleInteract>();
@@ -349,9 +384,9 @@ public class Act3Manager : MonoBehaviour
                 }
 
 
-                
+
                 // PEDIDO
-                
+
 
                 PedidoPickup pedido =
                     hit.collider.GetComponentInParent<PedidoPickup>();
@@ -367,9 +402,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // DIÁLOGOS
-    
+
 
     public void MostrarDialogo(string mensaje)
     {
@@ -400,9 +435,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // ILUMINACIÓN
-    
+
 
     public void CambiarIluminacion(string estado)
     {
@@ -449,9 +484,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // OBJETIVOS
-    
+
 
     public void ActualizarObjetivo(string nuevoObjetivo)
     {
@@ -462,9 +497,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // LIMPIEZA INICIAL
-    
+
 
     public void RecogerElementosLimpieza()
     {
@@ -605,9 +640,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // INICIO DEL ACTO 3
-    
+
 
     IEnumerator SecuenciaInicio()
     {
@@ -647,9 +682,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // PEDIDOS
-    
+
 
     public bool TienePedidoEntregable()
     {
@@ -664,9 +699,9 @@ public class Act3Manager : MonoBehaviour
         tienePedidoBuscado = false;
 
 
-        
+
         // PEDIDO ESPECIAL
-        
+
 
         if (objetoEspecial != null)
         {
@@ -745,9 +780,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // CONTEO DE CLIENTES
-    
+
 
     public void ClienteCompletado()
     {
@@ -774,9 +809,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // AVANZAR NOCHE
-    
+
 
     IEnumerator AvanzarNoche()
     {
@@ -828,9 +863,9 @@ public class Act3Manager : MonoBehaviour
         }
 
 
-        
+
         // APARICIÓN DEL VIGILANTE
-        
+
 
         if (vigilante != null && Camera.main != null)
         {
@@ -875,9 +910,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // PARANOIA
-    
+
 
     IEnumerator MantenerParanoiaMinima()
     {
@@ -893,9 +928,9 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    
+
     // SÓTANO
-    
+
 
     public void IrASotano()
     {
