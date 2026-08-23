@@ -749,6 +749,11 @@ public class Act3Manager : MonoBehaviour
         {
             tienePedidoBuscado = true;
 
+            if (objetoEspecial != null)
+            {
+                objetoEspecial.SetActive(false);
+            }
+
             Debug.Log("Pedido correcto.");
 
 
@@ -764,13 +769,6 @@ public class Act3Manager : MonoBehaviour
         tienePedido = false;
         tienePedidoBuscado = false;
         pedidoActual = "";
-
-
-        if (objetoEspecial != null)
-        {
-            objetoEspecial.SetActive(false);
-        }
-
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (" +
