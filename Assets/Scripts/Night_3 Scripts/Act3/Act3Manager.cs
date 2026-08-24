@@ -210,6 +210,25 @@ public class Act3Manager : MonoBehaviour
                     textoInteraccion.text = textoCliente;
             }
 
+            //ROCOLA 
+
+            Rocola rocola =
+                    hit.collider.GetComponent<Rocola>();
+
+            if (rocola != null)
+            {
+                mirandoAlgo = true;
+
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "usar rocola";
+            }
+
+
+
+
             // MANCHA DE SANGRE
             ManchaSangre mancha =
                 hit.collider.GetComponentInParent<ManchaSangre>();
@@ -317,6 +336,17 @@ public class Act3Manager : MonoBehaviour
                 QueryTriggerInteraction.Collide
             ))
             {
+
+                //ROCOLA
+                Rocola rocola =
+                    hit.collider.GetComponentInParent<Rocola>();
+
+                if (rocola != null)
+                {
+                    rocola.Interact();
+                    return;
+                }
+
 
                 // ELEMENTOS DE LIMPIEZA
                 ElementosLimpieza limpieza =

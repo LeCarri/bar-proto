@@ -1,3 +1,4 @@
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +8,9 @@ public class MinijuegoPedido : MonoBehaviour
     public GameObject panelMinijuego;
     public RectTransform vaso;
     public RectTransform zonaVerde;
+
+    [Header("jugador")]
+    public PlayerController jugador;
 
     [Header("Movimiento")]
     public float velocidadVaso = 0.00005f;
@@ -63,6 +67,11 @@ public class MinijuegoPedido : MonoBehaviour
         minijuegoActivo = true;
 
         aciertos = 0;
+
+        if (jugador !=null)
+        {
+            jugador.enabled = false;
+        }
 
         if (panelMinijuego != null)
         {
@@ -200,6 +209,11 @@ public class MinijuegoPedido : MonoBehaviour
         if (panelMinijuego != null)
         {
             panelMinijuego.SetActive(false);
+        }
+
+        if (jugador != null)
+        {
+            jugador.enabled = true;
         }
 
         PedidoCompletado();
