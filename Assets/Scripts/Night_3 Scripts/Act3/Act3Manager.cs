@@ -210,6 +210,25 @@ public class Act3Manager : MonoBehaviour
                     textoInteraccion.text = textoCliente;
             }
 
+            //ROCOLA 
+
+            Rocola rocola =
+                    hit.collider.GetComponent<Rocola>();
+
+            if (rocola != null)
+            {
+                mirandoAlgo = true;
+
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "usar rocola";
+            }
+
+
+
+
             // MANCHA DE SANGRE
             ManchaSangre mancha =
                 hit.collider.GetComponentInParent<ManchaSangre>();
@@ -317,6 +336,17 @@ public class Act3Manager : MonoBehaviour
                 QueryTriggerInteraction.Collide
             ))
             {
+
+                //ROCOLA
+                Rocola rocola =
+                    hit.collider.GetComponentInParent<Rocola>();
+
+                if (rocola != null)
+                {
+                    rocola.Interact();
+                    return;
+                }
+
 
                 // ELEMENTOS DE LIMPIEZA
                 ElementosLimpieza limpieza =
@@ -749,6 +779,11 @@ public class Act3Manager : MonoBehaviour
         {
             tienePedidoBuscado = true;
 
+            if (objetoEspecial != null)
+            {
+                objetoEspecial.SetActive(false);
+            }
+
             Debug.Log("Pedido correcto.");
 
 
@@ -764,13 +799,6 @@ public class Act3Manager : MonoBehaviour
         tienePedido = false;
         tienePedidoBuscado = false;
         pedidoActual = "";
-
-
-        if (objetoEspecial != null)
-        {
-            objetoEspecial.SetActive(false);
-        }
-
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (" +
