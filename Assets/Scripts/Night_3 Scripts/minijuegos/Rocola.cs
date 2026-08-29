@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class Rocola : MonoBehaviour
 {
     [System.Serializable]
@@ -14,72 +13,104 @@ public class Rocola : MonoBehaviour
     [Header("Canciones")]
     public List<cancion> canciones = new List<cancion>();
 
-    [Header("audio")]
+    [Header("Audio")]
     public AudioSource audioSource;
 
+    [Header("UI")]
+    public RocolaUI rocolaUI;
+
     [Header("Estado")]
-    public bool  reproduciendo = false;
+    public bool reproduciendo = false;
+
+    [Header("Jugador")]
+    public PlayerController jugador;
 
     private int cancionActual = -1;
 
 
-    //INTERACCION
+    
+    // INTERACCIÓN
+    
 
     public void Interact()
     {
-        Debug.Log("Interactuando");
-        for (int i = 0; i<canciones.Count; i++)
+        Debug.Log("Interactuando con la rocola.");
+
+        if (rocolaUI != null)
         {
-            Debug.Log(
-                i + ":" + canciones[i].nombre
+            Debug.Log("ROCOLA: Abriendo UI.");
+
+            rocolaUI.Abrir(this);
+        }
+        else
+        {
+            Debug.LogError(
+                "ROCOLA: No hay RocolaUI asignado en el Inspector."
             );
         }
     }
 
 
-
-    //REPRODUCIR CANCION
+    
+    // REPRODUCIR CANCIÓN
+   
 
     public void ReproducirCancion(int indice)
     {
-        if (audioSource==null)
+        Debug.Log("BOTÓN: Intentando reproducir canción " + indice);
+
+        if (audioSource == null)
         {
-            Debug.LogWarning("la rocola no tiene un audiosurce asignado");
+            Debug.LogWarning(
+                "La rocola no tiene un AudioSource asignado."
+            );
 
             return;
         }
 
-        if (indice < 0 || indice>= canciones.Count)
+        if (indice < 0 || indice >= canciones.Count)
         {
-            Debug.LogWarning("indice de cancion no valido" + indice);
-
-            return; 
-        }
-
-        cancion cancion = canciones[indice];
-
-        if (cancion.audio != null) 
-        {
-            Debug.LogWarning("la cancion '" + cancion.nombre + "'no tiene un AudioClip asignado");
+            Debug.LogWarning(
+                "Índice de canción no válido: " + indice
+            );
 
             return;
         }
 
-        audioSource.clip = cancion.audio;
+        cancion cancionSeleccionada = canciones[indice];
+
+        // ACÁ ESTABA EL ERROR
+        if (cancionSeleccionada.audio == null)
+        {
+            Debug.LogWarning(
+                "La canción '" +
+                cancionSeleccionada.nombre +
+                "' no tiene un AudioClip asignado."
+            );
+
+            return;
+        }
+
+        audioSource.clip = cancionSeleccionada.audio;
         audioSource.Play();
 
         cancionActual = indice;
         reproduciendo = true;
 
-        Debug.Log("reproduciendo:" + cancion.nombre);
-
+        Debug.Log(
+            "Reproduciendo: " +
+            cancionSeleccionada.nombre
+        );
     }
 
-    //DETENER CANCION
+
+    
+    // DETENER CANCIÓN
+    
 
     public void DetenerCanciones()
     {
-        if (audioSource==null)
+        if (audioSource == null)
             return;
 
         audioSource.Stop();
@@ -87,32 +118,50 @@ public class Rocola : MonoBehaviour
         reproduciendo = false;
         cancionActual = -1;
 
-        Debug.Log("Cancion detenida");
+        Debug.Log("Canción detenida.");
     }
 
-    //PAUSAR / CONTINUAR
 
-    public void PausarCacion()
+   
+    // PAUSAR / CONTINUAR
+    
+
+    public void PausarCancion()
     {
-        if(audioSource==null)
+        if (audioSource == null)
             return;
 
-        Debug.Log("Cancion continuada.");
+        if (audioSource.isPlaying)
+        {
+            audioSource.Pause();
+            Debug.Log("Canción pausada.");
+        }
+        else
+        {
+            audioSource.UnPause();
+            Debug.Log("Canción continuada.");
+        }
     }
 
-    //INFORMACION
+
+    
+    // INFORMACIÓN
+    
 
     public string ObtenerNombreCancion(int indice)
     {
         if (indice < 0 || indice >= canciones.Count)
             return "";
+
         return canciones[indice].nombre;
     }
+
 
     public int ObtenerCantidadCanciones()
     {
         return canciones.Count;
     }
+
 
     public int ObtenerCancionActual()
     {
