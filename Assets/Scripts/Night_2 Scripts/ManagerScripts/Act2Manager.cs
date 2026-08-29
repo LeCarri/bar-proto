@@ -50,6 +50,17 @@ public class Act2Manager : MonoBehaviour
     [Header("Clientes Corruptos")]
     public GameObject grupoClientesCorruptos;
 
+    [Header("Servicio de cerveza opcional")]
+    public ItemSO itemCerveza;
+    public ItemSO itemVasoVacio;
+
+    public GameObject vasoServicio;
+    public ServicioCervezaVisual servicioCervezaVisual;
+
+    [HideInInspector] public bool vasoEnCanilla = false;
+
+    private bool sirviendoCerveza = false;
+
     [Header("Secuencia del Pasillo")]
     public PasilloEfecto pasilloEfecto;
 
@@ -482,6 +493,89 @@ public class Act2Manager : MonoBehaviour
         yield return new WaitForSeconds(5f);
         SceneManager.LoadScene("Night_3 Scene");
     }
+
+    // =========================================================
+// SERVICIO DE CERVEZA OPCIONAL
+// =========================================================
+
+public void ColocarVasoEnCanilla()
+{
+    // Solo funciona durante Servicio
+    if (estadoActual != Act2State.Servicio)
+    {
+        MostrarDialogo("Lucas: Ahora no es momento de preparar bebidas.");
+        return;
+    }
+
+    if (ControladorMano3D.Instance == null)
+        return;
+
+    // Tiene que llevar específicamente el vaso vacío
+    if (ControladorMano3D.Instance.ObtenerItemActual() != itemVasoVacio)
+    {
+        MostrarDialogo("Lucas: Necesito un vaso primero.");
+        return;
+    }
+
+    // Sacamos el vaso vacío de la mano
+    ControladorMano3D.Instance.VaciarMano();
+
+    // Preparamos el líquido vacío antes de mostrar el vaso
+    if (servicioCervezaVisual != null)
+    {
+        servicioCervezaVisual.PrepararVasoVacio();
+    }
+
+    // Aparece el vaso debajo de la canilla
+    if (vasoServicio != null)
+    {
+        vasoServicio.SetActive(true);
+    }
+
+    vasoEnCanilla = true;
+
+    // Empieza a servir automáticamente
+    ServirCerveza();
+}
+
+public void ServirCerveza()
+{
+    if (!vasoEnCanilla)
+        return;
+
+    if (sirviendoCerveza)
+        return;
+
+    if (servicioCervezaVisual == null)
+    {
+        Debug.LogError(
+            "[Act2Manager] Falta asignar ServicioCervezaVisual."
+        );
+        return;
+    }
+
+    sirviendoCerveza = true;
+
+    servicioCervezaVisual.Servir(() =>
+    {
+        sirviendoCerveza = false;
+        vasoEnCanilla = false;
+
+        // Sacamos el vaso visual de debajo de la canilla
+        if (vasoServicio != null)
+        {
+            vasoServicio.SetActive(false);
+        }
+
+        // Aparece la cerveza llena en la mano
+        if (ControladorMano3D.Instance != null)
+        {
+            ControladorMano3D.Instance.EquiparItem(itemCerveza);
+        }
+
+        Debug.Log("[Act2Manager] Cerveza servida correctamente.");
+    });
+}
 
     // =========================================================
     // UTILIDADES
