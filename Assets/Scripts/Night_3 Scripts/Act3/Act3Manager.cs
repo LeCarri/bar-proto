@@ -79,6 +79,8 @@ public class Act3Manager : MonoBehaviour
 
     // LIMPIEZA INICIAL
 
+    [Header("DEBUG")]
+    public bool saltarLimpiezaAlIniciar = false;
 
     [Header("Limpieza Inicial")]
     public GameObject ElementosLimpieza;
@@ -93,6 +95,90 @@ public class Act3Manager : MonoBehaviour
 
     private bool limpiezaTerminada = false;
 
+    public bool PuedeUsarServicioBebidas()
+    {
+        return servicioBebidasActivo;
+    }
+
+    public void ColocarVasoEnCanilla()
+{
+    if (!PuedeUsarServicioBebidas())
+    {
+        MostrarDialogo("Lucas: Ahora no es momento de preparar bebidas.");
+        return;
+    }
+
+    if (ControladorMano3D.Instance == null)
+        return;
+
+    if (ControladorMano3D.Instance.ObtenerItemActual() != itemVasoVacio)
+    {
+        MostrarDialogo("Lucas: Necesito un vaso primero.");
+        return;
+    }
+
+    // Sacamos el vaso vacío de la mano
+    ControladorMano3D.Instance.VaciarMano();
+
+    // Dejamos el líquido vacío antes de mostrar el vaso
+    if (servicioCervezaVisual != null)
+    {
+        servicioCervezaVisual.PrepararVasoVacio();
+    }
+
+    // Aparece el vaso debajo de la canilla
+    if (vasoServicio != null)
+    {
+        vasoServicio.SetActive(true);
+    }
+
+    vasoEnCanilla = true;
+
+    // Empieza automáticamente
+    ServirCerveza();
+}
+
+
+public void ServirCerveza()
+{
+    if (!vasoEnCanilla)
+        return;
+
+    if (sirviendoCerveza)
+        return;
+
+    if (servicioCervezaVisual == null)
+    {
+        Debug.LogError(
+            "[Act3Manager] Falta asignar ServicioCervezaVisual."
+        );
+        return;
+    }
+
+    sirviendoCerveza = true;
+
+    servicioCervezaVisual.Servir(() =>
+    {
+        sirviendoCerveza = false;
+        vasoEnCanilla = false;
+
+        // Desaparece el vaso de la máquina
+        if (vasoServicio != null)
+        {
+            vasoServicio.SetActive(false);
+        }
+
+        // Aparece la cerveza llena en la mano
+        if (ControladorMano3D.Instance != null)
+        {
+            ControladorMano3D.Instance.EquiparItem(itemCerveza);
+        }
+
+        Debug.Log("[Act3Manager] Cerveza servida.");
+    });
+}
+
+
 
 
     // PEDIDOS
@@ -102,6 +188,18 @@ public class Act3Manager : MonoBehaviour
     public string pedidoActual = "";
     public bool tienePedido = false;
     public bool tienePedidoBuscado = false;
+
+    [Header("Servicio de cerveza")]
+    public ItemSO itemCerveza;
+    public ItemSO itemVasoVacio;
+
+    public GameObject vasoServicio;
+    public ServicioCervezaVisual servicioCervezaVisual;
+
+    [HideInInspector] public bool vasoEnCanilla = false;
+
+    private bool sirviendoCerveza = false;
+    private bool servicioBebidasActivo = false;
 
 
 
@@ -159,10 +257,19 @@ public class Act3Manager : MonoBehaviour
 
         limpiezaTerminada = false;
 
-        ActualizarObjetivo("Busca los elementos de limpieza");
-
         StartCoroutine(MantenerParanoiaMinima());
-    }
+
+
+        // DEBUG: saltar toda la limpieza
+        if (saltarLimpiezaAlIniciar)
+        {
+            SaltarLimpiezaDebug();
+            return;
+        }
+
+
+        ActualizarObjetivo("Busca los elementos de limpieza");
+            }
 
 
 
@@ -243,6 +350,37 @@ public class Act3Manager : MonoBehaviour
                 if (textoInteraccion != null)
                     textoInteraccion.text = "Mantener E para limpiar";
             }
+
+            // PUNTO DE VASOS
+                PuntoVasosAct3 puntoVasos =
+                    hit.collider.GetComponentInParent<PuntoVasosAct3>();
+
+                if (puntoVasos != null && puntoVasos.PuedeInteractuar())
+                {
+                    mirandoAlgo = true;
+
+                    if (panelInteraccion != null)
+                        panelInteraccion.SetActive(true);
+
+                    if (textoInteraccion != null)
+                        textoInteraccion.text = "Tomar vaso";
+                }
+
+            // SERVICIO DE CERVEZA
+                PuntoSuministroAct3 suministroCerveza =
+                    hit.collider.GetComponentInParent<PuntoSuministroAct3>();
+
+                if (suministroCerveza != null &&
+                    suministroCerveza.PuedeInteractuar())
+                {
+                    mirandoAlgo = true;
+
+                    if (panelInteraccion != null)
+                        panelInteraccion.SetActive(true);
+
+                    if (textoInteraccion != null)
+                        textoInteraccion.text = "Servir cerveza";
+                }
 
 
             // PEDIDO
@@ -413,6 +551,26 @@ public class Act3Manager : MonoBehaviour
                     return;
                 }
 
+                // PUNTO DE VASOS
+                PuntoVasosAct3 puntoVasos =
+                    hit.collider.GetComponentInParent<PuntoVasosAct3>();
+
+                if (puntoVasos != null)
+                {
+                    puntoVasos.Interact();
+                    return;
+                }
+
+                // SERVICIO DE CERVEZA
+                PuntoSuministroAct3 suministroCerveza =
+                    hit.collider.GetComponentInParent<PuntoSuministroAct3>();
+
+                if (suministroCerveza != null)
+                {
+                    suministroCerveza.Interact();
+                    return;
+                }
+
 
 
                 // PEDIDO
@@ -530,6 +688,28 @@ public class Act3Manager : MonoBehaviour
 
     // LIMPIEZA INICIAL
 
+    public void SaltarLimpiezaDebug()
+    {
+        Debug.Log("[DEBUG] Saltando limpieza inicial.");
+
+        tieneElementosLimpieza = true;
+
+        manchasParedLimpiadas = totalManchasPared;
+        manchasPisoLimpiadas = totalManchasPiso;
+
+        limpiezaTerminada = true;
+
+        // Ocultamos los elementos que había que recoger
+        if (ElementosLimpieza != null)
+        {
+            ElementosLimpieza.SetActive(false);
+        }
+
+        ActualizarObjetivo("Limpieza completada");
+
+        // Vamos directamente al comienzo del servicio
+        StartCoroutine(SecuenciaInicio());
+    }
 
     public void RecogerElementosLimpieza()
     {
@@ -705,6 +885,9 @@ public class Act3Manager : MonoBehaviour
             clientesActo3.SetActive(true);
         }
 
+        // A partir de acá Lucas puede preparar bebidas.
+        servicioBebidasActivo = true;
+
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (0/2)"
@@ -843,6 +1026,8 @@ public class Act3Manager : MonoBehaviour
 
     IEnumerator AvanzarNoche()
     {
+        servicioBebidasActivo = false;
+
         Debug.Log(
             "Los dos clientes fueron atendidos"
         );

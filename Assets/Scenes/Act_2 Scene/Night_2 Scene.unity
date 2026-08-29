@@ -63193,6 +63193,37 @@ MonoBehaviour:
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
+--- !u!1 &670539845
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 670539846}
+  m_Layer: 0
+  m_Name: PuntoMano
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &670539846
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 670539845}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.2000002, y: -0.8799987, z: 1.5499989}
+  m_LocalScale: {x: 0.6552903, y: 0.6552904, z: 0.65529007}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 726680641}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &672685905
 Mesh:
   m_ObjectHideFlags: 0
@@ -66337,6 +66368,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1454571666453407246, guid: 0adbe23c889821e40aa85b20f81895a5, type: 3}
   m_PrefabInstance: {fileID: 703294093}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &703942906 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7315607282774290910, guid: 1d5372e6ec40f4e40941f154619c8525, type: 3}
+  m_PrefabInstance: {fileID: 654566416}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &705366636 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 14b2499b01777437bb268eb5d96fdc79, type: 3}
@@ -67919,6 +67955,7 @@ GameObject:
   - component: {fileID: 726680644}
   - component: {fileID: 726680643}
   - component: {fileID: 726680642}
+  - component: {fileID: 726680648}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -67938,7 +67975,8 @@ Transform:
   m_LocalPosition: {x: -0.00000047107113, y: 0.023000002, z: 0.057000216}
   m_LocalScale: {x: 0.30469865, y: 0.3046986, z: 0.37277937}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 670539846}
   m_Father: {fileID: 1993805350}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &726680642
@@ -68002,7 +68040,7 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 8
-  mano3D: {fileID: 0}
+  mano3D: {fileID: 726680648}
   interactionPanel: {fileID: 98094787}
   interactionText: {fileID: 1431749406}
   descriptionText: {fileID: 298079007}
@@ -68109,6 +68147,19 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &726680648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726680640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c80f52892beea5c4a850f08b10a84b11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorMano3D
+  puntoMano: {fileID: 670539846}
 --- !u!1 &730394074
 GameObject:
   m_ObjectHideFlags: 0
@@ -109984,7 +110035,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1156925198}
   - component: {fileID: 1156925200}
-  - component: {fileID: 1156925199}
+  - component: {fileID: 1156925201}
   m_Layer: 3
   m_Name: PuntoVasos
   m_TagString: Untagged
@@ -110013,20 +110064,6 @@ Transform:
   - {fileID: 2013856223}
   m_Father: {fileID: 1704974596}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1156925199
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1156925197}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e25bc1fb1a554c4c83295b862240eb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PuntoVasos
-  itemVasoVacio: {fileID: 11400000, guid: d807adc115b484080a2397e8296d2eb9, type: 2}
-  vasoDisponible: {fileID: 1086008336}
 --- !u!65 &1156925200
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -110048,6 +110085,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.632786, y: 1.5090182, z: 1.6766417}
   m_Center: {x: -13.376998, y: 5.1754136, z: 25.74096}
+--- !u!114 &1156925201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156925197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b70b96c284e141a39c38b5ffb2806e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuntoVasosAct2
+  itemVasoVacio: {fileID: 11400000, guid: d807adc115b484080a2397e8296d2eb9, type: 2}
+  vasoDisponible: {fileID: 1086008336}
 --- !u!1 &1157281096
 GameObject:
   m_ObjectHideFlags: 0
@@ -171083,6 +171134,11 @@ MonoBehaviour:
   efectoPsicosis: {fileID: 1745656039}
   sacudidaCamara: {fileID: 636570686}
   grupoClientesCorruptos: {fileID: 1025457744}
+  itemCerveza: {fileID: 11400000, guid: d088918bb353a4e839d239be1eb42366, type: 2}
+  itemVasoVacio: {fileID: 11400000, guid: d807adc115b484080a2397e8296d2eb9, type: 2}
+  vasoServicio: {fileID: 703942906}
+  servicioCervezaVisual: {fileID: 2056194600}
+  vasoEnCanilla: 0
   pasilloEfecto: {fileID: 1674480745}
   puertaSotanoL: {fileID: 1850633334}
   puertaSotanoR: {fileID: 869816763}
@@ -179737,10 +179793,10 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 211280466716591218, guid: aa7b6a40013bc4fa7aa75bde111ce7b7, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1975300246}
+      addedObject: {fileID: 1975300245}
     - targetCorrespondingSourceObject: {fileID: 211280466716591218, guid: aa7b6a40013bc4fa7aa75bde111ce7b7, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1975300245}
+      addedObject: {fileID: 1975300246}
   m_SourcePrefab: {fileID: -4161369568681901532, guid: aa7b6a40013bc4fa7aa75bde111ce7b7, type: 3}
 --- !u!4 &1975300243 stripped
 Transform:
@@ -179780,12 +179836,11 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1975300244}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be08cee6e4d02dd45b8d4a2b3eb3ffb7, type: 3}
+  m_Script: {fileID: 11500000, guid: 4e7815677573a42a3b8d75ada3525b97, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PuntoSuministro
-  esBarra: 1
+  m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
 --- !u!1 &1981290222 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2685695807644304935, guid: 9574119bc5a004db2a5f6f98568352c5, type: 3}
