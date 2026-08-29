@@ -24,26 +24,37 @@ public class ControladorMano3D : MonoBehaviour
         }
     }
 
-    public void EquiparItem(ItemSO nuevoItem)
+public void EquiparItem(ItemSO nuevoItem)
+{
+    VaciarMano();
+
+    itemEquipadoActual = nuevoItem;
+
+    if (nuevoItem != null && nuevoItem.prefab3D != null && puntoMano != null)
     {
-        // Limpiamos lo que haya en mano antes de equipar
-        VaciarMano();
+        objetoInstanciadoEnMano =
+            Instantiate(nuevoItem.prefab3D, puntoMano);
 
-        itemEquipadoActual = nuevoItem;
+        objetoInstanciadoEnMano.transform.localPosition =
+            nuevoItem.posicionEnMano;
 
-        if (nuevoItem != null && nuevoItem.prefab3D != null && puntoMano != null)
-        {
-            objetoInstanciadoEnMano = Instantiate(nuevoItem.prefab3D, puntoMano);
-            objetoInstanciadoEnMano.transform.localPosition = Vector3.zero;
-            objetoInstanciadoEnMano.transform.localRotation = Quaternion.identity;
-            Debug.Log($"[ControladorMano3D] Equipado con éxito: {nuevoItem.nombreItem}");
-        }
-        else
-        {
-            Debug.LogWarning("[ControladorMano3D] No se pudo equipar el ítem: Faltan referencias en ItemSO o puntoMano.");
-        }
+        objetoInstanciadoEnMano.transform.localRotation =
+            Quaternion.Euler(nuevoItem.rotacionEnMano);
+
+        objetoInstanciadoEnMano.transform.localScale =
+            nuevoItem.escalaEnMano;
+
+        Debug.Log(
+            $"[ControladorMano3D] Equipado con éxito: {nuevoItem.nombreItem}"
+        );
     }
-
+    else
+    {
+        Debug.LogWarning(
+            "[ControladorMano3D] No se pudo equipar el ítem: Faltan referencias en ItemSO o puntoMano."
+        );
+    }
+}
     public void VaciarMano()
     {
         if (objetoInstanciadoEnMano != null)

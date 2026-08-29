@@ -81,6 +81,14 @@ public class Act1Manager : MonoBehaviour
     [Header("Items ScriptableObjects")]
     public ItemSO itemCerveza;
     public ItemSO itemHoney;
+    public ItemSO itemVasoVacio;
+    
+    [Header("Servicio de cerveza")]
+    public GameObject vasoServicio;
+    public ServicioCervezaVisual servicioCervezaVisual;
+
+    public bool vasoEnCanilla = false;
+    private bool sirviendoCerveza = false;
 
     public static Act1Manager Instance;
 
@@ -407,6 +415,38 @@ public void RecogerObjeto(bool esEnBarra)
         }
     }
 }
+
+public void ColocarVasoEnCanilla()
+{
+    if (ControladorMano3D.Instance == null)
+        return;
+
+    if (ControladorMano3D.Instance.ObtenerItemActual() != itemVasoVacio)
+    {
+        MostrarDialogo("Lucas: Necesito un vaso primero.");
+        return;
+    }
+
+    // Sacamos el vaso vacío de la mano
+    ControladorMano3D.Instance.VaciarMano();
+
+    // Primero dejamos el líquido en estado vacío
+    if (servicioCervezaVisual != null)
+    {
+        servicioCervezaVisual.PrepararVasoVacio();
+    }
+
+    // Ahora aparece el vaso debajo de la canilla
+    if (vasoServicio != null)
+    {
+        vasoServicio.SetActive(true);
+    }
+
+    vasoEnCanilla = true;
+
+    // Y automáticamente empieza a servirse
+    ServirCerveza();
+}
 public bool TienePedidoEntregable()
 {
     return tieneObjetoEnMano;
@@ -414,6 +454,14 @@ public bool TienePedidoEntregable()
 
 public void InteractuarCarlos()
 {
+    Debug.Log("ENTRÓ A InteractuarCarlos");
+
+    if (estadoActual != ActoState.Servicio)
+    {
+        MostrarDialogo("Lucas: Todavía no es momento.");
+        return;
+    }
+
     if (estadoActual != ActoState.Servicio)
     {
         MostrarDialogo("Lucas: Todavía no es momento.");
@@ -431,6 +479,9 @@ public void InteractuarCarlos()
     if (!carlosPidioCerveza)
     {
         carlosPidioCerveza = true; 
+
+        Debug.Log("CARLOS PIDIO CERVEZA = " + carlosPidioCerveza);
+
         MostrarDialogo("Carlos: ¿Te pido una cerveza, maestro?");
 
         if (indicadorCervezas != null) 
@@ -466,6 +517,46 @@ public void InteractuarCarlos()
     }
 
     Debug.Log("[Act1Manager] Carlos atendido. Ahora puede pedir Mariela.");
+}
+
+public void ServirCerveza()
+{
+    if (!vasoEnCanilla)
+    {
+        MostrarDialogo("Lucas: Necesito poner un vaso primero.");
+        return;
+    }
+
+    if (sirviendoCerveza)
+        return;
+
+    if (servicioCervezaVisual == null)
+    {
+        Debug.LogError("Falta asignar ServicioCervezaVisual.");
+        return;
+    }
+
+    sirviendoCerveza = true;
+
+    servicioCervezaVisual.Servir(() =>
+    {
+        sirviendoCerveza = false;
+        vasoEnCanilla = false;
+
+        // Sacamos el vaso visual de la máquina.
+        if (vasoServicio != null)
+            vasoServicio.SetActive(false);
+
+        // Ahora Lucas realmente tiene la cerveza.
+        tieneObjetoEnMano = true;
+
+        if (ControladorMano3D.Instance != null)
+        {
+            ControladorMano3D.Instance.EquiparItem(itemCerveza);
+        }
+
+        MostrarDialogo("Lucas: Listo. A llevársela a Carlos.");
+    });
 }
 
 public void InteractuarMariela()

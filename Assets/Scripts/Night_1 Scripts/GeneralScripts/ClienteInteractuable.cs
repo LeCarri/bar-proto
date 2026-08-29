@@ -92,11 +92,19 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
                 return;
             }
 
+            // Registramos oficialmente el pedido en Act1Manager
+            manager.carlosPidioCerveza = true;
+
             manager.MostrarDialogo(nombreCliente + ": " + dialogoPedido);
 
             estadoActual = EstadoCliente.EsperandoPedido;
 
-            Debug.Log("[ClienteInteractuable] Pedido de Carlos tomado.");
+            if (manager.indicadorCervezas != null)
+            {
+                manager.indicadorCervezas.SetActive(true);
+            }
+
+            Debug.Log("[ClienteInteractuable] Carlos pidió cerveza. carlosPidioCerveza = TRUE.");
             return;
         }
 
