@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -21,6 +22,9 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public Camera playerCamera;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 80.0f;
+
+    [Header("Bloqueo")]
+    public bool controlesBloqueados = false;
 
     private CharacterController characterController;
     private Vector3 moveDirection = Vector3.zero;
@@ -48,6 +52,16 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         if (characterController == null) return;
+
+        if (controlesBloqueados)
+        {
+            if (audioPasos != null)
+
+                audioPasos.Stop();
+
+            return;
+        }
+
 
         rotationX += -Input.GetAxis("Mouse Y") * lookSpeed * Time.timeScale;
         rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
