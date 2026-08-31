@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class Rocola : MonoBehaviour
 {
     [System.Serializable]
@@ -29,7 +30,7 @@ public class Rocola : MonoBehaviour
 
 
     
-    // INTERACCIÓN
+    // INTERACCIï¿½N
     
 
     public void Interact()
@@ -52,18 +53,16 @@ public class Rocola : MonoBehaviour
 
 
     
-    // REPRODUCIR CANCIÓN
+    // REPRODUCIR CANCIï¿½N
    
 
     public void ReproducirCancion(int indice)
     {
-        Debug.Log("BOTÓN: Intentando reproducir canción " + indice);
+        Debug.Log("BOTï¿½N: Intentando reproducir canciï¿½n " + indice);
 
         if (audioSource == null)
         {
-            Debug.LogWarning(
-                "La rocola no tiene un AudioSource asignado."
-            );
+            Debug.LogWarning("La rocola no tiene un AudioSource asignado.");
 
             return;
         }
@@ -71,7 +70,7 @@ public class Rocola : MonoBehaviour
         if (indice < 0 || indice >= canciones.Count)
         {
             Debug.LogWarning(
-                "Índice de canción no válido: " + indice
+                "ï¿½ndice de canciï¿½n no vï¿½lido: " + indice
             );
 
             return;
@@ -79,11 +78,11 @@ public class Rocola : MonoBehaviour
 
         cancion cancionSeleccionada = canciones[indice];
 
-        // ACÁ ESTABA EL ERROR
+        // ACï¿½ ESTABA EL ERROR
         if (cancionSeleccionada.audio == null)
         {
             Debug.LogWarning(
-                "La canción '" +
+                "La cancion '" +
                 cancionSeleccionada.nombre +
                 "' no tiene un AudioClip asignado."
             );
@@ -105,7 +104,7 @@ public class Rocola : MonoBehaviour
 
 
     
-    // DETENER CANCIÓN
+    // DETENER CANCIï¿½N
     
 
     public void DetenerCanciones()
@@ -118,7 +117,7 @@ public class Rocola : MonoBehaviour
         reproduciendo = false;
         cancionActual = -1;
 
-        Debug.Log("Canción detenida.");
+        Debug.Log("Canciï¿½n detenida.");
     }
 
 
@@ -134,18 +133,18 @@ public class Rocola : MonoBehaviour
         if (audioSource.isPlaying)
         {
             audioSource.Pause();
-            Debug.Log("Canción pausada.");
+            Debug.Log("Canciï¿½n pausada.");
         }
         else
         {
             audioSource.UnPause();
-            Debug.Log("Canción continuada.");
+            Debug.Log("Canciï¿½n continuada.");
         }
     }
 
 
     
-    // INFORMACIÓN
+    // INFORMACIï¿½N
     
 
     public string ObtenerNombreCancion(int indice)

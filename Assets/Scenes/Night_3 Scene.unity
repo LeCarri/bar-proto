@@ -15902,7 +15902,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -60, y: 142.40001}
+  m_AnchoredPosition: {x: -60, y: 142.40002}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &202835141
@@ -15998,6 +15998,7 @@ GameObject:
   - component: {fileID: 213822220}
   - component: {fileID: 213822222}
   - component: {fileID: 213822221}
+  - component: {fileID: 213822223}
   m_Layer: 0
   m_Name: Panelrocola
   m_TagString: Untagged
@@ -16012,7 +16013,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 213822219}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -16067,6 +16068,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 213822219}
   m_CullTransparentMesh: 1
+--- !u!114 &213822223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 213822219}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b59e7c9c0d05ad441be4bd1514c80e32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RocolaUI
+  panelrocola: {fileID: 213822219}
+  rocola: {fileID: 1104129111}
+  botonescanciones:
+  - {fileID: 428819310}
+  - {fileID: 202835141}
+  - {fileID: 1005460431}
+  textocanciones:
+  - {fileID: 1391725198}
+  - {fileID: 2024374044}
+  - {fileID: 216685297}
+  botonCerrar: {fileID: 0}
+  textoayuda: {fileID: 0}
 --- !u!1 &214834547
 GameObject:
   m_ObjectHideFlags: 0
@@ -23490,7 +23515,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 349955809}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -25674,61 +25699,6 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!1 &372629215
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 372629216}
-  - component: {fileID: 372629217}
-  m_Layer: 0
-  m_Name: ui script
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &372629216
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 372629215}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1181762682}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &372629217
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 372629215}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b59e7c9c0d05ad441be4bd1514c80e32, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RocolaUI
-  panelrocola: {fileID: 213822219}
-  rocola: {fileID: 1104129111}
-  botonescanciones:
-  - {fileID: 428819310}
-  textocanciones:
-  - {fileID: 1391725198}
-  textoayuda: {fileID: 0}
 --- !u!43 &373885195
 Mesh:
   m_ObjectHideFlags: 0
@@ -33549,7 +33519,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -60, y: 179.69998}
+  m_AnchoredPosition: {x: -60, y: 179.70001}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &428819310
@@ -33565,7 +33535,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
-    m_Mode: 3
+    m_Mode: -1
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
@@ -33596,18 +33566,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 428819308}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
+      - m_Target: {fileID: 213822223}
+        m_TargetAssemblyTypeName: RocolaUI, Assembly-CSharp
+        m_MethodName: Cerrar
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 2
+        m_CallState: 1
 --- !u!114 &428819311
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33629,7 +33599,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -49108,7 +49078,7 @@ Transform:
   m_GameObject: {fileID: 676673254}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 21.094439, y: -4.78358, z: -14.268479}
+  m_LocalPosition: {x: 34.43564, y: -0.9081998, z: -11.62468}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -49121,7 +49091,7 @@ Transform:
   - {fileID: 2060381801}
   - {fileID: 1849658154}
   - {fileID: 1492862930}
-  m_Father: {fileID: 1413163329}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &676816140
 GameObject:
@@ -68774,38 +68744,6 @@ MonoBehaviour:
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!1 &914857373
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 914857374}
-  m_Layer: 0
-  m_Name: ui rocola
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &914857374
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 914857373}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.4867897, y: -4.86754, z: -47.19914}
-  m_LocalScale: {x: 4.97, y: 4.97, z: 4.97}
-  m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 1181762682}
-  m_Father: {fileID: 1413163329}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &916121972
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -79435,7 +79373,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0.000030517578}
+  m_AnchoredPosition: {x: 0, y: -0.000061035156}
   m_SizeDelta: {x: 332.1, y: 444.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1087642234
@@ -80144,9 +80082,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Rocola
   canciones:
   - nombre: cancion 1
-    audio: {fileID: 8300000, guid: 0a42172d089bdc4498c662b44c9d39f8, type: 3}
+    audio: {fileID: 8300000, guid: 8020c1cfa5bd62746baf24294dc8f8d2, type: 3}
   audioSource: {fileID: 1104129114}
-  rocolaUI: {fileID: 372629217}
+  rocolaUI: {fileID: 213822223}
   reproduciendo: 0
   jugador: {fileID: 1869294550}
 --- !u!23 &1104129112
@@ -80218,7 +80156,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -85130,7 +85068,7 @@ GameObject:
   - component: {fileID: 1181762684}
   - component: {fileID: 1181762683}
   m_Layer: 0
-  m_Name: Canvas
+  m_Name: RocolaCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -85149,8 +85087,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 213822220}
-  - {fileID: 372629216}
-  m_Father: {fileID: 914857374}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -85173,7 +85110,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
 --- !u!114 &1181762684
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85219,7 +85156,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_TargetDisplay: 0
 --- !u!43 &1186133660
 Mesh:
@@ -97196,7 +97133,7 @@ GameObject:
   - component: {fileID: 1391725197}
   - component: {fileID: 1391725199}
   - component: {fileID: 1391725198}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97242,7 +97179,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: cancion prueba
+  m_text: 'cancion
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -98688,12 +98627,10 @@ Transform:
   - {fileID: 108769215}
   - {fileID: 2090812471}
   - {fileID: 1162425465}
-  - {fileID: 676673255}
   - {fileID: 679391380}
   - {fileID: 1636692266}
   - {fileID: 1009046103}
   - {fileID: 898041791}
-  - {fileID: 914857374}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1415365048
@@ -149848,7 +149785,9 @@ SceneRoots:
   - {fileID: 1613628049}
   - {fileID: 1830363686}
   - {fileID: 1413163329}
+  - {fileID: 1181762682}
   - {fileID: 1667527505}
+  - {fileID: 676673255}
   - {fileID: 507537258}
   - {fileID: 137586788}
   - {fileID: 53841271}

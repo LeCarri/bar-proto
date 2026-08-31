@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class RocolaUI : MonoBehaviour
 {
@@ -10,15 +12,15 @@ public class RocolaUI : MonoBehaviour
     [Header("Rocola")]
     public Rocola rocola;
 
-    [Header("Botones")]
+    [Header("Botones y Textos")]
     public Button[] botonescanciones;
-
-    [Header("Texto de los botones")]
     public TextMeshProUGUI[] textocanciones;
+
+    [Header("Boton de Salir")]
+    public Button botonCerrar; // Asignar este bot√≥n en el Inspector
 
     [Header("Texto de ayuda")]
     public TextMeshProUGUI textoayuda;
-
 
     private void Start()
     {
@@ -26,78 +28,64 @@ public class RocolaUI : MonoBehaviour
         {
             panelrocola.SetActive(false);
         }
+
+        // Vincular bot√≥n de cerrar si est√° asignado en Inspector
+        if (botonCerrar != null)
+        {
+            botonCerrar.onClick.RemoveAllListeners();
+            botonCerrar.onClick.AddListener(Cerrar);
+        }
     }
 
+    private void Update()
+    {
+        // Permitir salir de la UI con Tecla Escape o E si la rocola est√° abierta
+        if (panelrocola != null && panelrocola.activeSelf)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.E))
+            {
+                Cerrar();
+            }
+        }
+    }
 
-    
     // ABRIR ROCOLA
-    
-
     public void Abrir(Rocola nuevarocola)
     {
-        Debug.Log("UI: EntrÛ a Abrir()");
-
         rocola = nuevarocola;
 
         if (panelrocola != null)
         {
-            Debug.Log("UI: Panel encontrado. Activ·ndolo...");
-
             panelrocola.SetActive(true);
-
-            Debug.Log(
-                "Panel activo: " +
-                panelrocola.activeSelf
-            );
         }
         else
         {
-            Debug.LogError(
-                "UI: PANEL ROCOLA ES NULL"
-            );
+            Debug.LogError("UI: PANEL ROCOLA ES NULL");
+            return;
         }
 
-
-        // BLOQUEAR JUGADOR Y CAMARA
-
+        // BLOQUEAR JUGADOR
         if (rocola != null && rocola.jugador != null)
         {
             rocola.jugador.controlesBloqueados = true;
         }
 
-
         // MOSTRAR MOUSE
-
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-
         // ACTUALIZAR BOTONES
-
         Actualizarcanciones();
     }
 
-
-    
-    // ACTUALIZAR LISTA
-    
-
+    // ACTUALIZAR LISTA DE CANCIONES
     void Actualizarcanciones()
     {
         if (rocola == null)
         {
-            Debug.LogError(
-                "UI: No hay una rocola asignada."
-            );
-
+            Debug.LogError("UI: No hay una rocola asignada.");
             return;
         }
-
-        Debug.Log(
-            "UI: Cantidad de canciones: " +
-            rocola.canciones.Count
-        );
-
 
         for (int i = 0; i < botonescanciones.Length; i++)
         {
@@ -105,37 +93,17 @@ public class RocolaUI : MonoBehaviour
             {
                 botonescanciones[i].gameObject.SetActive(true);
 
-
                 // NOMBRE DE LA CANCION
-
-                if (i < textocanciones.Length)
+                if (i < textocanciones.Length && textocanciones[i] != null)
                 {
-                    textocanciones[i].text =
-                        rocola.canciones[i].nombre;
+                    textocanciones[i].text = rocola.canciones[i].nombre;
                 }
 
+                int indice = i; // Copia local para la closure de la lambda
 
-                int indice = i;
-
-
-                // LIMPIAR EVENTOS ANTERIORES
-
+                // LIMPIAR Y ASIGNAR EVENTO
                 botonescanciones[i].onClick.RemoveAllListeners();
-
-
-                // AGREGAR EVENTO
-
-                botonescanciones[i].onClick.AddListener(
-                    () => SeleccionarCancion(indice)
-                );
-
-
-                Debug.Log(
-                    "UI: BotÛn " +
-                    i +
-                    " conectado a canciÛn " +
-                    rocola.canciones[i].nombre
-                );
+                botonescanciones[i].onClick.AddListener(() => SeleccionarCancion(indice));
             }
             else
             {
@@ -144,56 +112,20 @@ public class RocolaUI : MonoBehaviour
         }
     }
 
-
-    
     // SELECCIONAR CANCION
-   
-
     void SeleccionarCancion(int indice)
     {
-        Debug.Log(
-            "UI: Se hizo click en el botÛn. Õndice: " +
-            indice
-        );
-
-
-        if (rocola == null)
-        {
-            Debug.LogError(
-                "UI: Rocola es NULL."
-            );
-
-            return;
-        }
-
-
-        if (indice < 0 || indice >= rocola.canciones.Count)
-        {
-            Debug.LogError(
-                "UI: Õndice inv·lido: " +
-                indice
-            );
-
-            return;
-        }
-
+        if (rocola == null) return;
 
         rocola.ReproducirCancion(indice);
 
-
         if (textoayuda != null)
         {
-            textoayuda.text =
-                "Reproduciendo: " +
-                rocola.canciones[indice].nombre;
+            textoayuda.text = "Reproduciendo: " + rocola.ObtenerNombreCancion(indice);
         }
     }
 
-
-   
     // CERRAR
-    
-
     public void Cerrar()
     {
         if (panelrocola != null)
@@ -201,21 +133,14 @@ public class RocolaUI : MonoBehaviour
             panelrocola.SetActive(false);
         }
 
-
         // DESBLOQUEAR JUGADOR
-
         if (rocola != null && rocola.jugador != null)
         {
             rocola.jugador.controlesBloqueados = false;
         }
 
-
         // OCULTAR MOUSE
-
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-
-        rocola = null;
     }
 }
