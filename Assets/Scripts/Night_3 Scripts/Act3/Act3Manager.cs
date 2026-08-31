@@ -79,6 +79,7 @@ public class Act3Manager : MonoBehaviour
 
     // LIMPIEZA INICIAL
 
+
     [Header("DEBUG")]
     public bool saltarLimpiezaAlIniciar = false;
 
@@ -95,90 +96,6 @@ public class Act3Manager : MonoBehaviour
 
     private bool limpiezaTerminada = false;
 
-    public bool PuedeUsarServicioBebidas()
-    {
-        return servicioBebidasActivo;
-    }
-
-    public void ColocarVasoEnCanilla()
-{
-    if (!PuedeUsarServicioBebidas())
-    {
-        MostrarDialogo("Lucas: Ahora no es momento de preparar bebidas.");
-        return;
-    }
-
-    if (ControladorMano3D.Instance == null)
-        return;
-
-    if (ControladorMano3D.Instance.ObtenerItemActual() != itemVasoVacio)
-    {
-        MostrarDialogo("Lucas: Necesito un vaso primero.");
-        return;
-    }
-
-    // Sacamos el vaso vacío de la mano
-    ControladorMano3D.Instance.VaciarMano();
-
-    // Dejamos el líquido vacío antes de mostrar el vaso
-    if (servicioCervezaVisual != null)
-    {
-        servicioCervezaVisual.PrepararVasoVacio();
-    }
-
-    // Aparece el vaso debajo de la canilla
-    if (vasoServicio != null)
-    {
-        vasoServicio.SetActive(true);
-    }
-
-    vasoEnCanilla = true;
-
-    // Empieza automáticamente
-    ServirCerveza();
-}
-
-
-public void ServirCerveza()
-{
-    if (!vasoEnCanilla)
-        return;
-
-    if (sirviendoCerveza)
-        return;
-
-    if (servicioCervezaVisual == null)
-    {
-        Debug.LogError(
-            "[Act3Manager] Falta asignar ServicioCervezaVisual."
-        );
-        return;
-    }
-
-    sirviendoCerveza = true;
-
-    servicioCervezaVisual.Servir(() =>
-    {
-        sirviendoCerveza = false;
-        vasoEnCanilla = false;
-
-        // Desaparece el vaso de la máquina
-        if (vasoServicio != null)
-        {
-            vasoServicio.SetActive(false);
-        }
-
-        // Aparece la cerveza llena en la mano
-        if (ControladorMano3D.Instance != null)
-        {
-            ControladorMano3D.Instance.EquiparItem(itemCerveza);
-        }
-
-        Debug.Log("[Act3Manager] Cerveza servida.");
-    });
-}
-
-
 
 
     // PEDIDOS
@@ -189,6 +106,14 @@ public void ServirCerveza()
     public bool tienePedido = false;
     public bool tienePedidoBuscado = false;
 
+    [Header("Configuración pedidos")]
+    public string nombrePedidoCerveza = "Cerveza";
+
+
+
+    // SERVICIO DE CERVEZA
+
+
     [Header("Servicio de cerveza")]
     public ItemSO itemCerveza;
     public ItemSO itemVasoVacio;
@@ -196,7 +121,8 @@ public void ServirCerveza()
     public GameObject vasoServicio;
     public ServicioCervezaVisual servicioCervezaVisual;
 
-    [HideInInspector] public bool vasoEnCanilla = false;
+    [HideInInspector]
+    public bool vasoEnCanilla = false;
 
     private bool sirviendoCerveza = false;
     private bool servicioBebidasActivo = false;
@@ -269,7 +195,116 @@ public void ServirCerveza()
 
 
         ActualizarObjetivo("Busca los elementos de limpieza");
+    }
+
+
+
+    // SERVICIO DE BEBIDAS
+
+
+    public bool PuedeUsarServicioBebidas()
+    {
+        return servicioBebidasActivo;
+    }
+
+
+    public void ColocarVasoEnCanilla()
+    {
+        if (!PuedeUsarServicioBebidas())
+        {
+            MostrarDialogo(
+                "Lucas: Ahora no es momento de preparar bebidas."
+            );
+            return;
+        }
+
+        if (ControladorMano3D.Instance == null)
+            return;
+
+        if (
+            ControladorMano3D.Instance.ObtenerItemActual()
+            != itemVasoVacio
+        )
+        {
+            MostrarDialogo(
+                "Lucas: Necesito un vaso primero."
+            );
+            return;
+        }
+
+        // Sacamos el vaso vacío de la mano
+        ControladorMano3D.Instance.VaciarMano();
+
+        // Dejamos el líquido vacío antes de mostrar el vaso
+        if (servicioCervezaVisual != null)
+        {
+            servicioCervezaVisual.PrepararVasoVacio();
+        }
+
+        // Aparece el vaso debajo de la canilla
+        if (vasoServicio != null)
+        {
+            vasoServicio.SetActive(true);
+        }
+
+        vasoEnCanilla = true;
+
+        // Empieza automáticamente
+        ServirCerveza();
+    }
+
+
+    public void ServirCerveza()
+    {
+        if (!vasoEnCanilla)
+            return;
+
+        if (sirviendoCerveza)
+            return;
+
+        if (servicioCervezaVisual == null)
+        {
+            Debug.LogError(
+                "[Act3Manager] Falta asignar ServicioCervezaVisual."
+            );
+            return;
+        }
+
+        sirviendoCerveza = true;
+
+        servicioCervezaVisual.Servir(() =>
+        {
+            sirviendoCerveza = false;
+            vasoEnCanilla = false;
+
+            // Desaparece el vaso de la máquina
+            if (vasoServicio != null)
+            {
+                vasoServicio.SetActive(false);
             }
+
+            // Aparece la cerveza llena en la mano
+            if (ControladorMano3D.Instance != null)
+            {
+                ControladorMano3D.Instance.EquiparItem(
+                    itemCerveza
+                );
+            }
+
+            // NUEVO:
+            // Registramos la cerveza como pedido recogido.
+            // Solo será correcto si coincide con pedidoActual.
+            RecogerPedido(nombrePedidoCerveza);
+
+            Debug.Log(
+                "[Act3Manager] Cerveza servida. " +
+                "Pedido actual: " +
+                pedidoActual +
+                " | Pedido conseguido: " +
+                tienePedidoBuscado
+            );
+        });
+    }
 
 
 
@@ -317,10 +352,10 @@ public void ServirCerveza()
                     textoInteraccion.text = textoCliente;
             }
 
-            //ROCOLA 
 
+            // ROCOLA
             Rocola rocola =
-                    hit.collider.GetComponent<Rocola>();
+                hit.collider.GetComponent<Rocola>();
 
             if (rocola != null)
             {
@@ -332,8 +367,6 @@ public void ServirCerveza()
                 if (textoInteraccion != null)
                     textoInteraccion.text = "usar rocola";
             }
-
-
 
 
             // MANCHA DE SANGRE
@@ -348,39 +381,50 @@ public void ServirCerveza()
                     panelInteraccion.SetActive(true);
 
                 if (textoInteraccion != null)
-                    textoInteraccion.text = "Mantener E para limpiar";
+                    textoInteraccion.text =
+                        "Mantener E para limpiar";
             }
 
+
             // PUNTO DE VASOS
-                PuntoVasosAct3 puntoVasos =
-                    hit.collider.GetComponentInParent<PuntoVasosAct3>();
+            PuntoVasosAct3 puntoVasos =
+                hit.collider.GetComponentInParent<PuntoVasosAct3>();
 
-                if (puntoVasos != null && puntoVasos.PuedeInteractuar())
-                {
-                    mirandoAlgo = true;
+            if (
+                puntoVasos != null &&
+                puntoVasos.PuedeInteractuar()
+            )
+            {
+                mirandoAlgo = true;
 
-                    if (panelInteraccion != null)
-                        panelInteraccion.SetActive(true);
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
 
-                    if (textoInteraccion != null)
-                        textoInteraccion.text = "Tomar vaso";
-                }
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "Tomar vaso";
+            }
+
 
             // SERVICIO DE CERVEZA
-                PuntoSuministroAct3 suministroCerveza =
-                    hit.collider.GetComponentInParent<PuntoSuministroAct3>();
+            PuntoSuministroAct3 suministroCerveza =
+                hit.collider.GetComponentInParent<
+                    PuntoSuministroAct3
+                >();
 
-                if (suministroCerveza != null &&
-                    suministroCerveza.PuedeInteractuar())
-                {
-                    mirandoAlgo = true;
+            if (
+                suministroCerveza != null &&
+                suministroCerveza.PuedeInteractuar()
+            )
+            {
+                mirandoAlgo = true;
 
-                    if (panelInteraccion != null)
-                        panelInteraccion.SetActive(true);
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
 
-                    if (textoInteraccion != null)
-                        textoInteraccion.text = "Servir cerveza";
-                }
+                if (textoInteraccion != null)
+                    textoInteraccion.text =
+                        "Servir cerveza";
+            }
 
 
             // PEDIDO
@@ -417,7 +461,9 @@ public void ServirCerveza()
 
             // ELEMENTOS DE LIMPIEZA
             ElementosLimpieza limpieza =
-                hit.collider.GetComponentInParent<ElementosLimpieza>();
+                hit.collider.GetComponentInParent<
+                    ElementosLimpieza
+                >();
 
             if (limpieza != null)
             {
@@ -433,7 +479,9 @@ public void ServirCerveza()
 
             // OBJETO ESPECIAL
             ObjetosEspeciales objeto =
-                hit.collider.GetComponentInParent<ObjetosEspeciales>();
+                hit.collider.GetComponentInParent<
+                    ObjetosEspeciales
+                >();
 
             if (objeto != null)
             {
@@ -474,8 +522,7 @@ public void ServirCerveza()
                 QueryTriggerInteraction.Collide
             ))
             {
-
-                //ROCOLA
+                // ROCOLA
                 Rocola rocola =
                     hit.collider.GetComponentInParent<Rocola>();
 
@@ -488,7 +535,9 @@ public void ServirCerveza()
 
                 // ELEMENTOS DE LIMPIEZA
                 ElementosLimpieza limpieza =
-                    hit.collider.GetComponentInParent<ElementosLimpieza>();
+                    hit.collider.GetComponentInParent<
+                        ElementosLimpieza
+                    >();
 
                 if (limpieza != null)
                 {
@@ -498,9 +547,10 @@ public void ServirCerveza()
 
 
                 // PUERTA
-
                 PuertaSotano puerta =
-                    hit.collider.GetComponentInParent<PuertaSotano>();
+                    hit.collider.GetComponentInParent<
+                        PuertaSotano
+                    >();
 
                 if (puerta != null)
                 {
@@ -511,7 +561,9 @@ public void ServirCerveza()
 
                 // MANCHA DE SANGRE
                 ManchaSangre mancha =
-                    hit.collider.GetComponentInParent<ManchaSangre>();
+                    hit.collider.GetComponentInParent<
+                        ManchaSangre
+                    >();
 
                 if (mancha != null)
                 {
@@ -529,9 +581,10 @@ public void ServirCerveza()
 
 
                 // OBJETO ESPECIAL
-
                 ObjetosEspeciales objeto =
-                    hit.collider.GetComponentInParent<ObjetosEspeciales>();
+                    hit.collider.GetComponentInParent<
+                        ObjetosEspeciales
+                    >();
 
                 if (objeto != null)
                 {
@@ -541,9 +594,10 @@ public void ServirCerveza()
 
 
                 // CLIENTE
-
                 SimpleInteract cliente =
-                    hit.collider.GetComponentInParent<SimpleInteract>();
+                    hit.collider.GetComponentInParent<
+                        SimpleInteract
+                    >();
 
                 if (cliente != null)
                 {
@@ -551,9 +605,12 @@ public void ServirCerveza()
                     return;
                 }
 
+
                 // PUNTO DE VASOS
                 PuntoVasosAct3 puntoVasos =
-                    hit.collider.GetComponentInParent<PuntoVasosAct3>();
+                    hit.collider.GetComponentInParent<
+                        PuntoVasosAct3
+                    >();
 
                 if (puntoVasos != null)
                 {
@@ -561,9 +618,12 @@ public void ServirCerveza()
                     return;
                 }
 
+
                 // SERVICIO DE CERVEZA
                 PuntoSuministroAct3 suministroCerveza =
-                    hit.collider.GetComponentInParent<PuntoSuministroAct3>();
+                    hit.collider.GetComponentInParent<
+                        PuntoSuministroAct3
+                    >();
 
                 if (suministroCerveza != null)
                 {
@@ -572,19 +632,17 @@ public void ServirCerveza()
                 }
 
 
-
                 // PEDIDO
-
-
                 PedidoPickup pedido =
-                    hit.collider.GetComponentInParent<PedidoPickup>();
+                    hit.collider.GetComponentInParent<
+                        PedidoPickup
+                    >();
 
                 if (pedido != null)
                 {
                     pedido.Interact();
                     return;
                 }
-
             }
         }
     }
@@ -606,7 +664,8 @@ public void ServirCerveza()
 
         textoSubtitulos.text = mensaje;
 
-        dialogoActual = StartCoroutine(LimpiarTextoCoroutine());
+        dialogoActual =
+            StartCoroutine(LimpiarTextoCoroutine());
     }
 
 
@@ -676,11 +735,14 @@ public void ServirCerveza()
     // OBJETIVOS
 
 
-    public void ActualizarObjetivo(string nuevoObjetivo)
+    public void ActualizarObjetivo(
+        string nuevoObjetivo
+    )
     {
         if (textoObjetivo != null)
         {
-            textoObjetivo.text = "- " + nuevoObjetivo;
+            textoObjetivo.text =
+                "- " + nuevoObjetivo;
         }
     }
 
@@ -688,28 +750,37 @@ public void ServirCerveza()
 
     // LIMPIEZA INICIAL
 
+
     public void SaltarLimpiezaDebug()
     {
-        Debug.Log("[DEBUG] Saltando limpieza inicial.");
+        Debug.Log(
+            "[DEBUG] Saltando limpieza inicial."
+        );
 
         tieneElementosLimpieza = true;
 
-        manchasParedLimpiadas = totalManchasPared;
-        manchasPisoLimpiadas = totalManchasPiso;
+        manchasParedLimpiadas =
+            totalManchasPared;
+
+        manchasPisoLimpiadas =
+            totalManchasPiso;
 
         limpiezaTerminada = true;
 
-        // Ocultamos los elementos que había que recoger
         if (ElementosLimpieza != null)
         {
             ElementosLimpieza.SetActive(false);
         }
 
-        ActualizarObjetivo("Limpieza completada");
+        ActualizarObjetivo(
+            "Limpieza completada"
+        );
 
-        // Vamos directamente al comienzo del servicio
-        StartCoroutine(SecuenciaInicio());
+        StartCoroutine(
+            SecuenciaInicio()
+        );
     }
+
 
     public void RecogerElementosLimpieza()
     {
@@ -718,7 +789,9 @@ public void ServirCerveza()
 
         tieneElementosLimpieza = true;
 
-        Debug.Log("Elementos de limpieza recogidos.");
+        Debug.Log(
+            "Elementos de limpieza recogidos."
+        );
 
         MostrarDialogo(
             "Bien... será mejor limpiar todo esto antes de empezar."
@@ -732,8 +805,14 @@ public void ServirCerveza()
     {
         if (!tieneElementosLimpieza)
         {
-            Debug.Log("NO SE PUEDE LIMPIAR: todavía no tiene los elementos de limpieza.");
-            MostrarDialogo("Necesito buscar los elementos de limpieza primero.");
+            Debug.Log(
+                "NO SE PUEDE LIMPIAR: todavía no tiene los elementos de limpieza."
+            );
+
+            MostrarDialogo(
+                "Necesito buscar los elementos de limpieza primero."
+            );
+
             return;
         }
 
@@ -742,9 +821,13 @@ public void ServirCerveza()
 
         manchasParedLimpiadas++;
 
-        if (manchasParedLimpiadas > totalManchasPared)
+        if (
+            manchasParedLimpiadas >
+            totalManchasPared
+        )
         {
-            manchasParedLimpiadas = totalManchasPared;
+            manchasParedLimpiadas =
+                totalManchasPared;
         }
 
         Debug.Log(
@@ -777,9 +860,13 @@ public void ServirCerveza()
 
         manchasPisoLimpiadas++;
 
-        if (manchasPisoLimpiadas > totalManchasPiso)
+        if (
+            manchasPisoLimpiadas >
+            totalManchasPiso
+        )
         {
-            manchasPisoLimpiadas = totalManchasPiso;
+            manchasPisoLimpiadas =
+                totalManchasPiso;
         }
 
         Debug.Log(
@@ -819,34 +906,48 @@ public void ServirCerveza()
             return;
 
         bool paredTerminada =
-            manchasParedLimpiadas >= totalManchasPared;
+            manchasParedLimpiadas >=
+            totalManchasPared;
 
         bool pisoTerminado =
-            manchasPisoLimpiadas >= totalManchasPiso;
+            manchasPisoLimpiadas >=
+            totalManchasPiso;
 
 
-        if (paredTerminada && pisoTerminado)
+        if (
+            paredTerminada &&
+            pisoTerminado
+        )
         {
             limpiezaTerminada = true;
 
-            Debug.Log("Limpieza terminada.");
+            Debug.Log(
+                "Limpieza terminada."
+            );
 
-            StartCoroutine(FinalizarLimpieza());
+            StartCoroutine(
+                FinalizarLimpieza()
+            );
         }
     }
 
 
     IEnumerator FinalizarLimpieza()
     {
-        ActualizarObjetivo("Limpieza completada");
+        ActualizarObjetivo(
+            "Limpieza completada"
+        );
 
         MostrarDialogo(
             "Listo... ya está todo limpio."
         );
 
-        yield return new WaitForSeconds(3f);
+        yield return
+            new WaitForSeconds(3f);
 
-        StartCoroutine(SecuenciaInicio());
+        StartCoroutine(
+            SecuenciaInicio()
+        );
     }
 
 
@@ -861,17 +962,21 @@ public void ServirCerveza()
             effectoParpadeo.IniciarParpadeo();
         }
 
-        yield return new WaitForSeconds(1.5f);
+        yield return
+            new WaitForSeconds(1.5f);
 
 
         MostrarDialogo(
             "Ya casi... una ronda mas y bajo a buscarlas. Tienen que estar por despertar"
         );
 
-        yield return new WaitForSeconds(3f);
+        yield return
+            new WaitForSeconds(3f);
 
 
-        CambiarIluminacion("Servicio");
+        CambiarIluminacion(
+            "Servicio"
+        );
 
 
         if (effectoParpadeo != null)
@@ -885,7 +990,6 @@ public void ServirCerveza()
             clientesActo3.SetActive(true);
         }
 
-        // A partir de acá Lucas puede preparar bebidas.
         servicioBebidasActivo = true;
 
 
@@ -901,20 +1005,22 @@ public void ServirCerveza()
 
     public bool TienePedidoEntregable()
     {
-        return tienePedido && tienePedidoBuscado;
+        return
+            tienePedido &&
+            tienePedidoBuscado;
     }
 
 
     public void TomarPedido(string pedido)
     {
         pedidoActual = pedido;
+
         tienePedido = true;
+
         tienePedidoBuscado = false;
 
 
-
         // PEDIDO ESPECIAL
-
 
         if (objetoEspecial != null)
         {
@@ -933,12 +1039,14 @@ public void ServirCerveza()
 
 
         ActualizarObjetivo(
-            "Pedido: " + pedidoActual
+            "Pedido: " +
+            pedidoActual
         );
 
 
         Debug.Log(
-            "Pedido tomado: " + pedidoActual
+            "Pedido tomado: " +
+            pedidoActual
         );
     }
 
@@ -946,11 +1054,13 @@ public void ServirCerveza()
     public void RecogerPedido(string objeto)
     {
         Debug.Log(
-            "Objeto recogido: " + objeto
+            "Objeto recogido: " +
+            objeto
         );
 
         Debug.Log(
-            "Pedido actual: " + pedidoActual
+            "Pedido actual: " +
+            pedidoActual
         );
 
 
@@ -967,29 +1077,41 @@ public void ServirCerveza()
                 objetoEspecial.SetActive(false);
             }
 
-            Debug.Log("Pedido correcto.");
+            Debug.Log(
+                "Pedido correcto."
+            );
 
 
             ActualizarObjetivo(
-                "Entregar pedido: " + pedidoActual
+                "Entregar pedido: " +
+                pedidoActual
             );
         }
     }
 
 
     public void EntregarPedido()
+{
+    // Sacamos de la mano cualquier objeto que Lucas
+    // acaba de entregar al cliente.
+    if (ControladorMano3D.Instance != null)
     {
-        tienePedido = false;
-        tienePedidoBuscado = false;
-        pedidoActual = "";
-
-        ActualizarObjetivo(
-            "Atiende a las entidades de la barra (" +
-            clientesAtendidos +
-            "/2)"
-        );
+        ControladorMano3D.Instance.VaciarMano();
     }
 
+    // Limpiamos el pedido actual.
+    tienePedido = false;
+    tienePedidoBuscado = false;
+    pedidoActual = "";
+
+    ActualizarObjetivo(
+        "Atiende a las entidades de la barra (" +
+        clientesAtendidos +
+        "/2)"
+    );
+
+    Debug.Log("[Act3Manager] Pedido entregado. Mano vaciada.");
+}
 
 
     // CONTEO DE CLIENTES
@@ -1015,7 +1137,9 @@ public void ServirCerveza()
 
         if (clientesAtendidos == 2)
         {
-            StartCoroutine(AvanzarNoche());
+            StartCoroutine(
+                AvanzarNoche()
+            );
         }
     }
 
@@ -1033,7 +1157,8 @@ public void ServirCerveza()
         );
 
 
-        yield return new WaitForSeconds(4f);
+        yield return
+            new WaitForSeconds(4f);
 
 
         if (effectoParpadeo != null)
@@ -1048,7 +1173,8 @@ public void ServirCerveza()
         }
 
 
-        yield return new WaitForSeconds(3f);
+        yield return
+            new WaitForSeconds(3f);
 
 
         MostrarDialogo(
@@ -1061,13 +1187,17 @@ public void ServirCerveza()
         );
 
 
-        yield return new WaitForSeconds(5f);
+        yield return
+            new WaitForSeconds(5f);
 
 
-        CambiarIluminacion("Apagado");
+        CambiarIluminacion(
+            "Apagado"
+        );
 
 
-        yield return new WaitForSeconds(1.5f);
+        yield return
+            new WaitForSeconds(1.5f);
 
 
         if (enemigos != null)
@@ -1080,7 +1210,10 @@ public void ServirCerveza()
         // APARICIÓN DEL VIGILANTE
 
 
-        if (vigilante != null && Camera.main != null)
+        if (
+            vigilante != null &&
+            Camera.main != null
+        )
         {
             Transform cam =
                 Camera.main.transform;
@@ -1108,7 +1241,9 @@ public void ServirCerveza()
 
 
             vigilante.transform.rotation =
-                Quaternion.LookRotation(direccion);
+                Quaternion.LookRotation(
+                    direccion
+                );
 
 
             vigilante.transform.Rotate(
@@ -1133,10 +1268,13 @@ public void ServirCerveza()
         {
             if (ParanoiaSystem.Instance != null)
             {
-                ParanoiaSystem.Instance.AddParanoia(1f);
+                ParanoiaSystem.Instance.AddParanoia(
+                    1f
+                );
             }
 
-            yield return new WaitForSeconds(5f);
+            yield return
+                new WaitForSeconds(5f);
         }
     }
 
@@ -1153,5 +1291,4 @@ public void ServirCerveza()
             "Basement (pasto)"
         );
     }
-
 }

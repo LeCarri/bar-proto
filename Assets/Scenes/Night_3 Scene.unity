@@ -76619,7 +76619,7 @@ MonoBehaviour:
   textoObjetivo: {fileID: 1129142945}
   enSotano: 0
   clientesAtendidos: 0
-  saltarLimpiezaAlIniciar: 0
+  saltarLimpiezaAlIniciar: 1
   ElementosLimpieza: {fileID: 103227574}
   tieneElementosLimpieza: 0
   manchasParedLimpiadas: 0
@@ -76629,6 +76629,7 @@ MonoBehaviour:
   pedidoActual: 
   tienePedido: 0
   tienePedidoBuscado: 0
+  nombrePedidoCerveza: Trago Especial
   itemCerveza: {fileID: 11400000, guid: d088918bb353a4e839d239be1eb42366, type: 2}
   itemVasoVacio: {fileID: 11400000, guid: d807adc115b484080a2397e8296d2eb9, type: 2}
   vasoServicio: {fileID: 1446332551}
@@ -93783,7 +93784,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PedidoPickup
   nombreObjeto: Vaso
-  minijuegoPedido: {fileID: 1305857764}
 --- !u!114 &1305857764
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93791,7 +93791,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1305857760}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a48818e829c40cb44ba7a85066f94a0c, type: 3}
   m_Name: 
@@ -102327,15 +102327,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 64b17715e33134fd3a1af78cdc68cd09, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.249071
+      value: 3.682
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 64b17715e33134fd3a1af78cdc68cd09, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.1651407
+      value: 1.172
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 64b17715e33134fd3a1af78cdc68cd09, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -44.44525
+      value: -44.319
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 64b17715e33134fd3a1af78cdc68cd09, type: 3}
       propertyPath: m_LocalRotation.w
@@ -117301,7 +117301,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PedidoPickup
   nombreObjeto: Trago Especial
-  minijuegoPedido: {fileID: 1726213119}
 --- !u!65 &1726213118
 BoxCollider:
   m_ObjectHideFlags: 0
