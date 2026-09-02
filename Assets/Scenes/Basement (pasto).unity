@@ -2984,10 +2984,12 @@ MonoBehaviour:
   normalFOV: 60
   runFOV: 68
   fovTransitionSpeed: 6
+  audioPasos: {fileID: 0}
   cameraPivot: {fileID: 0}
   playerCamera: {fileID: 1337759184}
   lookSpeed: 2
   lookXLimit: 75
+  controlesBloqueados: 0
 --- !u!54 &34853365
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -29843,7 +29845,7 @@ MonoBehaviour:
   m_text: New Text
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
-  m_sharedMaterial: {fileID: -2828476474859504074, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
+  m_sharedMaterial: {fileID: 4665154728266170493, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -65549,18 +65551,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6422788020536371428, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6444704545846961720, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
-      propertyPath: m_Constraints
-      value: 14
-      objectReference: {fileID: 0}
     - target: {fileID: 296295093561450055, guid: 6e4c78d8fd5eb4e129a7a00d811a0afc, type: 3}
       propertyPath: m_Size.x
       value: 4.1152506
@@ -65657,6 +65647,18 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 6ec8f4eefb5934e7e80f60a0fcbf2c3b, type: 2}
+    - target: {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6422788020536371428, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6444704545846961720, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
+      propertyPath: m_Constraints
+      value: 14
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6422788020536371428, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
     - {fileID: 1108807008902089556, guid: fd12bf96a0e228949be69ecbcb8fa3a5, type: 3}
@@ -79024,8 +79026,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 137684, guid: aff140f02621ac24782b60cba0a08072, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1138620820}
   m_SourcePrefab: {fileID: 100100000, guid: aff140f02621ac24782b60cba0a08072, type: 3}
+--- !u!1 &922447528 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 137684, guid: aff140f02621ac24782b60cba0a08072, type: 3}
+  m_PrefabInstance: {fileID: 922447527}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &925991248
 Mesh:
   m_ObjectHideFlags: 0
@@ -82488,7 +82498,7 @@ MonoBehaviour:
   m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
-  m_sharedMaterial: {fileID: -2828476474859504074, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
+  m_sharedMaterial: {fileID: 4665154728266170493, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -84355,6 +84365,103 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 494384, guid: aff140f02621ac24782b60cba0a08072, type: 3}
   m_PrefabInstance: {fileID: 922447527}
   m_PrefabAsset: {fileID: 0}
+--- !u!82 &1138620820
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 922447528}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 1366448cad4f55d498d1afb18bb54fc9, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1001 &1139690319
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -86169,7 +86276,7 @@ MonoBehaviour:
   m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
-  m_sharedMaterial: {fileID: -2828476474859504074, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
+  m_sharedMaterial: {fileID: 4665154728266170493, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -89054,6 +89161,7 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 8
+  mano3D: {fileID: 0}
   interactionPanel: {fileID: 0}
   interactionText: {fileID: 0}
   descriptionText: {fileID: 0}
@@ -106581,7 +106689,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 468756, guid: a89aa0f7fb27db94790f2db204b64677, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.65919
+      value: -5.53
       objectReference: {fileID: 0}
     - target: {fileID: 468756, guid: a89aa0f7fb27db94790f2db204b64677, type: 3}
       propertyPath: m_LocalPosition.z
@@ -111211,7 +111319,7 @@ MonoBehaviour:
   m_text: Paranoia
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
-  m_sharedMaterial: {fileID: -2828476474859504074, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
+  m_sharedMaterial: {fileID: 4665154728266170493, guid: b25a8c11dabab476ea77c2347430af00, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
