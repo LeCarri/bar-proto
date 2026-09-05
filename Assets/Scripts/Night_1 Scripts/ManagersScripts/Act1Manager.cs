@@ -93,11 +93,18 @@ public class Act1Manager : MonoBehaviour
     public bool vasoEnCanilla = false;
     private bool sirviendoCerveza = false;
 
-    public static Act1Manager Instance;
+    public static Act1Manager Instance {get; private set;}
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }   
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     void Start()
@@ -119,6 +126,12 @@ public class Act1Manager : MonoBehaviour
 
         CambiarIluminacion("Normal");
         IniciarFaseTareas();
+    }
+
+    private IEnumerator SecuenciaInicioNoche()
+    {
+        // Lógica inicial de la Noche 1 (fades, audios, etc.)
+        yield return null;
     }
 
     public void IniciarFaseTareas()
@@ -532,57 +545,86 @@ public void RecogerObjeto(ItemSO item)
 
     public void MostrarDialogo(string mensaje)
     {
-        if (textoSubtitulos == null) Debug.LogError("¡Falta asignar 'textosSubtitulos' en Act1Manager!");
-        if (canvasGroupDialogo == null) Debug.LogError("¡Falta asignar 'canvasGroupDialogo' en Act1Manager!");
+        Debug.Log($"[Act1Manager] MostrarDialogo llamado con mensaje: '{mensaje}'");
 
-        if (textoSubtitulos != null && canvasGroupDialogo != null)
+        if (textoSubtitulos == null)
         {
-            if (corrutinaActiva != null) StopCoroutine(corrutinaActiva);
-            corrutinaActiva = StartCoroutine(SecuenciaDialogo(mensaje));
+            Debug.LogError("[Act1Manager] ERROR: 'textosSubtitulos' es NULL en el Inspector!");
+            return;
         }
+
+        if (canvasGroupDialogo == null)
+        {
+            Debug.LogError("[Act1Manager] ERROR: 'canvasGroupDialogo' es NULL en el Inspector!");
+            return;
+        }
+
+        if (corrutinaActiva != null) 
+        {
+            StopCoroutine(corrutinaActiva);
+        }
+
+        corrutinaActiva = StartCoroutine(SecuenciaDialogo(mensaje));
     }
-
-    IEnumerator SecuenciaDialogo(string frase)
+        IEnumerator SecuenciaDialogo(string frase)
     {
-        textoSubtitulos.text = "";
-        while (canvasGroupDialogo.alpha < 1)
+        // 1. Nos aseguramos de que la pantalla negra del script de parpadeo esté APAGADA mientras leemos
+        if (effectoParpadeo != null && effectoParpadeo.pantallaNegra != null)
         {
-            canvasGroupDialogo.alpha += Time.deltaTime * velocidadFade;
-            yield return null;
+            effectoParpadeo.pantallaNegra.SetActive(false);
         }
 
-        foreach (char letra in frase.ToCharArray())
+        // 2. Activamos el contenedor de UI de diálogo y reseteamos el alpha
+        if (canvasGroupDialogo != null)
         {
-            textoSubtitulos.text += letra;
-            yield return new WaitForSeconds(velocidadEscritura);
+            if (!canvasGroupDialogo.gameObject.activeSelf)
+            {
+                canvasGroupDialogo.gameObject.SetActive(true);
+            }
+            canvasGroupDialogo.alpha = 0f;
+        }
+
+        if (textoSubtitulos != null)
+        {
+            textoSubtitulos.text = "";
+        }
+
+        float speedFade = velocidadFade > 0 ? velocidadFade : 2f;
+        float speedType = velocidadEscritura > 0 ? velocidadEscritura : 0.03f;
+
+        // 3. Fade In
+        while (canvasGroupDialogo != null && canvasGroupDialogo.alpha < 1f)
+        {
+            canvasGroupDialogo.alpha += Time.deltaTime * speedFade;
+            yield return null;
+        }      
+
+        // 4. Efecto de tipeo
+        if (textoSubtitulos != null)
+        {
+            foreach (char letra in frase.ToCharArray())
+            {
+                textoSubtitulos.text += letra;
+                yield return new WaitForSeconds(speedType);
+            }
         }
 
         yield return new WaitForSeconds(3f);
 
-        while (canvasGroupDialogo.alpha > 0)
+        // 5. Fade Out
+        while (canvasGroupDialogo != null && canvasGroupDialogo.alpha > 0f)
         {
-            canvasGroupDialogo.alpha -= Time.deltaTime * (velocidadFade / 2);
-            yield return null;
-        }
-        corrutinaActiva = null; 
-    }
-
-    IEnumerator SecuenciaInicioNoche()
-    {
-        fadeCanvasGroup.alpha = 1f;
-        yield return new WaitForSeconds(0.5f);
-
-        float duracionFade = 2.0f;
-        float tiempo = 0;
-
-        while (tiempo < duracionFade)
-        {
-            tiempo += Time.deltaTime;
-            fadeCanvasGroup.alpha = Mathf.Lerp(1, 0, tiempo / duracionFade);
+            canvasGroupDialogo.alpha -= Time.deltaTime * (speedFade / 2f);
             yield return null;
         }
 
-        fadeCanvasGroup.alpha = 0f;
-        fadeCanvasGroup.blocksRaycasts = false;
+    // 6. Ocultamos el panel de diálogo
+        if (canvasGroupDialogo != null)
+        {
+            canvasGroupDialogo.alpha = 0f;
+            canvasGroupDialogo.gameObject.SetActive(false);
+        }
+
+        corrutinaActiva = null;
     }
 }
