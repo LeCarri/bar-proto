@@ -18,6 +18,12 @@ public class MesaInteractuable : MonoBehaviour, IInteractable
 
     public void Interact()
     {
+        if (Act1Manager.Instance != null && !Act1Manager.Instance.tieneTrapo)
+        {
+            Act1Manager.Instance.MostrarDialogo("Necesito los elementos de limpieza para acomodar las mesas.");
+            return;
+        }
+
         if (estaLimpia) return;
 
         estaLimpia = true;

@@ -19,6 +19,12 @@ public class PuntoBarridoInteractuable : MonoBehaviour, IInteractable
 
     public void Interact()
     {
+        if (Act1Manager.Instance != null && !Act1Manager.Instance.tieneEscoba)
+        {
+            Act1Manager.Instance.MostrarDialogo("Primero tengo que ir a buscar las cosas de limpiar.");
+            return;
+        }
+
         if (estaBarrido) return;
 
         estaBarrido = true;

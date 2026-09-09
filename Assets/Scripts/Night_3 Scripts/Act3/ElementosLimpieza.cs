@@ -6,9 +6,9 @@ public class ElementosLimpieza : MonoBehaviour
     {
         Debug.Log("Elementos de limpieza recogidos.");
 
-        if (Act3Manager.Instance != null)
+        if (Act1Manager.Instance != null)
         {
-            Act3Manager.Instance.RecogerElementosLimpieza();
+           Act3Manager.Instance.RecogerElementosLimpieza();
         }
 
         gameObject.SetActive(false);

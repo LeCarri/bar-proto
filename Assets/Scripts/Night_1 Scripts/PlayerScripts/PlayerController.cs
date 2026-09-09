@@ -54,13 +54,13 @@ public class PlayerController : MonoBehaviour
         if (characterController == null) return;
 
         if (controlesBloqueados)
+    {
+        if (audioPasos != null && audioPasos.isPlaying)
         {
-            if (audioPasos != null)
-
-                audioPasos.Stop();
-
-            return;
+            audioPasos.Stop();
         }
+        return; // Corta la ejecución antes de leer el mouse o mover la cámara
+    }
 
 
         rotationX += -Input.GetAxis("Mouse Y") * lookSpeed * Time.timeScale;
