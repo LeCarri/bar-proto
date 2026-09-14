@@ -4,6 +4,9 @@ public class Inspector3D : MonoBehaviour
 {
     public static Inspector3D Instance { get; private set; }
 
+    [Header("Punto donde se montan los objetos a inspeccionar")]
+    [SerializeField] private Transform puntoInspeccion;
+
     [Header("Configuración de Rotación")]
     [SerializeField] private float velocidadRotacion = 5f;
 
@@ -12,6 +15,10 @@ public class Inspector3D : MonoBehaviour
 
     private GameObject objetoActual;
     private bool estaInspeccionando = false;
+    private bool listoParaCerrar = false;
+
+    // Propiedad para que los objetos narrativos encuentren el Transform fácil
+    public Transform PuntoInspeccion => puntoInspeccion;
 
     private void Awake()
     {
@@ -22,6 +29,16 @@ public class Inspector3D : MonoBehaviour
     private void Update()
     {
         if (!estaInspeccionando || objetoActual == null) return;
+
+        // Evita que la misma tecla [E] usada para interactuar cierre la inspección en el mismo frame
+        if (!listoParaCerrar)
+        {
+            if (Input.GetKeyUp(KeyCode.E))
+            {
+                listoParaCerrar = true;
+            }
+            return;
+        }
 
         // Rotación con Clic Izquierdo (Mouse Drag)
         if (Input.GetMouseButton(0))
@@ -44,8 +61,9 @@ public class Inspector3D : MonoBehaviour
     {
         objetoActual = objeto;
         estaInspeccionando = true;
+        listoParaCerrar = false; // Bloquea la salida inmediata durante el primer frame
 
-        // 1. Bloquear controles y mirada del Player
+        // 1. Bloquear controles del Player
         if (playerController != null)
         {
             playerController.controlesBloqueados = true;
@@ -67,6 +85,7 @@ public class Inspector3D : MonoBehaviour
         if (!estaInspeccionando) return;
 
         estaInspeccionando = false;
+        listoParaCerrar = false;
 
         // 1. Ocultar y volver a bloquear cursor en el centro
         Cursor.lockState = CursorLockMode.Locked;
@@ -78,7 +97,7 @@ public class Inspector3D : MonoBehaviour
             playerController.controlesBloqueados = false;
         }
 
-        // 3. Guardar / Desactivar objeto
+        // 3. Guardar / Desactivar objeto inspeccionado
         if (objetoActual != null)
         {
             objetoActual.SetActive(false);

@@ -24,6 +24,16 @@ public class ControladorMano3D : MonoBehaviour
         }
     }
 
+    private void Start()
+{
+    // Oculta cualquier visual de Preview al iniciar el juego para que no moleste en pantalla
+    Transform preview = puntoMano != null ? puntoMano.Find("PREVIEW_MANO_NO_BORRAR") : null;
+    if (preview != null)
+    {
+        preview.gameObject.SetActive(false);
+    }
+}
+
 public void EquiparItem(ItemSO nuevoItem)
 {
     VaciarMano();
