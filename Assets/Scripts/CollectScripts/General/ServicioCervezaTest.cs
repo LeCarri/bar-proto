@@ -82,4 +82,11 @@ public class ServicioCervezaTest : MonoBehaviour
         if (ControladorMano3D.Instance != null)
             ControladorMano3D.Instance.EquiparItem(itemCerveza);
     }
+
+    public void ResetearCanilla()
+    {
+        VasoEnCanilla = false;
+        // Reseteá acá cualquier otra variable de animación o estado del minijuego
+        Debug.Log("[ServicioCerveza] Canilla liberada para el siguiente servicio.");
+    }
 }

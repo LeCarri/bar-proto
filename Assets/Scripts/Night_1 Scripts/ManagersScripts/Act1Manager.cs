@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class Act1Manager : MonoBehaviour
 {
-    public enum ActoState { Limpieza, Servicio, Quiebre, AparicionBarra, Combate, Transicion }
+    public enum ActoState { Introduccion, Limpieza, Servicio, Quiebre, AparicionBarra, Combate, Cierre, Transicion }
 
     [Header("Estado General")]
     public ActoState estadoActual = ActoState.Limpieza;
@@ -15,6 +15,7 @@ public class Act1Manager : MonoBehaviour
     public TextMeshProUGUI textoSubtitulos;
     public CanvasGroup canvasGroupDialogo; 
     public TextMeshProUGUI textoObjetivo;
+    public TextMeshProUGUI textoInstruccionF; 
     public float velocidadEscritura = 0.04f;
     public float velocidadFade = 3f;
 
@@ -30,7 +31,7 @@ public class Act1Manager : MonoBehaviour
     public int totalZonasParaBarrer = 2;
     private int zonasBarridas = 0;
 
-    [Header("Estado de Limpieza")]
+    [Header("Herramientas de Limpieza")]
     public bool tieneEscoba = false;
     public bool tieneTrapo = false;
 
@@ -38,6 +39,7 @@ public class Act1Manager : MonoBehaviour
     public GameObject dibujoMesa;
     public GameObject jugueteOso;
     public GameObject fotoFamiliar;
+    private bool tieneDibujoGuardado = false;
 
     [Header("Efectos")]
     public EffectoParpadeo effectoParpadeo;
@@ -48,61 +50,64 @@ public class Act1Manager : MonoBehaviour
     public GameObject lucesCreepy;     
     public GameObject lucesCombate;    
 
-    [Header("Audio")]
+    [Header("Audio General")]
     public AudioSource ambientBar;
     public AudioSource musicBar;
     public AudioSource sonidoCajitaMusica;
     public AudioSource sonidoGritoNena;
 
-    [Header("Progreso de Servicio & Banderas de Clientes")]
-    public bool carlosPidioCerveza = false;
-    public bool marielaPidioHoney = false;
+    [Header("Progreso de Servicio & Clientes")]
     public int clientesAtendidosTotal = 0;
     public bool carlosAtendido = false;
     public bool cliente2Atendido = false;
     public bool cliente3Atendido = false;
+    public bool carlosPidioCerveza = false;
+    public bool marielaPidioHoney = false;
 
-    [Header("Secuencia Final y Objetos")]
+    [Header("Evento Celular")]
+    public GameObject notificacionCelularUI;
+    public AudioSource sonidoVibracionCelular;
+
+    [Header("Quiebre & Transición Cliente 4")]
+    public GameObject cajitaDeMusicaObjeto;
     public GameObject linternaObjeto;
     public GameObject botellaEspecial; 
     public GameObject objetoMujer;
     public GameObject puertaDeposito;
+    public AudioSource sonidoCierrePuerta;
 
     [Header("Combate")]
-    public GameObject[] enemigos;
+    public GameObject primeraSombra;
+    public GameObject[] sombrasSalon;
     public AudioSource sonidoMutacion;
     public CameraShake sacudidaCamara;
     public int enemigosDerrotados = 0;
-    public int totalEnemigos = 3;
+    public int totalEnemigos = 4;
 
-    [Header("Referencias de Cierre")] 
+    [Header("Cierre de Noche")]
+    public GameObject vasoHoneySobreMesa;
+    public bool vasoRecogidoCierre = false;
+    public bool vasoDejadoEnBarra = false;
     public CanvasGroup fadeCanvasGroup; 
 
-    [Header("Indicadores")]
+    [Header("Indicadores & Scriptables")]
     public GameObject indicadorCervezas;
     public GameObject indicadorDeposito;
-
-    [Header("Items ScriptableObjects")]
     public ItemSO itemCerveza;
     public ItemSO itemWhisky;
+    public ItemSO itemWhiskySangre; 
     public ItemSO itemVasoVacio;
-    public ItemSO itemHoney;
+    public ItemSO itemVasoHoney;
     
-    [Header("Estado del Jugador / Mano")]
+    [Header("Estado del Jugador")]
     public bool tieneObjetoEnMano = false;
 
     public static Act1Manager Instance { get; private set; }
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }   
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
     void Start()
@@ -114,23 +119,31 @@ public class Act1Manager : MonoBehaviour
         if (indicadorCervezas != null) indicadorCervezas.SetActive(false);
         if (indicadorDeposito != null) indicadorDeposito.SetActive(false);
         if (botellaEspecial != null) botellaEspecial.SetActive(false);
+        if (notificacionCelularUI != null) notificacionCelularUI.SetActive(false);
+        if (cajitaDeMusicaObjeto != null) cajitaDeMusicaObjeto.SetActive(false);
+        if (textoInstruccionF != null) textoInstruccionF.gameObject.SetActive(false);
 
         if (fadeCanvasGroup != null)
         {
             fadeCanvasGroup.gameObject.SetActive(true);
             fadeCanvasGroup.alpha = 1f;
-            StartCoroutine(SecuenciaInicioNoche());
         }
 
         CambiarIluminacion("Normal");
         IniciarFaseTareas();
     }
 
-    private IEnumerator SecuenciaInicioNoche()
-    {
-        yield return null;
-    }
+    // ==========================================
+    // MÉTODOS DE COMPATIBILIDAD (Soportan otros scripts)
+    // ==========================================
+    public void RegistrarPedidoMarielaHoney() { marielaPidioHoney = true; }
+    public bool TienePedidoEntregable() { return tieneObjetoEnMano; }
+    public void ClienteCompletado() { clientesAtendidosTotal++; }
+    public void HabilitarTriggerCocinaFinal() { /* Método puente para vacíos */ }
 
+    // ==========================================
+    // 1. TAREAS INICIALES
+    // ==========================================
     public void IniciarFaseTareas()
     {
         estadoActual = ActoState.Limpieza;
@@ -140,30 +153,42 @@ public class Act1Manager : MonoBehaviour
 
         MostrarDialogo("Lucas: Hay que dejar todo listo antes de abrir...");
         ActualizarProgresoObjetivo(); 
+
+        if (fadeCanvasGroup != null) StartCoroutine(FadeInInicial());
     }
 
-    // TAREAS INICIALES
-    public void RegistrarZonaBarrida()
+    IEnumerator FadeInInicial()
     {
-        zonasBarridas++;
-        VerificarFinTareas();
+        float t = 0;
+        while (t < 1.5f)
+        {
+            t += Time.deltaTime;
+            fadeCanvasGroup.alpha = Mathf.Lerp(1, 0, t / 1.5f);
+            yield return null;
+        }
+        fadeCanvasGroup.gameObject.SetActive(false);
     }
 
-    public void RegistrarMesasLimpias()
+    public void RegistrarZonaBarrida() { zonasBarridas++; VerificarFinTareas(); }
+    public void RegistrarMesasLimpias() { mesasLimpiadas++; VerificarFinTareas(); }
+    public void SillaCompletada() { sillasAcomodadas++; VerificarFinTareas(); }
+
+    public void InteractuarDibujo()
     {
-        mesasLimpiadas++;
-        VerificarFinTareas();
+        tieneDibujoGuardado = true;
+        if (dibujoMesa != null) dibujoMesa.SetActive(false);
+        MostrarDialogo("Lucas: Un dibujo infantil... sin firma.");
     }
 
-    public void SillaCompletada()
+    public void InteractuarOsoJuguete()
     {
-        sillasAcomodadas++;
-        VerificarFinTareas();
+        MostrarDialogo("Lucas: ¿Y esto?... Siempre pierde estas cosas; después se lo llevo.");
     }
 
-    public void InteractuarDibujo() => MostrarDialogo("Lucas: Un dibujo infantil... sin firma.");
-    public void InteractuarOsoJuguete() => MostrarDialogo("Lucas: ¿Y esto?... Siempre pierde estas cosas; después se lo llevo.");
-    public void InteractuarFotoFamiliar() => MostrarDialogo("Lucas: Mi familia... qué contenta estaba Pili ese día... qué lástima.");
+    public void InteractuarFotoFamiliar()
+    {
+        MostrarDialogo("Lucas: Qué contenta estaba Pili ese día...");
+    }
 
     private void VerificarFinTareas()
     {
@@ -174,6 +199,7 @@ public class Act1Manager : MonoBehaviour
             zonasBarridas >= totalZonasParaBarrer &&
             estadoActual == ActoState.Limpieza)
         {
+            if (!tieneDibujoGuardado && dibujoMesa != null) dibujoMesa.SetActive(false);
             StartCoroutine(SecuenciaTransicionServicio());
         }
     }
@@ -188,7 +214,9 @@ public class Act1Manager : MonoBehaviour
 
     IEnumerator SecuenciaTransicionServicio()
     {
-        yield return new WaitForSeconds(1f);
+        MostrarDialogo("Lucas: Listo. Guardo la escoba...");
+        yield return new WaitForSeconds(2f);
+
         if (sonidoGolpeSuelo != null) sonidoGolpeSuelo.Play();
         yield return new WaitForSeconds(1.5f);
         MostrarDialogo("Lucas: Ufff... Estas cañerías están cada vez peor...");
@@ -211,167 +239,131 @@ public class Act1Manager : MonoBehaviour
         if (musicBar != null && !musicBar.isPlaying) musicBar.Play();
     }
 
-    // SERVICIO
-    public void ObtenerCervezaServida()
-    {
-        tieneObjetoEnMano = true;
-
-        if (ControladorMano3D.Instance != null && itemCerveza != null)
-        {
-            ControladorMano3D.Instance.EquiparItem(itemCerveza);
-        }
-
-        MostrarDialogo("Lucas: Listo. A llevársela al cliente.");
-    }
-
-    public void ClienteCompletado()
-    {
-        clientesAtendidosTotal++;
-        tieneObjetoEnMano = false;
-
-        if (ControladorMano3D.Instance != null)
-        {
-            ControladorMano3D.Instance.VaciarMano();
-        }
-
-        if (clientesAtendidosTotal >= 3)
-        {
-            StartCoroutine(SecuenciaQuiebreCajita());
-        }
-    }
-
-    public void RecogerObjeto(bool esBarra)
-    {
-        tieneObjetoEnMano = true;
-        if (ControladorMano3D.Instance != null && itemVasoVacio != null)
-        {
-            ControladorMano3D.Instance.EquiparItem(itemVasoVacio);
-        }
-    }
-
+    // ==========================================
+    // 2. SERVICIO DE CLIENTES
+    // ==========================================
     public void InteractuarCarlos()
-    {
-        if (estadoActual != ActoState.Servicio) return;
+{
+    if (estadoActual != ActoState.Servicio) return;
 
-        if (!carlosAtendido)
+    if (!carlosAtendido && !tieneObjetoEnMano)
+    {
+        carlosPidioCerveza = true;
+        MostrarDialogo("Cliente: Hola Lucas, ¿todo bien?\nLucas: ¡Hola Carlos! Sí, todo bien... ¿Lo de siempre?\nCliente: Sí, por favor.");
+        if (indicadorCervezas != null) indicadorCervezas.SetActive(true);
+    }
+    else if (!carlosAtendido && tieneObjetoEnMano)
+    {
+        // DEBUG: Para ver en Consola qué ítem tenés y cuál requiere
+        ItemSO itemEnMano = ControladorMano3D.Instance != null ? ControladorMano3D.Instance.ObtenerItemActual() : null;
+        Debug.Log($"Item en mano: {(itemEnMano != null ? itemEnMano.nombreItem : "null")} | Esperado: {(itemCerveza != null ? itemCerveza.nombreItem : "null")}");
+
+        if (TienePedidoValido(itemCerveza))
         {
             carlosAtendido = true;
-            carlosPidioCerveza = true;
-            MostrarDialogo("Carlos: Hola Lucas, ¿todo bien?\nLucas: ¡Hola Carlos! Sí, todo bien... ¿Lo de siempre?\nCarlos: Sí, por favor.");
-            if (indicadorCervezas != null) indicadorCervezas.SetActive(true);
-        }
-        else if (tieneObjetoEnMano)
-        {
-            EntregarPedidoACliente();
-            MostrarDialogo("Carlos: Gracias, maestro.");
-            ClienteCompletado();
+            EntregarPedido();
+            MostrarDialogo("Cliente: Gracias, maestro.");
             if (indicadorCervezas != null) indicadorCervezas.SetActive(false);
+            clientesAtendidosTotal++;
         }
         else
         {
-            MostrarDialogo("Carlos: Te vas a terminar matando de tanto laburo.");
+            Debug.LogWarning("Carlos no acepta el pedido porque el ítem en mano no coincide con 'itemCerveza'.");
         }
     }
-
-    public void RegistrarPedidoMarielaHoney()
+    else if (carlosAtendido)
     {
-        marielaPidioHoney = true;
+        MostrarDialogo("Cliente: ¿Mucho laburo?\nLucas: Lo de siempre, la verdad.\nCliente: ¡Te vas a terminar matando!\nLucas: Y... no me queda otra.");
     }
-
-    public bool TienePedidoEntregable(string nombreCliente = "")
-{
-    // 1. Validar que la mano exista y tenga un item activo
-    if (ControladorMano3D.Instance == null || !ControladorMano3D.Instance.TieneManoOcupada())
-        return false;
-
-    ItemSO itemEnMano = ControladorMano3D.Instance.ObtenerItemActual();
-    if (itemEnMano == null) 
-        return false;
-
-    string cliente = string.IsNullOrEmpty(nombreCliente) ? "" : nombreCliente.Trim().ToLower();
-
-    // 2. Carlos (Pide Cerveza)
-    if (cliente == "carlos")
-    {
-        if (!carlosPidioCerveza || itemCerveza == null) return false;
-        
-        // Compara primero por referencia de ScriptableObject y luego por nombre
-        return itemEnMano == itemCerveza || 
-              (!string.IsNullOrEmpty(itemEnMano.nombreItem) && itemEnMano.nombreItem.Equals(itemCerveza.nombreItem, System.StringComparison.OrdinalIgnoreCase));
-    }
-
-    // 3. Mariela (Pide Honey)
-    if (cliente == "mariela")
-    {
-        if (!marielaPidioHoney || itemHoney == null) return false;
-
-        return itemEnMano == itemHoney || 
-              (!string.IsNullOrEmpty(itemEnMano.nombreItem) && itemEnMano.nombreItem.Equals(itemHoney.nombreItem, System.StringComparison.OrdinalIgnoreCase));
-    }
-
-    // 4. Otros Clientes (Cerveza o Whisky)
-    bool esCerveza = itemCerveza != null && (itemEnMano == itemCerveza || 
-        (!string.IsNullOrEmpty(itemEnMano.nombreItem) && itemEnMano.nombreItem.Equals(itemCerveza.nombreItem, System.StringComparison.OrdinalIgnoreCase)));
-        
-    bool esWhisky = itemWhisky != null && (itemEnMano == itemWhisky || 
-        (!string.IsNullOrEmpty(itemEnMano.nombreItem) && itemEnMano.nombreItem.Equals(itemWhisky.nombreItem, System.StringComparison.OrdinalIgnoreCase)));
-
-    return esCerveza || esWhisky;
 }
 
     public void InteractuarCliente2()
     {
         if (estadoActual != ActoState.Servicio || !carlosAtendido) return;
 
-        if (!cliente2Atendido)
+        if (!cliente2Atendido && !tieneObjetoEnMano)
+        {
+            MostrarDialogo("Cliente: Nos das una cerveza y un Whisky, por favor.");
+            DispararVibracionCelular();
+        }
+        else if (!cliente2Atendido && tieneObjetoEnMano && (TienePedidoValido(itemCerveza) || TienePedidoValido(itemWhisky)))
         {
             cliente2Atendido = true;
-            MostrarDialogo("Cliente: Nos das una cerveza y un Whisky, por favor.");
-        }
-        else if (tieneObjetoEnMano)
-        {
-            EntregarPedidoACliente();
+            EntregarPedido();
             MostrarDialogo("Cliente: Excelente, gracias.");
-            ClienteCompletado();
+            clientesAtendidosTotal++;
         }
+    }
+
+    public void DispararVibracionCelular()
+    {
+        if (notificacionCelularUI != null) notificacionCelularUI.SetActive(true);
+        if (sonidoVibracionCelular != null) sonidoVibracionCelular.Play();
+    }
+
+    public void InteractuarCelular()
+    {
+        MostrarDialogo("Mariela: ¿Vas a volver tarde?");
+        if (notificacionCelularUI != null) notificacionCelularUI.SetActive(false);
     }
 
     public void InteractuarCliente3()
     {
         if (estadoActual != ActoState.Servicio || !cliente2Atendido) return;
 
-        if (!cliente3Atendido)
+        if (!cliente3Atendido && !tieneObjetoEnMano)
+        {
+            MostrarDialogo("Cliente: Hola, ¿Te pido una cerveza?");
+            if (indicadorCervezas != null) indicadorCervezas.SetActive(true);
+        }
+        else if (!cliente3Atendido && tieneObjetoEnMano && TienePedidoValido(itemCerveza))
         {
             cliente3Atendido = true;
-            MostrarDialogo("Cliente: Hola, ¿Te pido una cerveza?\nCliente: ¿Mariela ya no viene? Hace rato que no la veo.\nLucas: Está en casa...");
-        }
-        else if (tieneObjetoEnMano)
-        {
-            EntregarPedidoACliente();
-            ClienteCompletado();
+            EntregarPedido();
+            MostrarDialogo("Cliente: ¿Mariela ya no viene? Hace rato que no la veo.\nLucas: Está en casa...\nCliente: Ah... Pensé que...\nLucas: ¿Qué...?\nCliente: Nada, nada...");
+            if (indicadorCervezas != null) indicadorCervezas.SetActive(false);
+            clientesAtendidosTotal++;
         }
     }
 
-    private void EntregarPedidoACliente()
+    public void InteractuarCliente4()
     {
-        tieneObjetoEnMano = false;
-        if (ControladorMano3D.Instance != null)
+        if (estadoActual != ActoState.Servicio || !cliente3Atendido) return;
+
+        if (!tieneObjetoEnMano)
         {
-            ControladorMano3D.Instance.VaciarMano();
+            MostrarDialogo("Cliente: Dame un Whisky Jack Daniels.");
+        }
+        else if (tieneObjetoEnMano && TienePedidoValido(itemWhiskySangre))
+        {
+            EntregarPedido();
+            StartCoroutine(SecuenciaQuiebreCajita());
         }
     }
 
-    // QUIEBRE Y COMBATE
+    public void ServirWhiskyEspecial()
+    {
+        tieneObjetoEnMano = true;
+        if (ControladorMano3D.Instance != null && itemWhiskySangre != null)
+        {
+            ControladorMano3D.Instance.EquiparItem(itemWhiskySangre);
+        }
+    }
+
+    // ==========================================
+    // 3. QUIEBRE Y APARICIÓN DE MARIELA
+    // ==========================================
     IEnumerator SecuenciaQuiebreCajita()
     {
         estadoActual = ActoState.Quiebre;
-        yield return new WaitForSeconds(1f);
 
         if (ambientBar != null) ambientBar.Stop();
         if (musicBar != null) musicBar.Stop();
 
         if (grupoClientes != null) grupoClientes.SetActive(false);
         CambiarIluminacion("Combate"); 
+
+        if (cajitaDeMusicaObjeto != null) cajitaDeMusicaObjeto.SetActive(true);
 
         if (sonidoCajitaMusica != null) sonidoCajitaMusica.Play();
         yield return new WaitForSeconds(4f);
@@ -391,21 +383,33 @@ public class Act1Manager : MonoBehaviour
 
         if (linternaObjeto != null) linternaObjeto.SetActive(false);
         MostrarDialogo("Lucas: Seguro saltó la térmica de nuevo... Tengo que revisar los tapones en el sótano...");
+    }
 
-        StartCoroutine(SecuenciaAparicionMariela());
+    public void TriggerSalidaBarraAparicion()
+    {
+        if (estadoActual == ActoState.Quiebre)
+        {
+            StartCoroutine(SecuenciaAparicionMariela());
+        }
     }
 
     IEnumerator SecuenciaAparicionMariela()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         CambiarIluminacion("Creepy");
 
         if (objetoMujer != null) objetoMujer.SetActive(true);
 
-        MostrarDialogo("Mujer: ¿Seguís sirviendo lo mismo de siempre?... Cerveza. Tragos... Excusas. ¿No tenés algo mejor para ofrecer?");
-        yield return new WaitForSeconds(5f);
+        MostrarDialogo("Mujer: ¿Seguís sirviendo lo mismo de siempre?... Cerveza. Tragos... Excusas.");
+        yield return new WaitForSeconds(4f);
 
-        MostrarDialogo("Lucas: Sí... Tengo algo especial en el depósito. Esperame. Ya vuelvo.");
+        MostrarDialogo("Lucas: Esa voz... ¿Te conozco?");
+        yield return new WaitForSeconds(3f);
+
+        MostrarDialogo("Mujer: Quizás el tiempo borró más que los nombres. ¿No tenés algo mejor para ofrecer?");
+        yield return new WaitForSeconds(4.5f);
+
+        MostrarDialogo("Lucas: Tengo algo especial en el depósito. Es... de la casa. Ya vuelvo.");
         ActualizarObjetivo("Busca la botella especial en el depósito");
 
         if (indicadorDeposito != null) indicadorDeposito.SetActive(true);
@@ -414,6 +418,9 @@ public class Act1Manager : MonoBehaviour
         estadoActual = ActoState.AparicionBarra;
     }
 
+    // ==========================================
+    // 4. COMBATE
+    // ==========================================
     public void AlRecogerBotellaEspecial()
     {
         if (estadoActual != ActoState.AparicionBarra) return;
@@ -421,44 +428,55 @@ public class Act1Manager : MonoBehaviour
         if (botellaEspecial != null) botellaEspecial.SetActive(false);
         if (indicadorDeposito != null) indicadorDeposito.SetActive(false);
 
+        StartCoroutine(SecuenciaOscuridadYLinterna());
+    }
+
+    IEnumerator SecuenciaOscuridadYLinterna()
+    {
         CambiarIluminacion("Combate"); 
         if (objetoMujer != null) objetoMujer.SetActive(false);
 
-        StartCoroutine(SecuenciaInicioCombate());
-    }
-
-    IEnumerator SecuenciaInicioCombate()
-    {
         yield return new WaitForSeconds(1.5f);
-        MostrarDialogo("Presiona [F] para usar la linterna.");
-        
+
+        if (textoInstruccionF != null)
+        {
+            textoInstruccionF.text = "PRESIONA [F] PARA USAR LA LINTERNA";
+            textoInstruccionF.gameObject.SetActive(true);
+        }
+
         yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.F));
 
-        if (sacudidaCamara != null) StartCoroutine(sacudidaCamara.Shake(0.8f, 0.2f));
+        if (textoInstruccionF != null) textoInstruccionF.gameObject.SetActive(false);
+
+        if (primeraSombra != null) primeraSombra.SetActive(true);
         if (sonidoMutacion != null) sonidoMutacion.Play();
+        if (sacudidaCamara != null) StartCoroutine(sacudidaCamara.Shake(0.6f, 0.2f));
 
         MostrarDialogo("Lucas: ¿¡Qué carajos!?");
-        yield return new WaitForSeconds(2f);
-
-        estadoActual = ActoState.Combate;
-        ActualizarObjetivo("¡SOBREVIVE! Disipa a las sombras con tu linterna");
-
-        if (puertaDeposito != null) puertaDeposito.SetActive(false);
-
-        StartCoroutine(ActivarEnemigosSecuencial());
     }
 
-    IEnumerator ActivarEnemigosSecuencial()
+    public void PrimeraSombraDerrotada()
     {
-        foreach (GameObject enemigo in enemigos)
+        StartCoroutine(SecuenciaTransicionSalonCombate());
+    }
+
+    IEnumerator SecuenciaTransicionSalonCombate()
+    {
+        MostrarDialogo("Lucas: ¿Qué fue eso? ¡No entiendo nada!");
+        yield return new WaitForSeconds(2.5f);
+
+        MostrarDialogo("Lucas: No.... no.... no... ¿Qué está pasando?");
+
+        if (puertaDeposito != null) puertaDeposito.SetActive(true); 
+        if (sonidoCierrePuerta != null) sonidoCierrePuerta.Play();
+
+        estadoActual = ActoState.Combate;
+        ActualizarObjetivo("¡SOBREVIVE! Disipa a las Sombras con tu linterna");
+
+        foreach (GameObject sombra in sombrasSalon)
         {
-            if (enemigo != null)
-            {
-                enemigo.SetActive(true);
-                AudioSource snd = enemigo.GetComponent<AudioSource>();
-                if (snd != null) snd.Play();
-            }
-            yield return new WaitForSeconds(1.5f);
+            if (sombra != null) sombra.SetActive(true);
+            yield return new WaitForSeconds(1.2f);
         }
     }
 
@@ -467,55 +485,101 @@ public class Act1Manager : MonoBehaviour
         enemigosDerrotados++;
         if (enemigosDerrotados >= totalEnemigos)
         {
-            FinalizarNoche();
+            IniciarCierreNoche();
         }
     }
 
-    void FinalizarNoche()
+    // ==========================================
+    // 5. CIERRE Y SALIDA
+    // ==========================================
+    void IniciarCierreNoche()
     {
-        StartCoroutine(SecuenciaCierreNoche());
-    }
-
-    IEnumerator SecuenciaCierreNoche()
-    {
+        estadoActual = ActoState.Cierre;
         CambiarIluminacion("Servicio");
         if (ambientBar != null) ambientBar.Play();
 
+        if (vasoHoneySobreMesa != null) vasoHoneySobreMesa.SetActive(true);
+
+        StartCoroutine(SecuenciaPostCombate());
+    }
+
+    IEnumerator SecuenciaPostCombate()
+    {
         MostrarDialogo("Lucas: ¿Qué fue todo eso...?... Estoy cansado... nada más.");
-        yield return new WaitForSeconds(3.5f);
+        yield return new WaitForSeconds(4f);
 
         MostrarDialogo("Lucas: Mejor guardo esto y mañana sigo...");
         ActualizarObjetivo("Guarda el vaso en la barra y retírate");
-
-        yield return new WaitForSeconds(4f);
-        MostrarDialogo("Lucas: ¡Qué día!... ¿¡Qué hora es ya!?");
-
-        yield return new WaitForSeconds(3f);
-        MostrarDialogo("Lucas: [Mensaje de Mariela]: Después...");
-
-        yield return new WaitForSeconds(3f);
-
-        float duracionFade = 2.5f;
-        float tiempoFade = 0;
-        while (tiempoFade < duracionFade)
-        {
-            tiempoFade += Time.deltaTime;
-            fadeCanvasGroup.alpha = Mathf.Lerp(0, 1, tiempoFade / duracionFade);
-            yield return null;
-        }
-
-        SceneManager.LoadScene("Night_2 Scene"); 
     }
 
-    public void HabilitarTriggerCocinaFinal()
+    public void InteractuarVasoHoneyCierre()
     {
-        if (indicadorDeposito != null)
+        if (estadoActual != ActoState.Cierre || vasoRecogidoCierre) return;
+
+        vasoRecogidoCierre = true;
+        if (vasoHoneySobreMesa != null) vasoHoneySobreMesa.SetActive(false);
+        if (ControladorMano3D.Instance != null && itemVasoHoney != null)
         {
-            indicadorDeposito.SetActive(true);
+            ControladorMano3D.Instance.EquiparItem(itemVasoHoney);
         }
+        ActualizarObjetivo("Deja el vaso detrás de la barra");
     }
 
-    // UTILIDADES
+    public void DejaVasoEnBarraCierre()
+    {
+        if (!vasoRecogidoCierre || vasoDejadoEnBarra) return;
+
+        vasoDejadoEnBarra = true;
+        if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
+
+        StartCoroutine(SecuenciaFinalPantalla());
+    }
+
+    IEnumerator SecuenciaFinalPantalla()
+    {
+        MostrarDialogo("Lucas: ¡Qué día!... ¿¡Qué hora es ya!?");
+        yield return new WaitForSeconds(3f);
+
+        DispararVibracionCelular();
+        yield return new WaitForSeconds(1f);
+
+        MostrarDialogo("Notificación: Mariela — 1 mensaje nuevo");
+        yield return new WaitForSeconds(3f);
+
+        MostrarDialogo("Lucas: Después.");
+        yield return new WaitForSeconds(2.5f);
+
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.gameObject.SetActive(true);
+            float t = 0;
+            while (t < 2.5f)
+            {
+                t += Time.deltaTime;
+                fadeCanvasGroup.alpha = Mathf.Lerp(0, 1, t / 2.5f);
+                yield return null;
+            }
+        }
+
+        SceneManager.LoadScene("Night_2 Scene");
+    }
+
+    // ==========================================
+    // UTILIDADES GENERALES
+    // ==========================================
+    private bool TienePedidoValido(ItemSO itemRequerido)
+    {
+        if (ControladorMano3D.Instance == null || itemRequerido == null) return false;
+        ItemSO actual = ControladorMano3D.Instance.ObtenerItemActual();
+        return actual == itemRequerido || (actual != null && actual.nombreItem.Equals(itemRequerido.nombreItem, System.StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void EntregarPedido()
+    {
+        tieneObjetoEnMano = false;
+        if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
+    }
+
     public void CambiarIluminacion(string estado)
     {
         if (lucesNormales != null) lucesNormales.SetActive(false);
@@ -549,52 +613,50 @@ public class Act1Manager : MonoBehaviour
         if (textoObjetivo != null) textoObjetivo.text = "- " + nuevoObjetivo;
     }
 
+   // ==========================================
+    // SISTEMA DE DIÁLOGOS (REVISADO)
+    // ==========================================
     public void MostrarDialogo(string mensaje)
     {
-        if (textoSubtitulos == null || canvasGroupDialogo == null) return;
-        if (corrutinaActiva != null) StopCoroutine(corrutinaActiva);
+        if (textoSubtitulos == null || canvasGroupDialogo == null)
+        {
+            Debug.LogWarning("[Act1Manager] Falta asignar textoSubtitulos o canvasGroupDialogo en el Inspector.");
+            return;
+        }
+
+        // Si hay un diálogo escribiéndose, lo cancelamos para empezar el nuevo
+        if (corrutinaActiva != null)
+        {
+            StopCoroutine(corrutinaActiva);
+        }
 
         corrutinaActiva = StartCoroutine(SecuenciaDialogo(mensaje));
     }
 
     IEnumerator SecuenciaDialogo(string frase)
     {
-        if (effectoParpadeo != null && effectoParpadeo.pantallaNegra != null)
-        {
-            effectoParpadeo.pantallaNegra.SetActive(false);
-        }
+        // 1. Activar el Canvas y resetear visibilidad
+        canvasGroupDialogo.gameObject.SetActive(true);
+        canvasGroupDialogo.alpha = 1f; // Forzamos visibilidad inmediata para evitar fallas de fade
+        textoSubtitulos.text = "";
 
-        if (canvasGroupDialogo != null)
-        {
-            if (!canvasGroupDialogo.gameObject.activeSelf) canvasGroupDialogo.gameObject.SetActive(true);
-            canvasGroupDialogo.alpha = 0f;
-        }
-
-        if (textoSubtitulos != null) textoSubtitulos.text = "";
-
-        float speedFade = velocidadFade > 0 ? velocidadFade : 2f;
         float speedType = velocidadEscritura > 0 ? velocidadEscritura : 0.03f;
 
-        while (canvasGroupDialogo != null && canvasGroupDialogo.alpha < 1f)
+        // 2. Efecto máquina de escribir
+        foreach (char letra in frase.ToCharArray())
         {
-            canvasGroupDialogo.alpha += Time.deltaTime * speedFade;
-            yield return null;
-        }      
-
-        if (textoSubtitulos != null)
-        {
-            foreach (char letra in frase.ToCharArray())
-            {
-                textoSubtitulos.text += letra;
-                yield return new WaitForSeconds(speedType);
-            }
+            textoSubtitulos.text += letra;
+            yield return new WaitForSeconds(speedType);
         }
 
-        yield return new WaitForSeconds(3f);
+        // 3. Tiempo de lectura visible en pantalla
+        yield return new WaitForSeconds(3.5f);
 
+        // 4. Desvanecimiento suave
+        float speedFade = velocidadFade > 0 ? velocidadFade : 2f;
         while (canvasGroupDialogo != null && canvasGroupDialogo.alpha > 0f)
         {
-            canvasGroupDialogo.alpha -= Time.deltaTime * (speedFade / 2f);
+            canvasGroupDialogo.alpha -= Time.deltaTime * speedFade;
             yield return null;
         }
 
@@ -605,10 +667,5 @@ public class Act1Manager : MonoBehaviour
         }
 
         corrutinaActiva = null;
-    }
-
-    public void EndNight()
-    {
-        FinalizarNoche();
     }
 }

@@ -28,6 +28,11 @@ public class ServicioCerveza : MonoBehaviour
             ControladorMano3D.Instance.VaciarMano();
         }
 
+        if (Act1Manager.Instance != null)
+        {
+            Act1Manager.Instance.tieneObjetoEnMano = false;
+        }
+
         vasoEnCanilla = true;
 
         if (vasoEnCanillaVisual != null)
@@ -35,6 +40,8 @@ public class ServicioCerveza : MonoBehaviour
 
         if (servicioVisual != null)
             servicioVisual.PrepararVasoVacio();
+
+        Debug.Log("[ServicioCerveza] Vaso colocado en la canilla.");
     }
 
     public void Servir()
@@ -69,12 +76,33 @@ public class ServicioCerveza : MonoBehaviour
         if (vasoEnCanillaVisual != null)
             vasoEnCanillaVisual.SetActive(false);
 
+        // Liberamos los estados internos para poder volver a servir luego
         vasoEnCanilla = false;
         sirviendo = false;
 
         if (ControladorMano3D.Instance != null && ItemCerveza != null)
         {
             ControladorMano3D.Instance.EquiparItem(ItemCerveza);
+
+            // Sincronizamos con el Act1Manager
+            if (Act1Manager.Instance != null)
+            {
+                Act1Manager.Instance.tieneObjetoEnMano = true;
+            }
         }
+
+        Debug.Log("[ServicioCerveza] Cerveza servida, equipada en mano y canilla liberada.");
+    }
+
+    public void ResetearCanilla()
+    {
+        vasoEnCanilla = false;
+        sirviendo = false;
+
+        if (vasoEnCanillaVisual != null)
+            vasoEnCanillaVisual.SetActive(false);
+
+        if (sonidoServirCerveza != null && sonidoServirCerveza.isPlaying)
+            sonidoServirCerveza.Stop();
     }
 }
