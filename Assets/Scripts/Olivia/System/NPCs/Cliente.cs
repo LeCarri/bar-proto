@@ -4,10 +4,10 @@ public class Cliente : MonoBehaviour, IInteractable
 {
     public EstadoCliente estadoActual = EstadoCliente.EsperandoAtencion;
 
-    [Header("Configuración")]
+    [Header("Configuraciï¿½n")]
     public string nombreCliente;
     public string dialogoPedido = "Hola, traeme una cerveza.";
-    public string dialogoGracias = "Gracias, Lucas. Dejala ahí.";
+    public string dialogoGracias = "Gracias, Lucas. Dejala ahï¿½.";
 
     [SerializeField]
     [InspectorName("Pedido del cliente")]
@@ -15,7 +15,7 @@ public class Cliente : MonoBehaviour, IInteractable
 
     [SerializeField]
     [InspectorName("Collision grab")]
-    [Tooltip("¿Puede el cliente agarrar pedidos que colisionen con él?")]
+    [Tooltip("ï¿½Puede el cliente agarrar pedidos que colisionen con ï¿½l?")]
     private bool canCollisionGrab = false;
 
     [Header("UI")]
@@ -39,8 +39,8 @@ public class Cliente : MonoBehaviour, IInteractable
         Manager.Instance.MostrarDialogo(nombreCliente + ": " + dialogoPedido);
         estadoActual = EstadoCliente.EsperandoPedido;
         
-        // El indicador violeta se queda encendido pero quizás podrías cambiarle el color 
-        // o dejarlo para que Lucas sepa que todavía tiene algo pendiente aquí.
+        // El indicador violeta se queda encendido pero quizï¿½s podrï¿½as cambiarle el color 
+        // o dejarlo para que Lucas sepa que todavï¿½a tiene algo pendiente aquï¿½.
         
         Debug.Log("Pedido tomado. Lucas debe buscar el objeto.");
     }
@@ -59,17 +59,17 @@ public class Cliente : MonoBehaviour, IInteractable
             if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
             
             if (FindObjectOfType<Act1Manager>() != null)
-                FindObjectOfType<Act1Manager>().ClienteCompletado();
+                //FindObjectOfType<Act1Manager>().ClienteCompletado();
 
             PlayerInteract.Instance.ResetCurrentPickup();
             DeactivateLc(PlayerInteract.Instance.currentPickup.lc); 
         } if (PlayerInteract.Instance.currentPickup.lc.liquid != bebidaDeseada)
         {
-            Manager.Instance.MostrarDialogo("Lucas: Esto no es lo que me pidió...");
+            Manager.Instance.MostrarDialogo("Lucas: Esto no es lo que me pidiï¿½...");
         }
         else
         {
-            Manager.Instance.MostrarDialogo("Lucas: Todavía no tengo lo que me pidió...");
+            Manager.Instance.MostrarDialogo("Lucas: Todavï¿½a no tengo lo que me pidiï¿½...");
         }
     }
 
@@ -83,7 +83,7 @@ public class Cliente : MonoBehaviour, IInteractable
             if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
 
             if (FindObjectOfType<Act1Manager>() != null)
-                FindObjectOfType<Act1Manager>().ClienteCompletado();
+                 //FindObjectOfType<Act1Manager>().ClienteCompletado();
 
             DeactivateLc(lc);
             Debug.Log("Performed collision grab.");

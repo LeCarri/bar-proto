@@ -24,6 +24,16 @@ public class ControladorMano3D : MonoBehaviour
         }
     }
 
+    private void Start()
+{
+    // Oculta cualquier visual de Preview al iniciar el juego para que no moleste en pantalla
+    Transform preview = puntoMano != null ? puntoMano.Find("PREVIEW_MANO_NO_BORRAR") : null;
+    if (preview != null)
+    {
+        preview.gameObject.SetActive(false);
+    }
+}
+
 public void EquiparItem(ItemSO nuevoItem)
 {
     VaciarMano();
@@ -32,27 +42,24 @@ public void EquiparItem(ItemSO nuevoItem)
 
     if (nuevoItem != null && nuevoItem.prefab3D != null && puntoMano != null)
     {
-        objetoInstanciadoEnMano =
-            Instantiate(nuevoItem.prefab3D, puntoMano);
+        // Instanciamos el objeto
+        objetoInstanciadoEnMano = Instantiate(nuevoItem.prefab3D, puntoMano);
 
-        objetoInstanciadoEnMano.transform.localPosition =
-            nuevoItem.posicionEnMano;
+        // Forzamos que se active en jerarquía por si el prefab estaba desactivado
+        objetoInstanciadoEnMano.SetActive(true);
 
-        objetoInstanciadoEnMano.transform.localRotation =
-            Quaternion.Euler(nuevoItem.rotacionEnMano);
+        // Aseguramos el escalado y reseteamos offsets antes de aplicar las coordenadas del SO
+        objetoInstanciadoEnMano.transform.localScale = 
+            nuevoItem.escalaEnMano != Vector3.zero ? nuevoItem.escalaEnMano : Vector3.one;
 
-        objetoInstanciadoEnMano.transform.localScale =
-            nuevoItem.escalaEnMano;
+        objetoInstanciadoEnMano.transform.localPosition = nuevoItem.posicionEnMano;
+        objetoInstanciadoEnMano.transform.localRotation = Quaternion.Euler(nuevoItem.rotacionEnMano);
 
-        Debug.Log(
-            $"[ControladorMano3D] Equipado con éxito: {nuevoItem.nombreItem}"
-        );
+        Debug.Log($"[ControladorMano3D] Equipado con éxito: {nuevoItem.nombreItem}");
     }
     else
     {
-        Debug.LogWarning(
-            "[ControladorMano3D] No se pudo equipar el ítem: Faltan referencias en ItemSO o puntoMano."
-        );
+        Debug.LogWarning("[ControladorMano3D] No se pudo equipar el ítem: Faltan referencias en ItemSO o puntoMano.");
     }
 }
     public void VaciarMano()

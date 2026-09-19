@@ -5,9 +5,9 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
     public EstadoCliente estadoActual = EstadoCliente.EsperandoAtencion;
 
     [Header("Configuración")]
-    public string nombreCliente;
-    public string dialogoPedido = "Hola, traeme una cerveza.";
-    public string dialogoGracias = "Gracias, Lucas. Dejala ahí.";
+    public string nombreCliente = "Carlos";
+    public string dialogoPedido = "Hola Lucas, ¿todo bien?... Dame lo de siempre.";
+    public string dialogoGracias = "Gracias, maestro.";
 
     [Header("UI")]
     public GameObject indicadorVioleta;
@@ -21,17 +21,12 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
 
     private void Start()
     {
-        // Al iniciar partida, todos los clientes arrancan esperando atención.
-        // Esto evita que queden estados raros entre pruebas.
         estadoActual = EstadoCliente.EsperandoAtencion;
     }
 
     public void Interact()
     {
-        if (manager == null)
-        {
-            manager = FindObjectOfType<Act1Manager>();
-        }
+        if (manager == null) manager = FindObjectOfType<Act1Manager>();
 
         if (manager == null)
         {
@@ -50,6 +45,11 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
                 break;
 
             case EstadoCliente.Atendido:
+                // Diálogo extra si volvés a hablarle ya atendido
+                if (nombreCliente.Trim().ToLower() == "carlos")
+                {
+                    manager.MostrarDialogo("Carlos: ¿Mucho laburo?\nLucas: Lo de siempre, la verdad.\nCarlos: ¡Te vas a terminar matando!\nLucas: Y... no me queda otra.");
+                }
                 break;
         }
     }
@@ -59,44 +59,19 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
         string clienteNormalizado = nombreCliente.Trim().ToLower();
 
         // =========================
-        // MARIELA
-        // =========================
-        if (clienteNormalizado == "mariela")
-        {
-            // Mariela NO puede pedir antes de que Carlos haya sido atendido.
-            if (manager.clientesAtendidosTotal < 1)
-            {
-                manager.MostrarDialogo("Lucas: Primero debería atender al cliente de la barra.");
-                Debug.Log("[ClienteInteractuable] Mariela bloqueada porque Carlos todavía no fue atendido.");
-                return;
-            }
-
-            // Si Carlos ya fue atendido, ahora sí Mariela hace su pedido especial.
-            manager.RegistrarPedidoMarielaHoney();
-
-            estadoActual = EstadoCliente.EsperandoPedido;
-
-            Debug.Log("[ClienteInteractuable] Pedido de Mariela tomado.");
-            return;
-        }
-
-        // =========================
         // CARLOS
         // =========================
         if (clienteNormalizado == "carlos")
         {
-            // Si Carlos ya fue atendido, no vuelve a pedir.
-            if (manager.clientesAtendidosTotal >= 1)
+            if (manager.carlosAtendido)
             {
                 manager.MostrarDialogo("Carlos: Gracias, maestro.");
+                estadoActual = EstadoCliente.Atendido;
                 return;
             }
 
-            // Registramos oficialmente el pedido en Act1Manager
             manager.carlosPidioCerveza = true;
-
             manager.MostrarDialogo(nombreCliente + ": " + dialogoPedido);
-
             estadoActual = EstadoCliente.EsperandoPedido;
 
             if (manager.indicadorCervezas != null)
@@ -109,61 +84,37 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
         }
 
         // =========================
+        // MARIELA
+        // =========================
+        if (clienteNormalizado == "mariela")
+        {
+            if (!manager.carlosAtendido)
+            {
+                manager.MostrarDialogo("Lucas: Primero debería atender a Carlos en la barra.");
+                return;
+            }
+
+            manager.RegistrarPedidoMarielaHoney();
+            manager.MostrarDialogo(nombreCliente + ": " + dialogoPedido);
+            estadoActual = EstadoCliente.EsperandoPedido;
+            return;
+        }
+
+        // =========================
         // OTROS CLIENTES
         // =========================
         manager.MostrarDialogo(nombreCliente + ": " + dialogoPedido);
         estadoActual = EstadoCliente.EsperandoPedido;
-
-        Debug.Log("[ClienteInteractuable] Pedido tomado.");
     }
 
     void EntregarPedido()
     {
         string clienteNormalizado = nombreCliente.Trim().ToLower();
 
-        // =========================
-        // MARIELA
-        // =========================
-        if (clienteNormalizado == "mariela")
+        // Chequeo de seguridad: ¿El jugador tiene un objeto en la mano?
+        if (!manager.tieneObjetoEnMano && (ControladorMano3D.Instance == null || ControladorMano3D.Instance.ObtenerItemActual() == null))
         {
-            // Si por algún motivo Mariela llegó a EsperandoPedido antes de Carlos,
-            // la devolvemos al estado correcto.
-            if (manager.clientesAtendidosTotal < 1)
-            {
-                estadoActual = EstadoCliente.EsperandoAtencion;
-                manager.marielaPidioHoney = false;
-
-                manager.MostrarDialogo("Lucas: Primero debería atender al cliente de la barra.");
-                Debug.Log("[ClienteInteractuable] Estado de Mariela corregido: no podía estar esperando pedido antes de Carlos.");
-                return;
-            }
-
-            // Si todavía no pidió oficialmente la Honey, la hacemos pedir ahora.
-            if (!manager.marielaPidioHoney)
-            {
-                manager.RegistrarPedidoMarielaHoney();
-                estadoActual = EstadoCliente.EsperandoPedido;
-                return;
-            }
-
-            // Si ya pidió, pero Lucas todavía no tiene algo entregable.
-            if (!manager.TienePedidoEntregable())
-            {
-                manager.MostrarDialogo("Lucas: Todavía no tengo lo que me pidió...");
-                return;
-            }
-
-            manager.MostrarDialogo(nombreCliente + ": " + dialogoGracias);
-            estadoActual = EstadoCliente.Atendido;
-
-            if (indicadorVioleta != null)
-            {
-                indicadorVioleta.SetActive(false);
-            }
-
-            manager.ClienteCompletado();
-
-            Debug.Log("[ClienteInteractuable] Mariela atendida.");
+            manager.MostrarDialogo("Lucas: Todavía no tengo lo que me pidió...");
             return;
         }
 
@@ -172,49 +123,65 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
         // =========================
         if (clienteNormalizado == "carlos")
         {
-            if (manager.TienePedidoEntregable())
+            ItemSO itemMano = ControladorMano3D.Instance != null ? ControladorMano3D.Instance.ObtenerItemActual() : null;
+            
+            // Verificamos que sea Cerveza (por slot o por nombre)
+            bool esCerveza = (manager.itemCerveza != null && itemMano == manager.itemCerveza) || 
+                             (itemMano != null && itemMano.nombreItem.ToLower().Contains("cerveza"));
+
+            if (esCerveza)
             {
+                // 1. Decir diálogo y actualizar flags en Manager
                 manager.MostrarDialogo(nombreCliente + ": " + dialogoGracias);
-
-                estadoActual = EstadoCliente.Atendido;
-
-                if (indicadorVioleta != null)
-                {
-                    indicadorVioleta.SetActive(false);
-                }
-
+                manager.carlosAtendido = true;
                 manager.ClienteCompletado();
 
-                Debug.Log("[ClienteInteractuable] Carlos atendido.");
+                // 2. Desactivar indicadores UI
+                if (manager.indicadorCervezas != null) manager.indicadorCervezas.SetActive(false);
+                if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
+
+                // 3. Vaciar la mano del jugador
+                if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
+                manager.tieneObjetoEnMano = false;
+
+                // 4. Marcar cliente como completado en este script
+                estadoActual = EstadoCliente.Atendido;
+                Debug.Log("[ClienteInteractuable] Carlos atendido con éxito y cerveza entregada.");
             }
             else
             {
-                manager.MostrarDialogo("Lucas: Todavía no tengo lo que me pidió...");
+                manager.MostrarDialogo("Carlos: Eso no es lo que te pedí, che.");
             }
+            return;
+        }
 
+        // =========================
+        // MARIELA
+        // =========================
+        if (clienteNormalizado == "mariela")
+        {
+            manager.MostrarDialogo(nombreCliente + ": " + dialogoGracias);
+            manager.ClienteCompletado();
+
+            if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
+            if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
+            manager.tieneObjetoEnMano = false;
+
+            estadoActual = EstadoCliente.Atendido;
             return;
         }
 
         // =========================
         // OTROS CLIENTES
         // =========================
-        if (manager.TienePedidoEntregable())
-        {
-            manager.MostrarDialogo(nombreCliente + ": " + dialogoGracias);
+        manager.MostrarDialogo(nombreCliente + ": " + dialogoGracias);
+        manager.ClienteCompletado();
 
-            estadoActual = EstadoCliente.Atendido;
+        if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
+        if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
+        manager.tieneObjetoEnMano = false;
 
-            if (indicadorVioleta != null)
-            {
-                indicadorVioleta.SetActive(false);
-            }
-
-            manager.ClienteCompletado();
-        }
-        else
-        {
-            manager.MostrarDialogo("Lucas: Todavía no tengo lo que me pidió...");
-        }
+        estadoActual = EstadoCliente.Atendido;
     }
 
     public string GetDescription()

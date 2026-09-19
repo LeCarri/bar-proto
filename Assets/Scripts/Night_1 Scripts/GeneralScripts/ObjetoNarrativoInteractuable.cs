@@ -4,7 +4,7 @@ public class ObjetoNarrativoInteractuable : MonoBehaviour, IInteractable
 {
     [Header("Configuración de Inspección")]
     [SerializeField] private string textoAccion = "Inspeccionar dibujo";
-    [SerializeField] private Transform puntoInspeccion; // Un GameObject vacío hijo de la MainCamera
+    [SerializeField] private Transform puntoInspeccion; // Opcional desde Inspector
 
     [Header("Lore / Narrativa")]
     [TextArea(3, 5)]
@@ -16,29 +16,39 @@ public class ObjetoNarrativoInteractuable : MonoBehaviour, IInteractable
     public string GetDescription() => textoAccion;
 
     public void Interact()
-{
-    if (yaFueTomado) return;
-    yaFueTomado = true;
-
-    // 1. Apagar Collider
-    Collider col = GetComponent<Collider>();
-    if (col != null) col.enabled = false;
-
-    // 2. Mover al punto de inspección y orientar de frente a la cámara
-    if (puntoInspeccion != null)
     {
-        transform.SetParent(puntoInspeccion);
-        transform.localPosition = Vector3.zero;
-        
-        // Aplica la rotación del punto de inspección + offset de 90 grados
-        // Si no queda de frente, podés cambiar Vector3.up por Vector3.right o Vector3.forward
-        transform.localRotation = Quaternion.identity * Quaternion.Euler(90f, 90f, -90f); 
-    }
+        if (yaFueTomado) return;
 
-    // 3. Iniciar inspección
-    if (Inspector3D.Instance != null)
-    {
-        Inspector3D.Instance.IniciarInspeccion(gameObject, descripcionLore);
+        // 1. Si no se asignó puntoInspeccion manualmente, intentamos obtenerlo desde el Inspector3D
+        if (puntoInspeccion == null && Inspector3D.Instance != null)
+        {
+            puntoInspeccion = Inspector3D.Instance.PuntoInspeccion; // O el transform del Inspector3D
+        }
+
+        yaFueTomado = true;
+
+        // 2. Apagar Collider para evitar volver a hacer raycast sobre él mientras se inspecciona
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
+
+        // 3. Mover al punto de inspección y orientar de frente
+        if (puntoInspeccion != null)
+        {
+            transform.SetParent(puntoInspeccion);
+            transform.localPosition = Vector3.zero;
+            
+            // Orientación frontal
+            transform.localRotation = Quaternion.identity * Quaternion.Euler(90f, 90f, -90f); 
+        }
+
+        // 4. Iniciar inspección en el sistema 3D
+        if (Inspector3D.Instance != null)
+        {
+            Inspector3D.Instance.IniciarInspeccion(gameObject, descripcionLore);
+        }
+        else
+        {
+            Debug.LogWarning("[ObjetoNarrativoInteractuable] No se encontró la instancia de Inspector3D en la escena.");
+        }
     }
-}
 }
