@@ -13029,6 +13029,7 @@ Transform:
   - {fileID: 1173911187}
   - {fileID: 1991974337}
   - {fileID: 2070714853}
+  - {fileID: 1266006932}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &213095679 stripped
@@ -77645,6 +77646,8 @@ MonoBehaviour:
   totalSillas: 4
   totalMesasParaLimpiar: 2
   totalZonasParaBarrer: 2
+  tieneEscoba: 0
+  tieneTrapo: 0
   dibujoMesa: {fileID: 0}
   jugueteOso: {fileID: 0}
   fotoFamiliar: {fileID: 0}
@@ -83244,6 +83247,50 @@ RectTransform:
   m_AnchoredPosition: {x: -262.45563, y: -131.61914}
   m_SizeDelta: {x: 414.5703, y: 126.0602}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1266006931
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1266006932}
+  - component: {fileID: 1266006933}
+  m_Layer: 0
+  m_Name: TestBebidas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1266006932
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1266006931}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 209536427}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1266006933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1266006931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e89df9e082fb544e3a9a1ccd158a97f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TestBebidasSetup
 --- !u!1001 &1267024210
 PrefabInstance:
   m_ObjectHideFlags: 0
