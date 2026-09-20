@@ -17749,6 +17749,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuntoSuministro
   esBarra: 0
+  servicioCerveza: {fileID: 0}
+  itemAEntregar: {fileID: 0}
+  sonidoSuministro: {fileID: 0}
 --- !u!65 &281190604
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17783,6 +17786,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuntoSuministro
   esBarra: 0
+  servicioCerveza: {fileID: 0}
+  itemAEntregar: {fileID: 0}
+  sonidoSuministro: {fileID: 0}
 --- !u!1 &281520142
 GameObject:
   m_ObjectHideFlags: 0
@@ -54793,8 +54799,44 @@ PrefabInstance:
       value: 2.1083515
       objectReference: {fileID: 0}
     - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -11.38
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.99
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.6849322
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.72840375
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.012166619
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.0121668875
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -89.99999
+      value: -94.037
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 29.238007
+      objectReference: {fileID: 0}
+    - target: {fileID: -1174219694993233962, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -29.238007
       objectReference: {fileID: 0}
     - target: {fileID: -666023131967943238, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -54831,6 +54873,46 @@ PrefabInstance:
     - target: {fileID: -83044596450189823, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 4.1053123
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.54999995
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -11.379999
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.98999846
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.6849322
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.72840375
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.012166619
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.0121668875
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -94.037
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 29.238007
+      objectReference: {fileID: 0}
+    - target: {fileID: 181509980972868323, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -29.238007
       objectReference: {fileID: 0}
     - target: {fileID: 350859030833574692, guid: ab5ad74a7a9ef4146bbb879f6c632a0b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -56256,6 +56338,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuntoSuministro
   esBarra: 1
+  servicioCerveza: {fileID: 0}
+  itemAEntregar: {fileID: 0}
+  sonidoSuministro: {fileID: 0}
 --- !u!114 &815297099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -77639,6 +77724,7 @@ MonoBehaviour:
   textoSubtitulos: {fileID: 1970935855}
   canvasGroupDialogo: {fileID: 1651790477}
   textoObjetivo: {fileID: 1688540084}
+  textoInstruccionF: {fileID: 0}
   velocidadEscritura: 0.04
   velocidadFade: 3
   grupoClientes: {fileID: 1025457744}
@@ -77660,36 +77746,38 @@ MonoBehaviour:
   musicBar: {fileID: 1688514657}
   sonidoCajitaMusica: {fileID: 0}
   sonidoGritoNena: {fileID: 0}
-  carlosPidioCerveza: 0
-  marielaPidioHoney: 0
   clientesAtendidosTotal: 0
   carlosAtendido: 0
   cliente2Atendido: 0
   cliente3Atendido: 0
+  carlosPidioCerveza: 0
+  marielaPidioHoney: 0
+  notificacionCelularUI: {fileID: 0}
+  sonidoVibracionCelular: {fileID: 0}
+  cajitaDeMusicaObjeto: {fileID: 0}
   linternaObjeto: {fileID: 1547855250}
   botellaEspecial: {fileID: 28017797}
   objetoMujer: {fileID: 862288451}
   puertaDeposito: {fileID: 0}
-  enemigos:
-  - {fileID: 685654397264451712}
-  - {fileID: 685654397973118942}
-  - {fileID: 685654398511792151}
+  sonidoCierrePuerta: {fileID: 0}
+  primeraSombra: {fileID: 0}
+  sombrasSalon: []
   sonidoMutacion: {fileID: 764917222}
   sacudidaCamara: {fileID: 1627891355}
   enemigosDerrotados: 0
   totalEnemigos: 3
+  vasoHoneySobreMesa: {fileID: 0}
+  vasoRecogidoCierre: 0
+  vasoDejadoEnBarra: 0
   fadeCanvasGroup: {fileID: 109367766}
-  interactionText: {fileID: 1970935855}
   indicadorCervezas: {fileID: 272598717}
   indicadorDeposito: {fileID: 0}
   itemCerveza: {fileID: 11400000, guid: d088918bb353a4e839d239be1eb42366, type: 2}
   itemWhisky: {fileID: 0}
+  itemWhiskySangre: {fileID: 0}
   itemVasoVacio: {fileID: 11400000, guid: d807adc115b484080a2397e8296d2eb9, type: 2}
-  itemHoney: {fileID: 11400000, guid: 8c3d1dbcb6e9094469c7c4b8a09ed490, type: 2}
-  vasoServicio: {fileID: 8899454398028204611}
-  servicioCervezaVisual: {fileID: 412984295}
+  itemVasoHoney: {fileID: 0}
   tieneObjetoEnMano: 0
-  vasoEnCanilla: 0
 --- !u!1 &1177692907
 GameObject:
   m_ObjectHideFlags: 0
@@ -116951,6 +117039,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuntoSuministro
   esBarra: 0
+  servicioCerveza: {fileID: 0}
+  itemAEntregar: {fileID: 0}
+  sonidoSuministro: {fileID: 0}
 --- !u!224 &1763668762 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 270671850776325463, guid: 6ba6f6dba499c40209062e95bb368944, type: 3}
@@ -128170,7 +128261,7 @@ MonoBehaviour:
   chorro: {fileID: 1999989405}
   bocaBotella: {fileID: 1793146918}
   puntoCaida: {fileID: 498408379}
-  curvaturaChorro: 0.08
+  curvaturaChorro: -0.3
   duracionLlenado: 2.5
   escalaYVacio: 0.001
   escalaYLleno: 1

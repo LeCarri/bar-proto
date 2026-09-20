@@ -14,6 +14,9 @@ public class ServicioWhiskyFPS : MonoBehaviour
     [SerializeField] private GameObject botellaMano;
     [SerializeField] private Transform bottleSocket;
     [SerializeField] private ServicioWhiskyVisual visualWhisky;
+    [Header("Resultado del servicio")]
+    [SerializeField] private ItemSO itemWhiskyServido;
+
 
     private bool reproduciendo;
 
@@ -69,27 +72,41 @@ public class ServicioWhiskyFPS : MonoBehaviour
 }
 
     // Animation Event
-    public void FinalizarServicio()
-    {
-        Debug.Log("EVENTO: FINALIZAR SERVICIO WHISKY");
+public void FinalizarServicio()
+{
+    Debug.Log("EVENTO: FINALIZAR SERVICIO WHISKY");
 
-        if (botellaMano != null)
-            botellaMano.SetActive(false);
+    if (botellaMano != null)
+        botellaMano.SetActive(false);
 
-        if (botellaMundo != null)
-            botellaMundo.SetActive(true);
+    if (botellaMundo != null)
+        botellaMundo.SetActive(true);
 
-        if (mallaBrazos != null)
-            mallaBrazos.SetActive(false);
+    if (mallaBrazos != null)
+        mallaBrazos.SetActive(false);
 
-        reproduciendo = false;
+    reproduciendo = false;
 
-        // Dejamos el Animator nuevamente en reposo.
-        animator.Play("Idle", 0, 0f);
+    // Dejamos el Animator nuevamente en reposo.
+    animator.Play("Idle", 0, 0f);
 
-        if (visualWhisky != null)
+    if (visualWhisky != null)
         visualWhisky.OcultarVaso();
+
+    // Entregamos el vaso de whisky al jugador.
+    if (ControladorMano3D.Instance != null && itemWhiskyServido != null)
+    {
+        ControladorMano3D.Instance.EquiparItem(itemWhiskyServido);
+
+        Debug.Log("WHISKY: vaso equipado en la mano.");
     }
+    else
+    {
+        Debug.LogWarning(
+            "WHISKY: falta ControladorMano3D o Item Whisky Servido."
+        );
+    }
+}
 
     public void MostrarVaso()
 {
