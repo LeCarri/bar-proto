@@ -20643,6 +20643,7 @@ MonoBehaviour:
   nombreCliente: 'Mariela '
   dialogoPedido: "Una media pinta de cerveza Honey, bien fr\xEDa... como antes."
   dialogoGracias: Llegaste tarde, Lucas.
+  esClienteCuatro: 0
   indicadorVioleta: {fileID: 384979690}
 --- !u!1001 &321273540
 PrefabInstance:
@@ -31336,6 +31337,7 @@ MonoBehaviour:
   nombreCliente: Cliente3
   dialogoPedido: Una bien fria para mi
   dialogoGracias: 'gracias querido '
+  esClienteCuatro: 0
   indicadorVioleta: {fileID: 298680519}
 --- !u!136 &453255103
 CapsuleCollider:
@@ -44585,7 +44587,7 @@ Transform:
   m_GameObject: {fileID: 612122500}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 34.43564, y: -0.9082, z: -11.62468}
+  m_LocalPosition: {x: 34.43564, y: 21.93, z: -11.62468}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -78893,7 +78895,7 @@ MonoBehaviour:
   tieneTrapo: 0
   dibujoMesa: {fileID: 1876148981}
   jugueteOso: {fileID: 0}
-  fotoFamiliar: {fileID: 0}
+  fotoFamiliar: {fileID: 109567219}
   effectoParpadeo: {fileID: 1991974338}
   lucesNormales: {fileID: 1560389704}
   lucesServicio: {fileID: 412008976}
@@ -78930,10 +78932,15 @@ MonoBehaviour:
   indicadorCervezas: {fileID: 272598717}
   indicadorDeposito: {fileID: 0}
   itemCerveza: {fileID: 11400000, guid: d088918bb353a4e839d239be1eb42366, type: 2}
-  itemWhisky: {fileID: 0}
+  itemWhisky: {fileID: 11400000, guid: aa5705b2aee4c7e4f9003278958bddcf, type: 2}
   itemWhiskySangre: {fileID: 0}
   itemVasoVacio: {fileID: 11400000, guid: d807adc115b484080a2397e8296d2eb9, type: 2}
   itemVasoHoney: {fileID: 0}
+  clientesEnOrden:
+  - {fileID: 1571467184}
+  - {fileID: 1421910341}
+  - {fileID: 453255102}
+  - {fileID: 317003444}
   tieneObjetoEnMano: 0
 --- !u!1 &1177692907
 GameObject:
@@ -95022,6 +95029,7 @@ MonoBehaviour:
   nombreCliente: Cliente2
   dialogoPedido: 'Un whisky, puede ser ?  '
   dialogoGracias: Gracias
+  esClienteCuatro: 0
   indicadorVioleta: {fileID: 1636733453}
 --- !u!136 &1421910342
 CapsuleCollider:
@@ -107497,6 +107505,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 49535839785498285, guid: 15097d7246912594f8bb0da12d45aa9b, type: 3}
   m_PrefabInstance: {fileID: 6239795778782552894}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1571467184 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2904457508897903412, guid: 15097d7246912594f8bb0da12d45aa9b, type: 3}
+  m_PrefabInstance: {fileID: 6239795778782552894}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d74b8a0c10752ef4f9792c70f3b4eb79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClienteInteractuable
 --- !u!1 &1573274321
 GameObject:
   m_ObjectHideFlags: 0
@@ -114590,7 +114609,7 @@ Transform:
   m_GameObject: {fileID: 1688514655}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.27, y: 0, z: 0}
+  m_LocalPosition: {x: -24.27, y: 24.26, z: 0}
   m_LocalScale: {x: 7.2370906, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -136630,7 +136649,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1186, y: 678}
+  m_SizeDelta: {x: 1515.8799, y: 848.7893}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2053588328
 MonoBehaviour:

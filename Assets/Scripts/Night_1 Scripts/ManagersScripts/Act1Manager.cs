@@ -98,6 +98,10 @@ public class Act1Manager : MonoBehaviour
     public ItemSO itemWhiskySangre; 
     public ItemSO itemVasoVacio;
     public ItemSO itemVasoHoney;
+
+    [Header("Control de Secuencia de Clientes")]
+    public ClienteInteractuable[] clientesEnOrden;
+    private int indiceClienteActual = 0;
     
     [Header("Estado del Jugador")]
     public bool tieneObjetoEnMano = false;
@@ -242,6 +246,8 @@ public class Act1Manager : MonoBehaviour
     // ==========================================
     // 2. SERVICIO DE CLIENTES
     // ==========================================
+
+    
     public void InteractuarCarlos()
 {
     if (estadoActual != ActoState.Servicio) return;
@@ -353,6 +359,14 @@ public class Act1Manager : MonoBehaviour
     // ==========================================
     // 3. QUIEBRE Y APARICIÓN DE MARIELA
     // ==========================================
+
+    /// <summary>
+    /// Método público llamado por ClienteInteractuable cuando el Cliente 4 recibe su bebida.
+    /// </summary>
+    public void IniciarSecuenciaQuiebre()
+    {
+        StartCoroutine(SecuenciaQuiebreCajita());
+    }
     IEnumerator SecuenciaQuiebreCajita()
     {
         estadoActual = ActoState.Quiebre;

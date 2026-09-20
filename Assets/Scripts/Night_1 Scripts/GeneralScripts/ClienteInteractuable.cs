@@ -6,8 +6,12 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
 
     [Header("Configuración")]
     public string nombreCliente = "Carlos";
-    public string dialogoPedido = "Hola Lucas, ¿todo bien?... Dame lo de siempre.";
-    public string dialogoGracias = "Gracias, maestro.";
+    [TextArea] public string dialogoPedido = "Hola Lucas, ¿todo bien?... Dame lo de siempre.";
+    [TextArea] public string dialogoGracias = "Gracias, maestro.";
+
+    [Header("Cliente Especial (Quiebre)")]
+    [Tooltip("Marcar solo si este cliente es el Cliente 4 que pide el Whisky Sangre")]
+    public bool esClienteCuatro = false;
 
     [Header("UI")]
     public GameObject indicadorVioleta;
@@ -45,7 +49,6 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
                 break;
 
             case EstadoCliente.Atendido:
-                // Diálogo extra si volvés a hablarle ya atendido
                 if (nombreCliente.Trim().ToLower() == "carlos")
                 {
                     manager.MostrarDialogo("Carlos: ¿Mucho laburo?\nLucas: Lo de siempre, la verdad.\nCarlos: ¡Te vas a terminar matando!\nLucas: Y... no me queda otra.");
@@ -79,7 +82,7 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
                 manager.indicadorCervezas.SetActive(true);
             }
 
-            Debug.Log("[ClienteInteractuable] Carlos pidió cerveza. carlosPidioCerveza = TRUE.");
+            Debug.Log("[ClienteInteractuable] Carlos pidió cerveza.");
             return;
         }
 
@@ -101,7 +104,7 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
         }
 
         // =========================
-        // OTROS CLIENTES
+        // OTROS CLIENTES / CLIENTE 4
         // =========================
         manager.MostrarDialogo(nombreCliente + ": " + dialogoPedido);
         estadoActual = EstadoCliente.EsperandoPedido;
@@ -111,11 +114,40 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
     {
         string clienteNormalizado = nombreCliente.Trim().ToLower();
 
-        // Chequeo de seguridad: ¿El jugador tiene un objeto en la mano?
         if (!manager.tieneObjetoEnMano && (ControladorMano3D.Instance == null || ControladorMano3D.Instance.ObtenerItemActual() == null))
         {
             manager.MostrarDialogo("Lucas: Todavía no tengo lo que me pidió...");
             return;
+        }
+
+        ItemSO itemMano = ControladorMano3D.Instance != null ? ControladorMano3D.Instance.ObtenerItemActual() : null;
+
+        // =========================
+        // CLIENTE 4 (QUIEBRE - WHISKY SANGRE)
+        // =========================
+        if (esClienteCuatro || clienteNormalizado == "cliente 4" || clienteNormalizado == "mariela quiebre")
+        {
+            bool esWhisky = (manager.itemWhisky != null && itemMano == manager.itemWhisky) ||
+                            (itemMano != null && itemMano.nombreItem.ToLower().Contains("whisky"));
+
+            if (esWhisky)
+            {
+                if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
+                manager.tieneObjetoEnMano = false;
+
+                if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
+
+                estadoActual = EstadoCliente.Atendido;
+
+                manager.IniciarSecuenciaQuiebre();
+                gameObject.SetActive(false);
+                return;
+            }
+            else
+            {
+                manager.MostrarDialogo("Cliente: Eso no es lo que pedí...");
+                return;
+            }
         }
 
         // =========================
@@ -123,30 +155,22 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
         // =========================
         if (clienteNormalizado == "carlos")
         {
-            ItemSO itemMano = ControladorMano3D.Instance != null ? ControladorMano3D.Instance.ObtenerItemActual() : null;
-            
-            // Verificamos que sea Cerveza (por slot o por nombre)
             bool esCerveza = (manager.itemCerveza != null && itemMano == manager.itemCerveza) || 
                              (itemMano != null && itemMano.nombreItem.ToLower().Contains("cerveza"));
 
             if (esCerveza)
             {
-                // 1. Decir diálogo y actualizar flags en Manager
                 manager.MostrarDialogo(nombreCliente + ": " + dialogoGracias);
                 manager.carlosAtendido = true;
                 manager.ClienteCompletado();
 
-                // 2. Desactivar indicadores UI
                 if (manager.indicadorCervezas != null) manager.indicadorCervezas.SetActive(false);
                 if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
 
-                // 3. Vaciar la mano del jugador
                 if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
                 manager.tieneObjetoEnMano = false;
 
-                // 4. Marcar cliente como completado en este script
                 estadoActual = EstadoCliente.Atendido;
-                Debug.Log("[ClienteInteractuable] Carlos atendido con éxito y cerveza entregada.");
             }
             else
             {
@@ -156,23 +180,7 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
         }
 
         // =========================
-        // MARIELA
-        // =========================
-        if (clienteNormalizado == "mariela")
-        {
-            manager.MostrarDialogo(nombreCliente + ": " + dialogoGracias);
-            manager.ClienteCompletado();
-
-            if (indicadorVioleta != null) indicadorVioleta.SetActive(false);
-            if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
-            manager.tieneObjetoEnMano = false;
-
-            estadoActual = EstadoCliente.Atendido;
-            return;
-        }
-
-        // =========================
-        // OTROS CLIENTES
+        // OTROS CLIENTES (MARIELA / CLIENTES SECUNDARIOS)
         // =========================
         manager.MostrarDialogo(nombreCliente + ": " + dialogoGracias);
         manager.ClienteCompletado();
@@ -205,6 +213,7 @@ public class ClienteInteractuable : MonoBehaviour, IInteractable
     }
 }
 
+// DECLARACIÓN DEL ENUM OBLIGATORIA
 public enum EstadoCliente
 {
     EsperandoAtencion,
