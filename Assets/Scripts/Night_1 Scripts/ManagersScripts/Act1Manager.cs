@@ -61,7 +61,7 @@ public class Act1Manager : MonoBehaviour
     public bool carlosAtendido = false;
     public bool carlosPidioCerveza = false;
 
-    [Header("Control de Turnos de Clientes (NUEVO)")]
+    [Header("Control de Turnos de Clientes")]
     [Tooltip("Arrastrá los GameObjects de los clientes en orden: Index 0 = Carlos, Index 1 = Cliente 2, etc.")]
     public ClienteInteractuable[] clientesEnOrden;
     private int indiceClienteActual = 0;
@@ -70,8 +70,20 @@ public class Act1Manager : MonoBehaviour
     public GameObject notificacionCelularUI;
     public AudioSource sonidoVibracionCelular;
 
-    [Header("Quiebre & Transición Cliente 4")]
-    public GameObject cajitaDeMusicaObjeto;
+    [Header("Referencias del Quiebre / Caja Musical")]
+    public GameObject cajaMusicalInteractuable; 
+    public GameObject vasoWhiskyServido;       
+    public GameObject grupoClientesBar;         
+    public GameObject lucesNormalesBar;
+    public GameObject lucesEmergenciaBar;
+
+    [Header("Audio e Impacto del Quiebre")]
+    public AudioSource sonidoCajaMusical;
+    public AudioSource sonidoGritoNina;
+    public AudioSource sonidoExplosionElectrica; 
+    public AudioSource sonidoCorteDeLuz;
+
+    [Header("PostQuiebre")]
     public GameObject linternaObjeto;
     public GameObject botellaEspecial; 
     public GameObject objetoMujer;
@@ -122,7 +134,7 @@ public class Act1Manager : MonoBehaviour
         if (indicadorDeposito != null) indicadorDeposito.SetActive(false);
         if (botellaEspecial != null) botellaEspecial.SetActive(false);
         if (notificacionCelularUI != null) notificacionCelularUI.SetActive(false);
-        if (cajitaDeMusicaObjeto != null) cajitaDeMusicaObjeto.SetActive(false);
+        if (cajaMusicalInteractuable != null) cajaMusicalInteractuable.SetActive(false);
         if (textoInstruccionF != null) textoInstruccionF.gameObject.SetActive(false);
 
         if (fadeCanvasGroup != null)
@@ -194,11 +206,14 @@ public class Act1Manager : MonoBehaviour
     {
         ActualizarProgresoObjetivo();
 
+        Debug.Log($"[Progreso Tareas] Sillas: {sillasAcomodadas}/{totalSillas} | Mesas: {mesasLimpiadas}/{totalMesasParaLimpiar} | Zonas: {zonasBarridas}/{totalZonasParaBarrer}");
+
         if (sillasAcomodadas >= totalSillas && 
             mesasLimpiadas >= totalMesasParaLimpiar &&
             zonasBarridas >= totalZonasParaBarrer &&
             estadoActual == ActoState.Limpieza)
         {
+            estadoActual = ActoState.Transicion;
             if (!tieneDibujoGuardado && dibujoMesa != null) dibujoMesa.SetActive(false);
             StartCoroutine(SecuenciaTransicionServicio());
         }
@@ -215,23 +230,27 @@ public class Act1Manager : MonoBehaviour
     IEnumerator SecuenciaTransicionServicio()
     {
         MostrarDialogo("Lucas: Listo. Guardo la escoba...");
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1.5f);
 
         if (sonidoGolpeSuelo != null) sonidoGolpeSuelo.Play();
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(1f);
+
         MostrarDialogo("Lucas: Ufff... Estas cañerías están cada vez peor...");
-        yield return new WaitForSeconds(2.5f);
 
         if (effectoParpadeo != null)
         {
+            Debug.Log("[Act1Manager] Ejecutando efecto de parpadeo.");
             effectoParpadeo.IniciarParpadeo();
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1.2f);
+        }
+        else
+        {
+            Debug.LogWarning("[Act1Manager] 'effectoParpadeo' no está asignado en el Inspector.");
         }
 
         CambiarIluminacion("Servicio");
         if (grupoClientes != null) grupoClientes.SetActive(true);
 
-        // INICIAR LÓGICA DE TURNOS DE CLIENTES
         IniciarServicioClientes();
 
         MostrarDialogo("Lucas: ¿Clientes?... ¡Muy bien, a trabajar!");
@@ -249,7 +268,6 @@ public class Act1Manager : MonoBehaviour
         estadoActual = ActoState.Servicio;
         indiceClienteActual = 0;
 
-        // Desactivamos el turno de todos los clientes
         for (int i = 0; i < clientesEnOrden.Length; i++)
         {
             if (clientesEnOrden[i] != null)
@@ -258,13 +276,11 @@ public class Act1Manager : MonoBehaviour
             }
         }
 
-        // Activamos únicamente el turno del primer cliente (Carlos)
         HabilitarClienteActual();
     }
 
     public void AvanzarSiguienteCliente()
     {
-        // Retiramos el turno del cliente recién atendido
         if (indiceClienteActual < clientesEnOrden.Length && clientesEnOrden[indiceClienteActual] != null)
         {
             clientesEnOrden[indiceClienteActual].esSuTurno = false;
@@ -272,7 +288,6 @@ public class Act1Manager : MonoBehaviour
 
         indiceClienteActual++;
 
-        // Habilitamos el turno del próximo cliente
         if (indiceClienteActual < clientesEnOrden.Length)
         {
             HabilitarClienteActual();
@@ -312,9 +327,6 @@ public class Act1Manager : MonoBehaviour
         if (notificacionCelularUI != null) notificacionCelularUI.SetActive(false);
     }
 
-    // ==========================================
-    // SISTEMA Y EVENTO CELULAR
-    // ==========================================
     public void DispararVibracionCelularConRetraso(float retrasoSegundos = 2f)
     {
         StartCoroutine(RutinaVibracionCelular(retrasoSegundos));
@@ -324,10 +336,8 @@ public class Act1Manager : MonoBehaviour
     {
         yield return new WaitForSeconds(retraso);
 
-        // Sonido de vibración/notificación
         if (sonidoVibracionCelular != null) sonidoVibracionCelular.Play();
 
-        // Enviamos el mensaje al SistemaCelular
         if (SistemaCelular.Instance != null)
         {
             SistemaCelular.Instance.RecibirMensaje("Mariela", "¿Vas a volver tarde?");
@@ -336,14 +346,9 @@ public class Act1Manager : MonoBehaviour
         MostrarDialogo("Lucas: (Mensaje de Mariela... Presiona [T] para ver)");
     }
 
-    /// <summary>
-    /// Se llama automáticamente cuando el jugador cierra el celular tras leer el mensaje.
-    /// </summary>
     public void MensajeCelularLeido()
     {
         MostrarDialogo("Lucas: Me acuerdo de cuando se preocupaba de verdad...");
-        
-        // Habilitar la siguiente fase/cliente si aplica
         Debug.Log("[Act1Manager] Mensaje leído. Avanzando narrativa.");
     }
 
@@ -358,7 +363,6 @@ public class Act1Manager : MonoBehaviour
 
     public void HabilitarTriggerCocinaFinal()
     {
-        // Método puente llamado por TriggerRegreso.cs para evitar errores
         Debug.Log("[Act1Manager] Trigger Cocina Final habilitado.");
     }
 
@@ -367,31 +371,92 @@ public class Act1Manager : MonoBehaviour
     // ==========================================
     public void IniciarSecuenciaQuiebre()
     {
-        StartCoroutine(SecuenciaQuiebreCajita());
+        Debug.Log("[Act1Manager] INICIANDO SECUENCIA DE QUIEBRE");
+
+        estadoActual = ActoState.Quiebre; // Cambiamos el estado formalmente a Quiebre
+
+        if (grupoClientesBar != null) grupoClientesBar.SetActive(false);
+        if (vasoWhiskyServido != null) vasoWhiskyServido.SetActive(true);
+        
+        // Habilitamos la caja en escena para ser interactuada
+        if (cajaMusicalInteractuable != null) 
+        {
+            cajaMusicalInteractuable.SetActive(true);
+            Debug.Log("[Act1Manager] Caja musical activada en la escena.");
+        }
+
+        if (lucesNormalesBar != null) lucesNormalesBar.SetActive(true);
+        if (lucesEmergenciaBar != null) lucesEmergenciaBar.SetActive(false);
+
+        MostrarDialogo("Lucas: ¿Pará... a dónde se fueron todos?");
+        ActualizarObjetivo("Investiga la caja musical sobre la barra");
     }
 
-    IEnumerator SecuenciaQuiebreCajita()
+    // Llamada de interacción directa para la Caja Musical
+    public void InteractuarCajaMusical()
     {
-        estadoActual = ActoState.Quiebre;
+        if (estadoActual == ActoState.Quiebre)
+        {
+            ActivarSecuenciaCajaMusical();
+        }
+    }
 
-        if (ambientBar != null) ambientBar.Stop();
-        if (musicBar != null) musicBar.Stop();
+    public void ActivarSecuenciaCajaMusical()
+    {
+        StartCoroutine(RutinaCajaMusicalYSusto());
+    }
 
-        if (grupoClientes != null) grupoClientes.SetActive(false);
-        CambiarIluminacion("Combate"); 
+    private IEnumerator RutinaCajaMusicalYSusto()
+    {
+        if (sonidoCajaMusical != null)
+        {
+            sonidoCajaMusical.pitch = 1.0f;
+            sonidoCajaMusical.Play();
+        }
 
-        if (cajitaDeMusicaObjeto != null) cajitaDeMusicaObjeto.SetActive(true);
+        yield return new WaitForSeconds(3.0f);
 
-        if (sonidoCajitaMusica != null) sonidoCajitaMusica.Play();
-        yield return new WaitForSeconds(4f);
+        float tiempoAcelerando = 0f;
+        float duracionAceleracion = 2.5f;
 
-        if (sonidoGritoNena != null) sonidoGritoNena.Play();
-        yield return new WaitForSeconds(1.5f);
+        while (tiempoAcelerando < duracionAceleracion)
+        {
+            tiempoAcelerando += Time.deltaTime;
+            if (sonidoCajaMusical != null)
+            {
+                sonidoCajaMusical.pitch = Mathf.Lerp(1.0f, 2.2f, tiempoAcelerando / duracionAceleracion);
+            }
+            yield return null;
+        }
 
-        if (sonidoCajitaMusica != null) sonidoCajitaMusica.Stop();
+        if (sonidoCajaMusical != null) sonidoCajaMusical.Stop();
 
-        MostrarDialogo("Lucas: ¿Justo ahora?... Menos mal que tengo la linterna acá en la barra.");
-        ActualizarObjetivo("Busca la linterna detrás de la barra");
+        float duracionParpadeo = 1.2f;
+        float tiempoParpadeo = 0f;
+
+        while (tiempoParpadeo < duracionParpadeo)
+        {
+            if (lucesNormalesBar != null)
+            {
+                lucesNormalesBar.SetActive(!lucesNormalesBar.activeSelf);
+            }
+        
+            float intervaloAleatorio = Random.Range(0.04f, 0.12f);
+            tiempoParpadeo += intervaloAleatorio;
+            yield return new WaitForSeconds(intervaloAleatorio);
+        }
+
+        if (sonidoExplosionElectrica != null) sonidoExplosionElectrica.Play();
+        if (sonidoGritoNina != null) sonidoGritoNina.Play();
+        if (sonidoCorteDeLuz != null) sonidoCorteDeLuz.Play();
+
+        if (lucesNormalesBar != null) lucesNormalesBar.SetActive(false);
+        if (lucesEmergenciaBar != null) lucesEmergenciaBar.SetActive(true);
+
+        yield return new WaitForSeconds(1.8f);
+
+        MostrarDialogo("Lucas: ¡Hijos de puta! Se reventó todo... Necesito la linterna ya.");
+        HabilitarTriggerCocinaFinal();
     }
 
     public void RecogerLinterna()
@@ -533,10 +598,10 @@ public class Act1Manager : MonoBehaviour
     {
         if (estadoActual != ActoState.Cierre || vasoRecogidoCierre) return;
 
-        visitarVasoHoney();
+        VisitarVasoHoney();
     }
 
-    private void visitarVasoHoney()
+    private void VisitarVasoHoney()
     {
         vasoRecogidoCierre = true;
         if (vasoHoneySobreMesa != null) vasoHoneySobreMesa.SetActive(false);
