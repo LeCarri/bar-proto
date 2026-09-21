@@ -21,7 +21,8 @@ public class ServicioWhiskyFPS : MonoBehaviour
 
     [Header("Whisky tomado por Lucas")]
     [SerializeField] private float tiempoAntesDeTomar = 1f;
-    [SerializeField] private AudioSource sonidoTrago;
+    [SerializeField] private AudioSource sonidoTrago1;
+    [SerializeField] private AudioSource sonidoTrago2;
 
     private bool reproduciendo;
 
@@ -171,9 +172,13 @@ public class ServicioWhiskyFPS : MonoBehaviour
         // El vaso permanece visible en PuntoMano.
         yield return new WaitForSeconds(tiempoAntesDeTomar);
 
-        // Sonido de Lucas tomando el whisky.
-        if (sonidoTrago != null)
-            sonidoTrago.Play();
+        // Elegimos aleatoriamente uno de los dos sorbos.
+        AudioSource sonidoElegido = Random.value < 0.5f
+            ? sonidoTrago1
+            : sonidoTrago2;
+
+        if (sonidoElegido != null)
+            sonidoElegido.Play();
 
         // Desaparece el vaso.
         if (ControladorMano3D.Instance != null)
@@ -218,3 +223,4 @@ public class ServicioWhiskyFPS : MonoBehaviour
             Debug.LogError("visualWhisky NO ESTÁ ASIGNADO");
     }
 }
+
