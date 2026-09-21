@@ -11,6 +11,9 @@ public class Act1Manager : MonoBehaviour
     public ActoState estadoActual = ActoState.Limpieza;
     private Coroutine corrutinaActiva;
 
+    [Header("DEBUG / TEST")]
+    [SerializeField] private bool saltarLimpieza = false;
+
     [Header("UI y Diálogos")]
     public TextMeshProUGUI textoSubtitulos;
     public CanvasGroup canvasGroupDialogo; 
@@ -143,8 +146,35 @@ public class Act1Manager : MonoBehaviour
             fadeCanvasGroup.alpha = 1f;
         }
 
-        CambiarIluminacion("Normal");
-        IniciarFaseTareas();
+        if (saltarLimpieza)
+{
+            IniciarServicioDirecto();
+        }
+        else
+        {
+            CambiarIluminacion("Normal");
+            IniciarFaseTareas();
+}
+    }
+
+    private void IniciarServicioDirecto()
+    {
+        Debug.Log("[DEBUG] Saltando limpieza. Iniciando servicio directamente.");
+
+        CambiarIluminacion("Servicio");
+
+        if (grupoClientes != null)
+            grupoClientes.SetActive(true);
+
+        IniciarServicioClientes();
+
+        ActualizarObjetivo("Atiende a los clientes en el salón");
+
+        if (ambientBar != null && !ambientBar.isPlaying)
+            ambientBar.Play();
+
+        if (musicBar != null && !musicBar.isPlaying)
+            musicBar.Play();
     }
 
     // ==========================================

@@ -19698,7 +19698,11 @@ MonoBehaviour:
   nombreCliente: 'Mariela '
   dialogoPedido: "Una media pinta de cerveza Honey, bien fr\xEDa... como antes."
   dialogoGracias: Llegaste tarde, Lucas.
-  indicadorVioleta: {fileID: 384979690}
+  itemPedidoRequerido: {fileID: 0}
+  esSuTurno: 0
+  esClienteCuatro: 0
+  disparaCelularAlEntregar: 0
+  indicadorVisual: {fileID: 0}
 --- !u!1001 &321273540
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -77748,13 +77752,19 @@ MonoBehaviour:
   sonidoGritoNena: {fileID: 0}
   clientesAtendidosTotal: 0
   carlosAtendido: 0
-  cliente2Atendido: 0
-  cliente3Atendido: 0
   carlosPidioCerveza: 0
-  marielaPidioHoney: 0
+  clientesEnOrden: []
   notificacionCelularUI: {fileID: 0}
   sonidoVibracionCelular: {fileID: 0}
-  cajitaDeMusicaObjeto: {fileID: 0}
+  cajaMusicalInteractuable: {fileID: 0}
+  vasoWhiskyServido: {fileID: 0}
+  grupoClientesBar: {fileID: 0}
+  lucesNormalesBar: {fileID: 0}
+  lucesEmergenciaBar: {fileID: 0}
+  sonidoCajaMusical: {fileID: 0}
+  sonidoGritoNina: {fileID: 0}
+  sonidoExplosionElectrica: {fileID: 0}
+  sonidoCorteDeLuz: {fileID: 0}
   linternaObjeto: {fileID: 1547855250}
   botellaEspecial: {fileID: 28017797}
   objetoMujer: {fileID: 862288451}
@@ -96279,7 +96289,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1461993928
 Transform:
   m_ObjectHideFlags: 0
@@ -115307,6 +115317,7 @@ MonoBehaviour:
   botellaMano: {fileID: 117345734}
   bottleSocket: {fileID: 1102814710}
   visualWhisky: {fileID: 1951352806}
+  itemWhiskyServido: {fileID: 11400000, guid: aa5705b2aee4c7e4f9003278958bddcf, type: 2}
 --- !u!1001 &1729633054
 PrefabInstance:
   m_ObjectHideFlags: 0
