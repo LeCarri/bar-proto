@@ -5,6 +5,7 @@ public class ObjetoNarrativoInteractuable : MonoBehaviour, IInteractable
     [Header("Configuración de Inspección")]
     [SerializeField] private string textoAccion = "Inspeccionar dibujo";
     [SerializeField] private Transform puntoInspeccion; // Opcional desde Inspector
+    [SerializeField] public GameObject luzInteractuable;
 
     [Header("Lore / Narrativa")]
     [TextArea(3, 5)]
