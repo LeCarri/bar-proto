@@ -27,7 +27,7 @@ public class DebugTools : MonoBehaviour
         switch (currScene)
         {
             case 0: SaveManager.Instance.LoadSave(); break;
-            case 1: Act1Manager.Instance.EndNight(); break;
+            //case 1: Act1Manager.Instance.EndNight(); break;
         }
     }
 }

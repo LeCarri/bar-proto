@@ -7,7 +7,8 @@ public enum TipoItem
     Cerveza,
     Honey,
     Trapo,
-    Linterna
+    Linterna,
+    Whisky
 }
 
 [CreateAssetMenu(fileName = "NuevoItem", menuName = "Juego/Item")]

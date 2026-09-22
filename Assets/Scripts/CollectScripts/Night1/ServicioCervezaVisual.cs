@@ -11,7 +11,6 @@ public class ServicioCervezaVisual : MonoBehaviour
     [SerializeField] private float duracionLlenado = 2.5f;
 
     [Header("Chorro")]
-
     [Range(0f, 0.5f)]
     [SerializeField] private float inicioAcortarChorro = 0.20f;
 
@@ -21,7 +20,6 @@ public class ServicioCervezaVisual : MonoBehaviour
     public bool EstaSirviendo { get; private set; }
 
     private Vector3 escalaLlena;
-
     private Transform transformChorro;
     private Vector3 escalaOriginalChorro;
     private Vector3 posicionOriginalChorro;
@@ -49,8 +47,13 @@ public class ServicioCervezaVisual : MonoBehaviour
             escalaOriginalChorro = transformChorro.localScale;
             posicionOriginalChorro = transformChorro.localPosition;
 
-            // Detectamos automáticamente cuál es
-            // el eje más largo del cilindro.
+            // Aseguramos que la escala guardada no sea cero por error
+            if (escalaOriginalChorro == Vector3.zero)
+            {
+                escalaOriginalChorro = Vector3.one;
+            }
+
+            // Detectamos automáticamente el eje más largo
             float x = Mathf.Abs(escalaOriginalChorro.x);
             float y = Mathf.Abs(escalaOriginalChorro.y);
             float z = Mathf.Abs(escalaOriginalChorro.z);
@@ -71,14 +74,10 @@ public class ServicioCervezaVisual : MonoBehaviour
         if (liquidoCerveza != null)
         {
             Vector3 escala = escalaLlena;
-
-            // En tu vaso, Z es el eje vertical del líquido.
-            escala.z = 0.01f;
-
+            escala.z = 0.01f; // Z es el eje vertical del líquido
             liquidoCerveza.localScale = escala;
         }
 
-        // Restauramos el chorro por si ya fue utilizado antes.
         if (transformChorro != null)
         {
             transformChorro.localScale = escalaOriginalChorro;
@@ -115,9 +114,7 @@ public class ServicioCervezaVisual : MonoBehaviour
         while (tiempo < duracionLlenado)
         {
             tiempo += Time.deltaTime;
-
-            float porcentaje =
-                Mathf.Clamp01(tiempo / duracionLlenado);
+            float porcentaje = Mathf.Clamp01(tiempo / duracionLlenado);
 
             // ==========================
             // LLENAR CERVEZA
@@ -125,13 +122,7 @@ public class ServicioCervezaVisual : MonoBehaviour
             if (liquidoCerveza != null)
             {
                 Vector3 escala = escalaLlena;
-
-                escala.z = Mathf.Lerp(
-                    0.01f,
-                    escalaLlena.z,
-                    porcentaje
-                );
-
+                escala.z = Mathf.Lerp(0.01f, escalaLlena.z, porcentaje);
                 liquidoCerveza.localScale = escala;
             }
 
@@ -147,41 +138,20 @@ public class ServicioCervezaVisual : MonoBehaviour
                 );
 
                 Vector3 escala = escalaOriginalChorro;
+                float escalaOriginal = ObtenerComponente(escalaOriginalChorro, ejeLargoChorro);
+                float nuevaEscala = Mathf.Lerp(escalaOriginal, escalaOriginal * 0.02f, progresoChorro);
 
-                float escalaOriginal =
-                    ObtenerComponente(
-                        escalaOriginalChorro,
-                        ejeLargoChorro
-                    );
-
-                float nuevaEscala = Mathf.Lerp(
-                    escalaOriginal,
-                    escalaOriginal * 0.02f,
-                    progresoChorro
-                );
-
-                AsignarComponente(
-                    ref escala,
-                    ejeLargoChorro,
-                    nuevaEscala
-                );
-
+                AsignarComponente(ref escala, ejeLargoChorro, nuevaEscala);
                 transformChorro.localScale = escala;
 
-                // El centro del cilindro se acerca
-                // progresivamente a la boca de la canilla.
-                transformChorro.localPosition =
-                    Vector3.Lerp(
-                        posicionOriginalChorro,
-                        Vector3.zero,
-                        progresoChorro
-                    );
+                transformChorro.localPosition = Vector3.Lerp(
+                    posicionOriginalChorro,
+                    Vector3.zero,
+                    progresoChorro
+                );
             }
 
-            // Cortamos el chorro justo antes de llenarse del todo.
-            if (porcentaje >= porcentajeCorteChorro &&
-                chorroCerveza != null &&
-                chorroCerveza.activeSelf)
+            if (porcentaje >= porcentajeCorteChorro && chorroCerveza != null && chorroCerveza.activeSelf)
             {
                 chorroCerveza.SetActive(false);
             }
@@ -189,7 +159,6 @@ public class ServicioCervezaVisual : MonoBehaviour
             yield return null;
         }
 
-        // Aseguramos que termine completamente lleno.
         if (liquidoCerveza != null)
         {
             liquidoCerveza.localScale = escalaLlena;
@@ -203,7 +172,6 @@ public class ServicioCervezaVisual : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
 
         EstaSirviendo = false;
-
         alTerminar?.Invoke();
     }
 
@@ -211,21 +179,13 @@ public class ServicioCervezaVisual : MonoBehaviour
     {
         if (eje == 0) return vector.x;
         if (eje == 1) return vector.y;
-
         return vector.z;
     }
 
-    private void AsignarComponente(
-        ref Vector3 vector,
-        int eje,
-        float valor
-    )
+    private void AsignarComponente(ref Vector3 vector, int eje, float valor)
     {
-        if (eje == 0)
-            vector.x = valor;
-        else if (eje == 1)
-            vector.y = valor;
-        else
-            vector.z = valor;
+        if (eje == 0) vector.x = valor;
+        else if (eje == 1) vector.y = valor;
+        else vector.z = valor;
     }
 }
