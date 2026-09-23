@@ -508,20 +508,15 @@ private IEnumerator SecuenciaParpadeoYTransicionLuces()
 
     public void AlRecogerLinternaBarra()
 {
-    Debug.Log("[Act1Manager] Linterna recogida en la barra.");
+    Debug.Log("[Act1Manager] Linterna recogida de la barra.");
 
-    if (linternaBarraInteractuable != null) 
-    {
-        linternaBarraInteractuable.SetActive(false);
-    }
-
-    // Diálogo de Lucas al juntar la linterna (GDD Noche 1)
+    // Diálogo del GDD Noche 1
     MostrarDialogo("Lucas: Seguro saltó la térmica de nuevo... Tengo que revisar los tapones en el sótano...");
+    ActualizarObjetivo("Revisa los tapones en el sótano");
 
-    // Habilitamos el trigger para cuando intente salir de la barra y aparezca Ñañiela
+    // Habilitar el trigger para cuando el jugador intente salir de detrás de la barra (Aparición de Ñañiela)
     TriggerSalidaBarraAparicion();
 }
-
     public void TriggerSalidaBarraAparicion()
     {
         if (estadoActual == ActoState.Quiebre)

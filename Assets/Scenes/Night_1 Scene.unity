@@ -428,7 +428,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6689036041284674117, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -5268032525925798142, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
       propertyPath: m_Layer
@@ -5970,6 +5970,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: vintage_flashlight
       objectReference: {fileID: 0}
+    - target: {fileID: -6689036041284674117, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -5268032525925798142, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -2453481652302740365, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -1560238017295493156, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1903486728043639652, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.09624294
@@ -6022,10 +6042,28 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -42.492
       objectReference: {fileID: 0}
+    - target: {fileID: 4463531831353046413, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5079154401812278292, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6561203752439586297, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -6689036041284674117, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 989944632}
+    - targetCorrespondingSourceObject: {fileID: -6689036041284674117, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 989944634}
   m_SourcePrefab: {fileID: -5645937942226959685, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
 --- !u!4 &71168085 stripped
 Transform:
@@ -61000,8 +61038,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 2.5535722}
-  m_Center: {x: 0, y: 0, z: -0.42970815}
+  m_Size: {x: 0, y: 0, z: 0}
+  m_Center: {x: -0.50000006, y: -0.50000024, z: -1.7064962}
 --- !u!1 &863900417
 GameObject:
   m_ObjectHideFlags: 0
@@ -69515,6 +69553,47 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &989944631 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -6689036041284674117, guid: 9c672e9394ad3ce47b5c83546e0fd7c3, type: 3}
+  m_PrefabInstance: {fileID: 69547602}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &989944632
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 989944631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f817c29e8c9f0414087e2c77338aa244, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LinternaInteractuable
+  linternaJugadorMano: {fileID: 1332426104}
+  mensajeInteraccion: Presiona [E] para tomar la linterna
+  descripcionInteraccion: Linterna de mano
+--- !u!65 &989944634
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 989944631}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 16.39975, y: 6.648722, z: 4.9268723}
+  m_Center: {x: -4.431508, y: 0.29214054, z: -0.18341926}
 --- !u!1 &991468178
 GameObject:
   m_ObjectHideFlags: 0
@@ -75148,11 +75227,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7058900763340401169, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: m_Name
-      value: Flashlight
+      value: LinternaDeMano
       objectReference: {fileID: 0}
     - target: {fileID: 7058900763340401169, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7783841349094393964, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: fuenteAudio
@@ -81479,7 +81558,7 @@ MonoBehaviour:
   sonidoGritoNina: {fileID: 1819261441}
   sonidoExplosionElectrica: {fileID: 640316214}
   sonidoCorteDeLuz: {fileID: 0}
-  linternaBarraInteractuable: {fileID: 0}
+  linternaBarraInteractuable: {fileID: 989944631}
   puntoAparicionLinterna: {fileID: 1017331025}
   botellaEspecial: {fileID: 28017797}
   objetoMujer: {fileID: 862288451}
@@ -91128,6 +91207,11 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!1 &1332426104 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7058900763340401169, guid: 181a591db194f96478abe2992843a1fc, type: 3}
+  m_PrefabInstance: {fileID: 1071382792}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1332426105 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2316779096662292979, guid: 181a591db194f96478abe2992843a1fc, type: 3}
