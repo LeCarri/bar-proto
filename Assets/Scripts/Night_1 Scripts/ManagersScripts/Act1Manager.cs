@@ -775,7 +775,7 @@ public class Act1Manager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(1.5f); 
-        SceneManager.LoadScene("Night_2 Scene");
+        SceneManager.LoadScene("Scene_Night2");
     }
 
     // ==========================================
