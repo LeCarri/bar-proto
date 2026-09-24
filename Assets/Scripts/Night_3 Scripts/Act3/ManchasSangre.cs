@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class ManchaSangre : MonoBehaviour
@@ -7,6 +8,9 @@ public class ManchaSangre : MonoBehaviour
 
     [Header("Tipo de mancha")]
     public bool esManchaPared = true;
+
+    [Header("Evento especial")]
+    public GameObject marcasUnas;
 
     private float tiempoActual = 0f;
     private bool limpiando = false;
@@ -25,6 +29,12 @@ public class ManchaSangre : MonoBehaviour
         {
             material = rend.material;
             colorInicial = material.color;
+        }
+
+        // Las marcas empiezan ocultas
+        if (marcasUnas != null)
+        {
+            marcasUnas.SetActive(false);
         }
     }
 
@@ -106,6 +116,13 @@ public class ManchaSangre : MonoBehaviour
             }
         }
 
+        // Mostrar las marcas de uñas
+        if (marcasUnas != null)
+        {
+            marcasUnas.SetActive(true);
+        }
+
         gameObject.SetActive(false);
     }
 }
+
