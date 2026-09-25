@@ -127,7 +127,7 @@ public class Act2DebugHelper : MonoBehaviour
         if (!hudVisible) return;
 
         Act2Manager m = Act2Manager.Instance;
-        float paranoia = ParanoiaSystem.Instance?.GetParanoia() ?? -1f;
+        //float paranoia = ParanoiaSystem.Instance?.GetParanoia() ?? -1f;
 
         // Fondo semitransparente
         GUI.color = new Color(0, 0, 0, 0.6f);
@@ -137,7 +137,7 @@ public class Act2DebugHelper : MonoBehaviour
         string texto =
             "<b><color=#FF6B6B>ACT2 DEBUG</color></b> [F1 ocultar]\n" +
             $"Estado: <color=#FFD93D>{m?.estadoActual}</color>\n" +
-            $"Paranoia: <color=#FF6B6B>{paranoia:F0}/100</color>\n" +
+            //$"Paranoia: <color=#FF6B6B>{paranoia:F0}/100</color>\n" +
             $"Llave: {(m != null && m.TieneLlave() ? "<color=#6BCB77>SÍ</color>" : "<color=#FF6B6B>NO</color>")}\n" +
             "──────────────────\n" +
             "<color=#AAAAAA>[1-7] Saltar estado\n" +
