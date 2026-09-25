@@ -7,6 +7,7 @@ public class Act3Manager : MonoBehaviour
 {
     public static Act3Manager Instance;
 
+    public DistorsionPasilloAct3 triggerDistorsion;
 
     // ESCENA
 
@@ -1002,18 +1003,25 @@ public class Act3Manager : MonoBehaviour
 
         Debug.Log("Elementos de limpieza guardados en el armario.");
 
-        ActualizarObjetivo(
-            "Limpieza completada"
-        );
+        if (triggerDistorsion != null)
+        {
+            triggerDistorsion.ActivarTrigger();
+        }
+
+        ActualizarObjetivo("Vuelve al salón");
 
         MostrarDialogo(
             "Listo. Ahora sí, puedo continuar."
         );
-
-        StartCoroutine(
-            SecuenciaInicio()
-        );
     }
+ 
+
+    // INICIAR SECUENCIA LLEGADA AL SALÓN
+    public void IniciarSecuenciaSalon()
+    {
+        StartCoroutine(SecuenciaInicio());
+    }
+
 
     // SECUENCIA INICIO 
 
@@ -1027,7 +1035,6 @@ public class Act3Manager : MonoBehaviour
         yield return
             new WaitForSeconds(1.5f);
 
-
         MostrarDialogo(
             "Ya casi... una ronda mas y bajo a buscarlas. Tienen que estar por despertar"
         );
@@ -1035,25 +1042,16 @@ public class Act3Manager : MonoBehaviour
         yield return
             new WaitForSeconds(3f);
 
-
         CambiarIluminacion(
             "Servicio"
         );
-
 
         if (effectoParpadeo != null)
         {
             effectoParpadeo.IniciarParpadeo();
         }
 
-
-        if (clientesActo3 != null)
-        {
-            clientesActo3.SetActive(true);
-        }
-
         servicioBebidasActivo = true;
-
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (0/2)"
