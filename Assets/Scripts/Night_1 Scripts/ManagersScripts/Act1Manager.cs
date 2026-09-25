@@ -317,6 +317,11 @@ public class Act1Manager : MonoBehaviour
         }
 
         HabilitarClienteActual();
+
+         if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(10f);
+        }
     }
 
     public void AvanzarSiguienteCliente()
@@ -445,18 +450,22 @@ public class Act1Manager : MonoBehaviour
         {
             cajaMusicalInteractuable.SetActive(true);
 
-            // Si la caja tiene un AudioSource directo, lo reproducimos:
+            // PARANOIA: La música misteriosa desconcierta al jugador (+20)
+            if (ParanoiaSystem.Instance != null)
+            {
+                ParanoiaSystem.Instance.AddParanoia(20f);
+            }
+
             AudioSource audioCaja = cajaMusicalInteractuable.GetComponent<AudioSource>();
             if (audioCaja != null && !audioCaja.isPlaying)
             {
                 audioCaja.Play();
             }
 
-            // Si usás el script Controlador/CajaMusicalController:
             CajaMusicalController controller = cajaMusicalInteractuable.GetComponent<CajaMusicalController>();
             if (controller != null)
             {
-                controller.ActivarCaja(); // O el método que active la música en tu script
+                controller.ActivarCaja();
             }
         }
 
@@ -465,7 +474,6 @@ public class Act1Manager : MonoBehaviour
         MostrarDialogo("Lucas: ¿Pará... a dónde se fueron todos?");
         ActualizarObjetivo("Investiga el origen de la música en la barra");
 
-        // Disparamos la rutina del susto/apagón automáticamente sin esperar la interacción [E]
         StartCoroutine(RutinaCajaMusicalYSusto());
     }
 
@@ -513,6 +521,12 @@ public class Act1Manager : MonoBehaviour
         if (sonidoGritoNina != null) sonidoGritoNina.Play();
         if (sonidoCorteDeLuz != null) sonidoCorteDeLuz.Play();
 
+        // PARANOIA: El apagón repentino y el grito elevan la tensión (+25)
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(25f);
+        }
+
         yield return new WaitForSeconds(1.8f);
 
         MostrarDialogo("Lucas: ¿Justo ahora?... Menos mal que tengo la linterna acá en la barra.");
@@ -557,6 +571,12 @@ public class Act1Manager : MonoBehaviour
 
         // Aparición de Ñañiela
         if (nanielaGameObject != null) nanielaGameObject.SetActive(true);
+
+        // PARANOIA: Encuentro inquietante con Ñañiela (+15)
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(15f);
+        }
 
         // Cambio de audio: apagar neón y encender zumbido ambiental
         if (neonSound != null && neonSound.isPlaying) neonSound.Stop();
@@ -621,6 +641,12 @@ public class Act1Manager : MonoBehaviour
         if (sonidoMutacion != null) sonidoMutacion.Play();
         if (sacudidaCamara != null) StartCoroutine(sacudidaCamara.Shake(0.6f, 0.2f));
 
+        // PARANOIA: Jump scare con la primera sombra pegada (+30) -> Dispara estática y latidos al máximo
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(30f);
+        }
+
         MostrarDialogo("Lucas: ¿¡Qué carajos!?");
 
         // 4. Cartel tutorial de ataque con Click Derecho
@@ -642,6 +668,12 @@ public class Act1Manager : MonoBehaviour
 
     public void PrimeraSombraDerrotada()
     {
+        // PARANOIA: Alivio momentáneo al destruir al primer enemigo (-15)
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(-15f);
+        }
+
         StartCoroutine(SecuenciaTransicionSalonCombate());
     }
 
@@ -654,6 +686,12 @@ public class Act1Manager : MonoBehaviour
 
         if (puertaDeposito != null) puertaDeposito.SetActive(true); 
         if (sonidoCierrePuerta != null) sonidoCierrePuerta.Play();
+
+        // PARANOIA: Portazo y atrapado a oscuras (+15)
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(15f);
+        }
 
         estadoActual = ActoState.Combate;
         ActualizarObjetivo("¡SOBREVIVE! Disipa a las Sombras con tu linterna");
@@ -669,6 +707,12 @@ public class Act1Manager : MonoBehaviour
     {
         enemigosEliminados++;
 
+        // PARANOIA: Recompensa de cordura al destruir cada sombra (-15)
+        if (ParanoiaSystem.Instance != null)
+        {
+            //ParanoiaSystem.Instance.AddParanoia(15f);
+        }
+
         // Solo iniciamos el cierre si eliminó a TODOS los enemigos de la oleada
         if (enemigosEliminados >= enemigosTotalesNoche1 && estadoActual != ActoState.Cierre)
         {
@@ -679,9 +723,14 @@ public class Act1Manager : MonoBehaviour
     // ==========================================
     // 5. CIERRE Y SALIDA DE LA NOCHE 1
     // ==========================================
-   void IniciarCierreNoche()
+    void IniciarCierreNoche()
     {
         estadoActual = ActoState.Cierre;
+
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(-100f);
+        }
         
         // Volvemos a la iluminación Normal del bar (luces cálidas)
         CambiarIluminacion("Normal");
@@ -745,7 +794,6 @@ public class Act1Manager : MonoBehaviour
 
         DispararVibracionCelular();
         
-        // Notificamos que llegó algo de Mariela, pero que el Canvas solo muestre "1 mensaje nuevo"
         if (SistemaCelular.Instance != null)
         {
             SistemaCelular.Instance.RecibirNotificacionSinLeer("Mariela");
@@ -753,7 +801,6 @@ public class Act1Manager : MonoBehaviour
 
         ActualizarObjetivo("Presiona [T] para revisar el teléfono");
 
-        // Esperamos a que abra el celular para ver el aviso
         yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.T));
 
         yield return new WaitForSeconds(3.0f);
