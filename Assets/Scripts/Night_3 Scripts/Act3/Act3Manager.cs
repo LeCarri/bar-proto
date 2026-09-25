@@ -96,6 +96,9 @@ public class Act3Manager : MonoBehaviour
 
     private bool limpiezaTerminada = false;
 
+    public bool sangreLimpiada = false;
+    public bool elementosGuardados = false;
+
 
 
     // PEDIDOS
@@ -476,6 +479,22 @@ public class Act3Manager : MonoBehaviour
                     textoInteraccion.text = "Recoger";
             }
 
+            // ARMARIO ELEMENTOS DE LIMPIEZA
+            ArmarioElementosLimpieza armario =
+                hit.collider.GetComponentInParent<
+                    ArmarioElementosLimpieza
+                >();
+
+            if (armario != null)
+            {
+                mirandoAlgo = true;
+
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "Guardar elementos";
+            }
 
             // OBJETO ESPECIAL
             ObjetosEspeciales objeto =
@@ -579,6 +598,17 @@ public class Act3Manager : MonoBehaviour
                     return;
                 }
 
+                // ARMARIO DE ELEMENTOS DE LIMPIEZA
+                ArmarioElementosLimpieza armario =
+                    hit.collider.GetComponentInParent<
+                        ArmarioElementosLimpieza
+                    >();
+
+                if (armario != null)
+                {
+                    armario.Interact();
+                    return;
+                }
 
                 // OBJETO ESPECIAL
                 ObjetosEspeciales objeto =
@@ -934,26 +964,58 @@ public class Act3Manager : MonoBehaviour
 
     IEnumerator FinalizarLimpieza()
     {
+        sangreLimpiada = true;
+
+        ActualizarObjetivo(
+            "Ve al depósito y deja los elementos de limpieza en el armario"
+        );
+
+        MostrarDialogo(
+            "Listo... ya está todo limpio. Ahora tengo que guardar los elementos."
+        );
+
+        yield return
+            new WaitForSeconds(3f);
+    }
+
+
+    //guardar elementos de limpieza
+    public void GuardarElementosLimpieza()
+    {
+        if (elementosGuardados)
+            return;
+
+        if (!sangreLimpiada)
+        {
+            Debug.Log("Todavía no terminó de limpiar la sangre.");
+            return;
+        }
+
+        if (!tieneElementosLimpieza)
+        {
+            Debug.Log("No tiene los elementos de limpieza.");
+            return;
+        }
+
+        elementosGuardados = true;
+        tieneElementosLimpieza = false;
+
+        Debug.Log("Elementos de limpieza guardados en el armario.");
+
         ActualizarObjetivo(
             "Limpieza completada"
         );
 
         MostrarDialogo(
-            "Listo... ya está todo limpio."
+            "Listo. Ahora sí, puedo continuar."
         );
-
-        yield return
-            new WaitForSeconds(3f);
 
         StartCoroutine(
             SecuenciaInicio()
         );
     }
 
-
-
-    // INICIO DEL ACTO 3
-
+    // SECUENCIA INICIO 
 
     IEnumerator SecuenciaInicio()
     {
