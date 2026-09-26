@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class DistorsionPasilloAct3 : MonoBehaviour
 {
@@ -18,22 +19,29 @@ public class DistorsionPasilloAct3 : MonoBehaviour
     private bool activado = false;
     private bool habilitado = false;
 
-    private void Awake()
-    {  
+    private Volume volumenDistorsion;
 
+    private void Awake()
+    {
         habilitado = false;
         activado = false;
 
-       
+        
         if (audioDistorsion != null)
         {
             audioDistorsion.playOnAwake = false;
             audioDistorsion.Stop();
         }
 
+        
         if (efectoGlitch != null)
         {
-            efectoGlitch.SetActive(false);
+            volumenDistorsion = efectoGlitch.GetComponent<Volume>();
+
+            if (volumenDistorsion != null)
+            {
+                volumenDistorsion.weight = 0f;
+            }
         }
     }
 
@@ -70,26 +78,31 @@ public class DistorsionPasilloAct3 : MonoBehaviour
 
     private IEnumerator ReproducirDistorsion()
     {
+        
         if (audioDistorsion != null)
         {
             audioDistorsion.Play();
         }
 
-        if (efectoGlitch != null)
+        
+        if (volumenDistorsion != null)
         {
-            efectoGlitch.SetActive(true);
+            volumenDistorsion.weight = 1f;
         }
 
+       
         yield return new WaitForSeconds(duracionDistorsion);
 
+       
         if (audioDistorsion != null)
         {
             audioDistorsion.Stop();
         }
 
-        if (efectoGlitch != null)
+        
+        if (volumenDistorsion != null)
         {
-            efectoGlitch.SetActive(false);
+            volumenDistorsion.weight = 0f;
         }
 
         Debug.Log("[Act3] Distorsión finalizada.");
