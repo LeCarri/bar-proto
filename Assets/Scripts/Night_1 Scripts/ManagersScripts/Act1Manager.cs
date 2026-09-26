@@ -487,7 +487,7 @@ public class Act1Manager : MonoBehaviour
 
     private IEnumerator RutinaCajaMusicalYSusto()
     {
-        yield return new WaitForSeconds(8.5f);
+        yield return new WaitForSeconds(20f);
 
         // PARPADEO PREVIO AL APAGÓN
         float duracionParpadeo = 1.5f;
