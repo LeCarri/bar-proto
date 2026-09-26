@@ -16,28 +16,43 @@ public class DistorsionPasilloAct3 : MonoBehaviour
     public float duracionDistorsion = 3f;
 
     private bool activado = false;
+    private bool habilitado = false;
 
+    private void Awake()
+    {  
 
-    private void Start()
-    {
-        gameObject.SetActive(false);
+        habilitado = false;
+        activado = false;
+
+       
+        if (audioDistorsion != null)
+        {
+            audioDistorsion.playOnAwake = false;
+            audioDistorsion.Stop();
+        }
+
+        if (efectoGlitch != null)
+        {
+            efectoGlitch.SetActive(false);
+        }
     }
-
 
     public void ActivarTrigger()
     {
-        gameObject.SetActive(true);
+        habilitado = true;
 
-        Debug.Log("[Act3] Trigger de distorsión activado.");
+        Debug.Log("[Act3] Trigger de distorsión habilitado.");
     }
-
 
     private void OnTriggerEnter(Collider other)
     {
         if (activado)
             return;
 
-        if (jugador != null && other.gameObject != jugador)
+        if (!habilitado)
+            return;
+
+        if (jugador != null && other.transform.root != jugador.transform.root)
             return;
 
         if (Act3Manager.Instance == null)
@@ -48,11 +63,10 @@ public class DistorsionPasilloAct3 : MonoBehaviour
 
         activado = true;
 
-        Debug.Log("[Act3] Lucas activó la distorsión.");
+        Debug.Log("[Act3] Lucas activó la distorsión del pasillo.");
 
         StartCoroutine(ReproducirDistorsion());
     }
-
 
     private IEnumerator ReproducirDistorsion()
     {
