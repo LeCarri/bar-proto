@@ -1,46 +1,182 @@
-using UnityEngine;
 
-public enum TipoZonaLimpieza { Mesa, Suelo }
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
+
+public enum TipoZonaLimpieza
+{
+    Mesa,
+    Suelo
+}
 
 public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
 {
-    [Header("Tipo de Limpieza")]
+    [Header("Tipo de limpieza")]
     [SerializeField] private TipoZonaLimpieza tipoZona;
-    [SerializeField] private float tiempoNecesario = 2.5f; // Segundos requeridos
+    [SerializeField] private float tiempoNecesario = 2.5f;
 
-    [Header("Visuales")]
-    [Tooltip("El Renderer de la mancha o mugre.")]
+    [Header("Visuales de suciedad")]
     [SerializeField] private Renderer rendererSuciedad;
+    [SerializeField] private DecalProjector decalSuciedad;
 
+    [Header("Animacion de mopa")]
+    [SerializeField] private GameObject visualMopa;
+    [SerializeField] private Animator animatorMopa;
+
+    [Tooltip("Nombre exacto del estado en el Animator.")]
+    [SerializeField] private string estadoLimpieza = "LimpiarSuelo";
+
+    [Header("Audio de limpieza")]
+    [SerializeField] private AudioSource audioMopa;
+    [SerializeField] private AudioClip sonidoLimpiezaLargo;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float volumenLimpieza = 0.8f;
+
+    // Estado de limpieza
     private float progresoActual = 0f;
     private bool estaCompletado = false;
     private bool estaLimpiando = false;
+
+    // Control de animacion
+    private bool animacionActiva = false;
+    private bool detenerAlFinalizarCiclo = false;
+
+    private float tiempoAnimacion = 0f;
+    private float duracionCiclo = 0f;
+
+    // Materiales
     private Material materialInstanciado;
+
+    private float opacidadInicialDecal = 1f;
+    private float alfaInicialRenderer = 1f;
+
+    // ==========================================
+    // INICIALIZACION
+    // ==========================================
 
     private void Start()
     {
         if (rendererSuciedad != null)
         {
             materialInstanciado = rendererSuciedad.material;
+
+            if (materialInstanciado.HasProperty("_BaseColor"))
+            {
+                alfaInicialRenderer =
+                    materialInstanciado.GetColor("_BaseColor").a;
+            }
+            else if (materialInstanciado.HasProperty("_Color"))
+            {
+                alfaInicialRenderer = materialInstanciado.color.a;
+            }
+        }
+
+        if (decalSuciedad != null)
+        {
+            opacidadInicialDecal = decalSuciedad.fadeFactor;
+        }
+
+        if (visualMopa != null)
+        {
+            visualMopa.SetActive(false);
+        }
+
+        if (audioMopa != null)
+        {
+            audioMopa.playOnAwake = false;
+            audioMopa.loop = true;
+            audioMopa.Stop();
         }
     }
 
     private void Update()
     {
-        if (estaCompletado) return;
+        if (!estaCompletado)
+        {
+            ProcesarLimpieza();
+        }
 
-        // Si estamos interactuando y el jugador MANTIENE la tecla E presionada
+        // La animacion puede continuar despues de soltar E.
+        ActualizarAnimacion();
+
+        // El audio solo suena mientras se mantiene E.
+        ActualizarAudioMopa();
+    }
+
+    // ==========================================
+    // INTERACCION
+    // ==========================================
+
+    public bool CanInteract()
+    {
+        return !estaCompletado;
+    }
+
+    public string GetDescription()
+    {
+        return tipoZona == TipoZonaLimpieza.Mesa
+            ? "Limpiar mesa"
+            : "Limpiar suelo";
+    }
+
+    public void Interact()
+    {
+        if (estaCompletado)
+            return;
+
+        if (Act1Manager.Instance != null)
+        {
+            if (tipoZona == TipoZonaLimpieza.Mesa &&
+                !Act1Manager.Instance.tieneTrapo)
+            {
+                Act1Manager.Instance.MostrarDialogo(
+                    "Necesito el trapo para limpiar la mesa."
+                );
+
+                return;
+            }
+
+            if (tipoZona == TipoZonaLimpieza.Suelo &&
+                !Act1Manager.Instance.tieneEscoba)
+            {
+                Act1Manager.Instance.MostrarDialogo(
+                    "Necesito la mopa para limpiar esto."
+                );
+
+                return;
+            }
+        }
+
+        estaLimpiando = true;
+
+        // Iniciar la animacion incluso con una pulsacion breve.
+        if (tipoZona == TipoZonaLimpieza.Suelo)
+        {
+            IniciarAnimacionMopa();
+        }
+    }
+
+    // ==========================================
+    // PROGRESO DE LIMPIEZA
+    // ==========================================
+
+    private void ProcesarLimpieza()
+    {
         if (estaLimpiando && Input.GetKey(KeyCode.E))
         {
+            if (tipoZona == TipoZonaLimpieza.Suelo)
+            {
+                IniciarAnimacionMopa();
+            }
+
             progresoActual += Time.deltaTime;
 
-            // Calculamos porcentaje de 0 a 1
-            float porcentaje = Mathf.Clamp01(progresoActual / tiempoNecesario);
+            float porcentaje = Mathf.Clamp01(
+                progresoActual / Mathf.Max(0.01f, tiempoNecesario)
+            );
 
-            // Reducimos el Alpha gradualmente
             ActualizarTransparencia(1f - porcentaje);
 
-            // Completado al llegar al tiempo objetivo
             if (progresoActual >= tiempoNecesario)
             {
                 CompletarLimpieza();
@@ -48,77 +184,231 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
         }
         else
         {
-            // Si soltó la E o dejó de mirarlo, reseteamos el estado de limpieza activa
             estaLimpiando = false;
-        }
-    }
 
-    public bool CanInteract() => !estaCompletado;
-
-    public string GetDescription()
-    {
-        return tipoZona == TipoZonaLimpieza.Mesa ? "Limpiar mesa" : "Barrer suelo";
-    }
-
-    public void Interact()
-    {
-        if (estaCompletado) return;
-
-        // 1. Validaciones en Act1Manager
-        if (Act1Manager.Instance != null)
-        {
-            if (tipoZona == TipoZonaLimpieza.Mesa && !Act1Manager.Instance.tieneTrapo)
+            // La animacion termina el ciclo actual.
+            if (animacionActiva)
             {
-                Act1Manager.Instance.MostrarDialogo("Necesito el trapo para limpiar la mesa.");
-                return;
-            }
-            if (tipoZona == TipoZonaLimpieza.Suelo && !Act1Manager.Instance.tieneEscoba)
-            {
-                Act1Manager.Instance.MostrarDialogo("Necesito la escoba para barrer esto.");
-                return;
+                detenerAlFinalizarCiclo = true;
             }
         }
-
-        // 2. Si pasó las validaciones, habilitamos la bandera para que el Update procese el Hold
-        estaLimpiando = true;
     }
 
-    private void ActualizarTransparencia(float alfa)
+    // ==========================================
+    // ANIMACION DE MOPA
+    // ==========================================
+
+    private void IniciarAnimacionMopa()
     {
-        if (materialInstanciado != null && materialInstanciado.HasProperty("_Color"))
+        if (visualMopa == null || animatorMopa == null)
+            return;
+
+        // No reiniciar una animacion que ya esta reproduciendose.
+        if (animacionActiva)
         {
-            Color colorActual = materialInstanciado.color;
-            colorActual.a = alfa;
-            materialInstanciado.color = colorActual;
+            detenerAlFinalizarCiclo = false;
+            return;
+        }
+
+        visualMopa.SetActive(true);
+
+        animatorMopa.speed = 1f;
+        animatorMopa.Play(estadoLimpieza, 0, 0f);
+        animatorMopa.Update(0f);
+
+        AnimatorStateInfo estado =
+            animatorMopa.GetCurrentAnimatorStateInfo(0);
+
+        duracionCiclo = estado.length;
+        tiempoAnimacion = 0f;
+
+        animacionActiva = true;
+        detenerAlFinalizarCiclo = false;
+    }
+
+    private void ActualizarAnimacion()
+    {
+        if (!animacionActiva || animatorMopa == null)
+            return;
+
+        if (duracionCiclo <= 0f)
+            return;
+
+        tiempoAnimacion += Time.deltaTime;
+
+        bool mantenerLoop =
+            estaLimpiando &&
+            Input.GetKey(KeyCode.E) &&
+            !estaCompletado;
+
+        detenerAlFinalizarCiclo = !mantenerLoop;
+
+        // Al terminar cada ciclo, decidir si continuar u ocultar.
+        if (tiempoAnimacion >= duracionCiclo)
+        {
+            if (detenerAlFinalizarCiclo)
+            {
+                FinalizarAnimacion();
+                return;
+            }
+
+            tiempoAnimacion -= duracionCiclo;
         }
     }
+
+    private void FinalizarAnimacion()
+    {
+        animacionActiva = false;
+        detenerAlFinalizarCiclo = false;
+
+        tiempoAnimacion = 0f;
+
+        if (animatorMopa != null)
+        {
+            animatorMopa.speed = 1f;
+        }
+
+        if (visualMopa != null)
+        {
+            visualMopa.SetActive(false);
+        }
+    }
+
+    // ==========================================
+    // AUDIO DE LIMPIEZA
+    // ==========================================
+    private void ActualizarAudioMopa()
+    {
+    if (audioMopa == null || sonidoLimpiezaLargo == null)
+        return;
+
+    bool debeSonar =
+        tipoZona == TipoZonaLimpieza.Suelo &&
+        estaLimpiando &&
+        Input.GetKey(KeyCode.E) &&
+        !estaCompletado;
+
+    if (debeSonar)
+    {
+        if (!audioMopa.isPlaying)
+        {
+            audioMopa.clip = sonidoLimpiezaLargo;
+            audioMopa.loop = true;
+            audioMopa.volume = volumenLimpieza;
+
+            audioMopa.Play();
+
+            Debug.Log("[MOPA] Audio iniciado");
+        }
+    }
+    else
+    {
+        if (audioMopa.isPlaying)
+        {
+            audioMopa.Stop();
+
+            Debug.Log("[MOPA] Audio detenido");
+        }
+    }
+    }
+
+    private void DetenerAudioMopa()
+    {
+        if (audioMopa != null && audioMopa.isPlaying)
+        {
+            audioMopa.Stop();
+        }
+    }
+
+    // ==========================================
+    // TRANSPARENCIA DE SUCIEDAD
+    // ==========================================
+
+    private void ActualizarTransparencia(float factor)
+    {
+        // Decal Projector URP
+        if (decalSuciedad != null)
+        {
+            decalSuciedad.fadeFactor =
+                opacidadInicialDecal * factor;
+        }
+
+        // Renderer tradicional
+        if (materialInstanciado != null)
+        {
+            if (materialInstanciado.HasProperty("_BaseColor"))
+            {
+                Color color =
+                    materialInstanciado.GetColor("_BaseColor");
+
+                color.a = alfaInicialRenderer * factor;
+
+                materialInstanciado.SetColor(
+                    "_BaseColor",
+                    color
+                );
+            }
+            else if (materialInstanciado.HasProperty("_Color"))
+            {
+                Color color = materialInstanciado.color;
+
+                color.a = alfaInicialRenderer * factor;
+
+                materialInstanciado.color = color;
+            }
+        }
+    }
+
+    // ==========================================
+    // COMPLETAR LIMPIEZA
+    // ==========================================
 
     private void CompletarLimpieza()
     {
         estaCompletado = true;
         estaLimpiando = false;
 
-        // 1. Ocultamos el objeto visual de la mancha o suciedad
-        if (rendererSuciedad != null)
+        // El audio se corta, pero la animacion
+        // termina el ultimo movimiento.
+        DetenerAudioMopa();
+
+        detenerAlFinalizarCiclo = true;
+
+        if (decalSuciedad != null)
         {
-            rendererSuciedad.gameObject.SetActive(false);
+            decalSuciedad.enabled = false;
         }
 
-        // 2. Apagamos el Collider para no seguir interactuando
-        Collider col = GetComponent<Collider>();
-        if (col != null) col.enabled = false;
+        if (rendererSuciedad != null)
+        {
+            rendererSuciedad.enabled = false;
+        }
 
-        // 3. Llamamos a los métodos que SÍ existen en tu Act1Manager
+        Collider col = GetComponent<Collider>();
+
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+
         if (Act1Manager.Instance != null)
         {
             if (tipoZona == TipoZonaLimpieza.Suelo)
             {
                 Act1Manager.Instance.RegistrarZonaBarrida();
             }
-            else if (tipoZona == TipoZonaLimpieza.Mesa)
+            else
             {
                 Act1Manager.Instance.RegistrarMesasLimpias();
             }
         }
+    }
+
+    private void OnDisable()
+    {
+        estaLimpiando = false;
+
+        DetenerAudioMopa();
+        FinalizarAnimacion();
     }
 }
