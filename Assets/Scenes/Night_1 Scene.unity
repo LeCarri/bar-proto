@@ -2331,7 +2331,7 @@ GameObject:
   - component: {fileID: 20214569}
   - component: {fileID: 20214571}
   - component: {fileID: 20214570}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Ballerina_MusicBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -13856,7 +13856,7 @@ GameObject:
   - component: {fileID: 201872136}
   - component: {fileID: 201872138}
   - component: {fileID: 201872137}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Key_MusicBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -21570,7 +21570,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 323264694}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Pivot_Key
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32223,7 +32223,7 @@ GameObject:
   - component: {fileID: 461180939}
   - component: {fileID: 461180938}
   - component: {fileID: 461180940}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: MusicBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32265,10 +32265,11 @@ MonoBehaviour:
   espejo: {fileID: 1163193031}
   bailarina: {fileID: 1674885907}
   llave: {fileID: 323264694}
-  tiempoNormal: 5
-  aceleracion: 0.03
+  tiempoNormal: 17
+  duracionTotal: 25
+  aceleracion: 0.2
   pitchInicial: 1
-  pitchMaximo: 1.5
+  pitchMaximo: 3
   volumen: 1
   velocidadGiroInicial: 30
   multiplicadorAceleracionGiro: 5
@@ -55415,7 +55416,7 @@ GameObject:
   - component: {fileID: 764038149}
   - component: {fileID: 764038151}
   - component: {fileID: 764038150}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: CajaMusicalBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -76373,7 +76374,7 @@ PrefabInstance:
     - target: {fileID: 7783841349094393964, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: fuenteAudio
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 341792714}
     - target: {fileID: 7783841349094393964, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: luzLinterna
       value: 
@@ -82485,7 +82486,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1163193031}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Pivot_Mirror
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -83047,7 +83048,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstNightManager
   estadoActual: 2
-  saltarLimpieza: 0
+  saltarLimpieza: 1
   textoSubtitulos: {fileID: 1970935855}
   canvasGroupDialogo: {fileID: 1651790477}
   textoObjetivo: {fileID: 1688540084}
@@ -98663,7 +98664,7 @@ GameObject:
   - component: {fileID: 1391989591}
   - component: {fileID: 1391989593}
   - component: {fileID: 1391989592}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Mirror_MusicBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -119063,7 +119064,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1674885907}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Pivot_Ballerina
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -111,7 +111,7 @@ public class ParanoiaSystem : MonoBehaviour
         }
     }
 
-    private void ActualizarEfectosVisuales()
+   private void ActualizarEfectosVisuales()
     {
         // Debajo de 50: Vista nítida/limpia
         if (paranoiaActual < 50f)
@@ -124,16 +124,23 @@ public class ParanoiaSystem : MonoBehaviour
             return;
         }
 
-        // Escalado para el rango 50 a 100
+        // Escalado para el rango de 50 a 100 de paranoia
         float factorEfectos = (paranoiaActual - 50f) / 50f;
 
-        // 1. ABERRACIÓN CROMÁTICA
+        // 1. ABERRACIÓN CROMÁTICA (Subida fuerte: Arranca en 0.85f y llega al tope 1.0f)
         if (chromaticAberration != null)
         {
-            chromaticAberration.intensity.value = Mathf.Lerp(0.70f, 1.0f, factorEfectos);
+            chromaticAberration.intensity.value = Mathf.Lerp(0.85f, 1.0f, factorEfectos);
         }
 
-        // 2. DISTORSIÓN DE LENTE
+        // 2. GRANO DE PELÍCULA / ESTÁTICA ("LLUVIA VISUAL")
+        // Subido marcadamente: Arranca en 0.60f y escala a 0.90f para máxima textura
+        if (filmGrain != null)
+        {
+            filmGrain.intensity.value = Mathf.Lerp(0.60f, 0.90f, factorEfectos);
+        }
+
+        // 3. DISTORSIÓN DE LENTE
         if (lensDistortion != null)
         {
             float baseDistorsion = Mathf.Lerp(-0.25f, -0.65f, factorEfectos);
@@ -147,20 +154,14 @@ public class ParanoiaSystem : MonoBehaviour
             lensDistortion.intensity.value = baseDistorsion;
         }
 
-        // 3. VIÑETA
+        // 4. VIÑETA CLAUSTROFÓBICA
         if (vignette != null)
         {
             vignette.intensity.value = Mathf.Lerp(0.45f, 0.75f, factorEfectos);
             vignette.smoothness.value = Mathf.Lerp(0.40f, 0.80f, factorEfectos);
         }
 
-        // 4. GRANO DE PELÍCULA
-        if (filmGrain != null)
-        {
-            filmGrain.intensity.value = Mathf.Lerp(0.35f, 0.75f, factorEfectos);
-        }
-
-        // 5. DESENFOQUE SUTIL AL 100% (Súper tenue: de 10f a 4.5f para no cegar)
+        // 5. DESENFOQUE SUTIL AL 100%
         if (depthOfField != null)
         {
             if (paranoiaActual >= 90f)
@@ -230,7 +231,7 @@ public class ParanoiaSystem : MonoBehaviour
     {
         if (clipsSusurros == null || clipsSusurros.Length == 0) return;
 
-        bool enRangoInicial = (paranoiaActual >= 10f && paranoiaActual <= 60f);
+        bool enRangoInicial = (paranoiaActual >= 10f && paranoiaActual <= 30f);
         bool enRangoCritico = (paranoiaActual >= 80f && paranoiaActual <= 100f);
 
         if (!enRangoInicial && !enRangoCritico) return;

@@ -12,17 +12,20 @@ public class CajaMusicalController : MonoBehaviour, IInteractable
 
     [Header("Inicio y Tiempo")]
     [Tooltip("Tiempo que la caja funciona normalmente antes de empezar a acelerarse.")]
-    [SerializeField] private float tiempoNormal = 2f;
+    [SerializeField] private float tiempoNormal = 8f; // Subido de 2s a 8s
+
+    [Tooltip("Tiempo máximo total que sonará la caja antes de apagarse sola (0 = infinito).")]
+    [SerializeField] private float duracionTotal = 25f; 
 
     [Header("Control de aceleración")]
     [Tooltip("Cuánto aumenta la velocidad por segundo después del tiempo normal.")]
-    [SerializeField] private float aceleracion = 0.25f;
+    [SerializeField] private float aceleracion = 0.06f; // Reducido de 0.25f a 0.06f para desacelerar la rampa
 
     [Tooltip("Pitch normal de la música.")]
     [SerializeField] private float pitchInicial = 1f;
 
     [Tooltip("Pitch máximo que puede alcanzar.")]
-    [SerializeField] private float pitchMaximo = 2.2f;
+    [SerializeField] private float pitchMaximo = 1.8f; // Ligeramente más bajo para no deformarlo tan rápido
 
     [Header("Volumen")]
     [Range(0f, 1f)]
@@ -33,7 +36,7 @@ public class CajaMusicalController : MonoBehaviour, IInteractable
     [SerializeField] private float velocidadGiroInicial = 30f;
 
     [Tooltip("Cuánto se exagera la aceleración visual de los giros respecto a la música.")]
-    [SerializeField] private float multiplicadorAceleracionGiro = 2f;
+    [SerializeField] private float multiplicadorAceleracionGiro = 1.5f;
 
     [Tooltip("Multiplicador del giro del espejo.")]
     [SerializeField] private Vector3 ejeEspejo = new Vector3(0, 1, 0);
@@ -63,6 +66,13 @@ public class CajaMusicalController : MonoBehaviour, IInteractable
         if (!activa) return;
 
         tiempoActiva += Time.deltaTime;
+
+        // Si sobrepasa la duración total deseada, la detenemos
+        if (duracionTotal > 0f && tiempoActiva >= duracionTotal)
+        {
+            DetenerCaja();
+            return;
+        }
 
         // =========================
         // ACELERACIÓN POR TIEMPO
