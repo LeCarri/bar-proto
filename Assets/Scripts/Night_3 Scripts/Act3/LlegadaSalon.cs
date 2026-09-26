@@ -13,24 +13,26 @@ public class LlegadaSalonAct3 : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log(
+            "[SALON] ENTRÓ AL TRIGGER: " +
+            other.gameObject.name
+        );
+
         // Evita que se active más de una vez
         if (activado)
             return;
 
 
-        // Verificamos que haya entrado Lucas
+        // Verifica que haya entrado Lucas
         if (jugador != null && other.gameObject != jugador)
             return;
 
 
-        // Verificamos que exista el Act3Manager
+        // Verifica que exista el Act3Manager
         if (Act3Manager.Instance == null)
             return;
 
 
-        // IMPORTANTE:
-        // Solo puede activarse después de guardar
-        // los elementos de limpieza.
         if (!Act3Manager.Instance.elementosGuardados)
             return;
 
@@ -43,7 +45,7 @@ public class LlegadaSalonAct3 : MonoBehaviour
         );
 
 
-        // Activamos las siluetas
+        // Activa las siluetas
         if (clientesActo3 != null)
         {
             clientesActo3.SetActive(true);

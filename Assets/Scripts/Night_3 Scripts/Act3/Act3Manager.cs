@@ -983,29 +983,39 @@ public class Act3Manager : MonoBehaviour
     //guardar elementos de limpieza
     public void GuardarElementosLimpieza()
     {
+        Debug.Log("INTENTANDO GUARDAR ELEMENTOS");
+
         if (elementosGuardados)
+        {
+            Debug.Log("[GUARDAR] Ya estaban guardados.");
             return;
+        }
 
         if (!sangreLimpiada)
         {
-            Debug.Log("Todavía no terminó de limpiar la sangre.");
+            Debug.Log("[GUARDAR] Todavía NO terminó de limpiar la sangre.");
             return;
         }
 
         if (!tieneElementosLimpieza)
         {
-            Debug.Log("No tiene los elementos de limpieza.");
+            Debug.Log("[GUARDAR] NO tiene los elementos de limpieza.");
             return;
         }
 
         elementosGuardados = true;
         tieneElementosLimpieza = false;
 
-        Debug.Log("Elementos de limpieza guardados en el armario.");
+        Debug.Log("[GUARDAR] ¡ELEMENTOS GUARDADOS CORRECTAMENTE!");
 
         if (triggerDistorsion != null)
         {
+            Debug.Log("[GUARDAR] triggerDistorsion está asignado.");
             triggerDistorsion.ActivarTrigger();
+        }
+        else
+        {
+            Debug.LogError("[GUARDAR] triggerDistorsion NO está asignado en el Inspector.");
         }
 
         ActualizarObjetivo("Vuelve al salón");
@@ -1014,7 +1024,7 @@ public class Act3Manager : MonoBehaviour
             "Listo. Ahora sí, puedo continuar."
         );
     }
- 
+
 
     // INICIAR SECUENCIA LLEGADA AL SALÓN
     public void IniciarSecuenciaSalon()
