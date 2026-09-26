@@ -7,6 +7,7 @@ public class Act3Manager : MonoBehaviour
 {
     public static Act3Manager Instance;
 
+    public DistorsionPasilloAct3 triggerDistorsion;
 
     // ESCENA
 
@@ -982,38 +983,55 @@ public class Act3Manager : MonoBehaviour
     //guardar elementos de limpieza
     public void GuardarElementosLimpieza()
     {
+        Debug.Log("INTENTANDO GUARDAR ELEMENTOS");
+
         if (elementosGuardados)
+        {
+            Debug.Log("[GUARDAR] Ya estaban guardados.");
             return;
+        }
 
         if (!sangreLimpiada)
         {
-            Debug.Log("Todavía no terminó de limpiar la sangre.");
+            Debug.Log("[GUARDAR] Todavía NO terminó de limpiar la sangre.");
             return;
         }
 
         if (!tieneElementosLimpieza)
         {
-            Debug.Log("No tiene los elementos de limpieza.");
+            Debug.Log("[GUARDAR] NO tiene los elementos de limpieza.");
             return;
         }
 
         elementosGuardados = true;
         tieneElementosLimpieza = false;
 
-        Debug.Log("Elementos de limpieza guardados en el armario.");
+        Debug.Log("[GUARDAR] ¡ELEMENTOS GUARDADOS CORRECTAMENTE!");
 
-        ActualizarObjetivo(
-            "Limpieza completada"
-        );
+        if (triggerDistorsion != null)
+        {
+            Debug.Log("[GUARDAR] triggerDistorsion está asignado.");
+            triggerDistorsion.ActivarTrigger();
+        }
+        else
+        {
+            Debug.LogError("[GUARDAR] triggerDistorsion NO está asignado en el Inspector.");
+        }
+
+        ActualizarObjetivo("Vuelve al salón");
 
         MostrarDialogo(
             "Listo. Ahora sí, puedo continuar."
         );
-
-        StartCoroutine(
-            SecuenciaInicio()
-        );
     }
+
+
+    // INICIAR SECUENCIA LLEGADA AL SALÓN
+    public void IniciarSecuenciaSalon()
+    {
+        StartCoroutine(SecuenciaInicio());
+    }
+
 
     // SECUENCIA INICIO 
 
@@ -1027,7 +1045,6 @@ public class Act3Manager : MonoBehaviour
         yield return
             new WaitForSeconds(1.5f);
 
-
         MostrarDialogo(
             "Ya casi... una ronda mas y bajo a buscarlas. Tienen que estar por despertar"
         );
@@ -1035,25 +1052,16 @@ public class Act3Manager : MonoBehaviour
         yield return
             new WaitForSeconds(3f);
 
-
         CambiarIluminacion(
             "Servicio"
         );
-
 
         if (effectoParpadeo != null)
         {
             effectoParpadeo.IniciarParpadeo();
         }
 
-
-        if (clientesActo3 != null)
-        {
-            clientesActo3.SetActive(true);
-        }
-
         servicioBebidasActivo = true;
-
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (0/2)"

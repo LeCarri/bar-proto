@@ -3326,10 +3326,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -3347,7 +3347,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 414939607}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -32697,6 +32697,7 @@ Transform:
   - {fileID: 32680802}
   - {fileID: 962683435}
   - {fileID: 1690859947}
+  - {fileID: 733338249}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &468662827
@@ -53061,15 +53062,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 733338248}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.876, y: -0.55992, z: 22.31784}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -257.13034, y: -0.55993, z: -502.10825}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6233711029587453813}
   - {fileID: 6233711028807417899}
   - {fileID: 6233711028273004514}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 466079578}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &737009061 stripped
 Transform:
@@ -60673,8 +60674,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5.4101315, y: 4.1608663, z: 1.0061553}
-  m_Center: {x: -2.2049615, y: -7.574374, z: 1.4124722}
+  m_Size: {x: 5.4101315, y: 4.160859, z: 0}
+  m_Center: {x: -2.2049615, y: -7.5743775, z: 1.91555}
 --- !u!1 &827413322
 GameObject:
   m_ObjectHideFlags: 0
@@ -108424,7 +108425,7 @@ Transform:
   m_GameObject: {fileID: 1523825135}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.8476847, z: -0, w: 0.53050035}
-  m_LocalPosition: {x: -6.4, y: 4.4699993, z: -9.71}
+  m_LocalPosition: {x: -6.4, y: 4.468, z: -9.71}
   m_LocalScale: {x: 0.11330061, y: 0.11996962, z: 0.07936675}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -142820,7 +142821,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1515.8799, y: 848.7893}
+  m_SizeDelta: {x: 1920, y: 981.08}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2053588328
 MonoBehaviour:
@@ -149500,7 +149501,6 @@ SceneRoots:
   - {fileID: 209536427}
   - {fileID: 36754086}
   - {fileID: 1025457745}
-  - {fileID: 733338249}
   - {fileID: 612122501}
   - {fileID: 776860391}
   - {fileID: 466079578}
