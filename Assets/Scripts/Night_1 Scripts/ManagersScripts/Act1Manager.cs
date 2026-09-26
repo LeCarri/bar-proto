@@ -729,7 +729,7 @@ public class Act1Manager : MonoBehaviour
 
         if (ParanoiaSystem.Instance != null)
         {
-            ParanoiaSystem.Instance.AddParanoia(-100f);
+            ParanoiaSystem.Instance.ResetParanoia();
         }
         
         // Volvemos a la iluminación Normal del bar (luces cálidas)

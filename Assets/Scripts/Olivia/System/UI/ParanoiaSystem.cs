@@ -22,6 +22,8 @@ public class ParanoiaSystem : MonoBehaviour
     private ChromaticAberration chromaticAberration;
     private LensDistortion lensDistortion;
     private Vignette vignette;
+    private FilmGrain filmGrain;
+    private DepthOfField depthOfField; // <-- Agregado para el toque al 100%
 
     [Header("Efectos de Audio de Estado")]
     public AudioSource audioLatidos;
@@ -52,6 +54,8 @@ public class ParanoiaSystem : MonoBehaviour
             globalVolume.profile.TryGet(out chromaticAberration);
             globalVolume.profile.TryGet(out lensDistortion);
             globalVolume.profile.TryGet(out vignette);
+            globalVolume.profile.TryGet(out filmGrain);
+            globalVolume.profile.TryGet(out depthOfField);
         }
 
         tiempoProximaAlucinacion = Time.time + Random.Range(intervaloMinAlucinacion, intervaloMaxAlucinacion);
@@ -65,10 +69,24 @@ public class ParanoiaSystem : MonoBehaviour
         GestionarAlucinaciones();
     }
 
+    /// <summary>
+    /// Suma paranoia. Si algún script intenta mandar un valor negativo, se ignora.
+    /// </summary>
     public void AddParanoia(float cantidad)
     {
+        if (cantidad <= 0f) return; // Bloquea reducciones no deseadas al matar sombras individualmente
+
         paranoiaActual = Mathf.Clamp(paranoiaActual + cantidad, 0f, paranoiaMaxima);
-        Debug.Log($"[ParanoiaSystem] Paranoia actual: {paranoiaActual}");
+        Debug.Log($"[ParanoiaSystem] Paranoia aumentada a: {paranoiaActual}");
+    }
+
+    /// <summary>
+    /// Usar SOLO para la mecánica final donde se limpian todas las sombras.
+    /// </summary>
+    public void ResetParanoia()
+    {
+        paranoiaActual = 0f;
+        Debug.Log("[ParanoiaSystem] Paranoia reseteada a 0.");
     }
 
     public void SetParanoia(float valor)
@@ -80,13 +98,11 @@ public class ParanoiaSystem : MonoBehaviour
     {
         float porcentaje = paranoiaActual / paranoiaMaxima;
 
-        // Opción 1: Imagen tipo Filled
         if (barraParanoiaImage != null)
         {
             barraParanoiaImage.fillAmount = porcentaje;
         }
 
-        // Opción 2: RectTransform escalando en X
         if (barraParanoiaTransform != null)
         {
             Vector3 escala = barraParanoiaTransform.localScale;
@@ -97,39 +113,65 @@ public class ParanoiaSystem : MonoBehaviour
 
     private void ActualizarEfectosVisuales()
     {
-        float factor = paranoiaActual / paranoiaMaxima;
-
-        // Aberración Cromática (Progresiva hasta 0.65f)
-        if (chromaticAberration != null)
+        // Debajo de 50: Vista nítida/limpia
+        if (paranoiaActual < 50f)
         {
-            chromaticAberration.intensity.value = Mathf.Lerp(0f, 0.65f, factor);
+            if (chromaticAberration != null) chromaticAberration.intensity.value = 0f;
+            if (lensDistortion != null) lensDistortion.intensity.value = 0f;
+            if (vignette != null) vignette.intensity.value = 0.18f;
+            if (filmGrain != null) filmGrain.intensity.value = 0f;
+            if (depthOfField != null) depthOfField.focusDistance.value = 10f;
+            return;
         }
 
-        // Distorsión de Lente
+        // Escalado para el rango 50 a 100
+        float factorEfectos = (paranoiaActual - 50f) / 50f;
+
+        // 1. ABERRACIÓN CROMÁTICA
+        if (chromaticAberration != null)
+        {
+            chromaticAberration.intensity.value = Mathf.Lerp(0.70f, 1.0f, factorEfectos);
+        }
+
+        // 2. DISTORSIÓN DE LENTE
         if (lensDistortion != null)
         {
-            if (paranoiaActual > 30f)
+            float baseDistorsion = Mathf.Lerp(-0.25f, -0.65f, factorEfectos);
+            
+            if (paranoiaActual >= 70f)
             {
-                float factorDistorsion = (paranoiaActual - 30f) / 70f;
-                lensDistortion.intensity.value = Mathf.Lerp(0f, -0.35f, factorDistorsion);
-                
-                if (paranoiaActual > 70f)
-                {
-                    float pulsoSuave = Mathf.Sin(Time.time * 2f) * 0.03f;
-                    lensDistortion.intensity.value += pulsoSuave;
-                }
+                float pulsoMareo = Mathf.Sin(Time.time * 2.5f) * 0.05f;
+                baseDistorsion += pulsoMareo;
+            }
+
+            lensDistortion.intensity.value = baseDistorsion;
+        }
+
+        // 3. VIÑETA
+        if (vignette != null)
+        {
+            vignette.intensity.value = Mathf.Lerp(0.45f, 0.75f, factorEfectos);
+            vignette.smoothness.value = Mathf.Lerp(0.40f, 0.80f, factorEfectos);
+        }
+
+        // 4. GRANO DE PELÍCULA
+        if (filmGrain != null)
+        {
+            filmGrain.intensity.value = Mathf.Lerp(0.35f, 0.75f, factorEfectos);
+        }
+
+        // 5. DESENFOQUE SUTIL AL 100% (Súper tenue: de 10f a 4.5f para no cegar)
+        if (depthOfField != null)
+        {
+            if (paranoiaActual >= 90f)
+            {
+                float factorDesenfoque = (paranoiaActual - 90f) / 10f;
+                depthOfField.focusDistance.value = Mathf.Lerp(10f, 4.5f, factorDesenfoque);
             }
             else
             {
-                lensDistortion.intensity.value = 0f;
+                depthOfField.focusDistance.value = 10f;
             }
-        }
-
-        // Viñeta
-        if (vignette != null)
-        {
-            vignette.intensity.value = Mathf.Lerp(0.2f, 0.52f, factor);
-            vignette.smoothness.value = Mathf.Lerp(0.2f, 0.5f, factor);
         }
     }
 
@@ -137,7 +179,7 @@ public class ParanoiaSystem : MonoBehaviour
     {
         float factor = paranoiaActual / paranoiaMaxima;
 
-        // 1. LATIDOS
+        // LATIDOS
         if (audioLatidos != null)
         {
             if (!audioLatidos.isPlaying && paranoiaActual > 10f) audioLatidos.Play();
@@ -152,7 +194,7 @@ public class ParanoiaSystem : MonoBehaviour
             }
         }
 
-        // 2. RESPIRACIÓN AGITADA Y PRESENTE
+        // RESPIRACIÓN
         if (audioRespiracion != null)
         {
             if (paranoiaActual > 25f)
@@ -169,7 +211,7 @@ public class ParanoiaSystem : MonoBehaviour
             }
         }
 
-        // 3. MIXER LOW PASS
+        // MIXER LOW PASS
         if (audioMixer != null)
         {
             if (paranoiaActual >= 60f)
@@ -188,8 +230,7 @@ public class ParanoiaSystem : MonoBehaviour
     {
         if (clipsSusurros == null || clipsSusurros.Length == 0) return;
 
-        // Rangos: 10 a 60 y 80 a 100
-        bool enRangoInicial = (paranoiaActual >= 10f && paranoiaActual <= 50f);
+        bool enRangoInicial = (paranoiaActual >= 10f && paranoiaActual <= 60f);
         bool enRangoCritico = (paranoiaActual >= 80f && paranoiaActual <= 100f);
 
         if (!enRangoInicial && !enRangoCritico) return;
