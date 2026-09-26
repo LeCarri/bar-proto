@@ -16,13 +16,16 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
 
     [Header("Visuales de suciedad")]
     [SerializeField] private Renderer rendererSuciedad;
+
+    [Tooltip("Para manchas individuales, como las del suelo.")]
     [SerializeField] private DecalProjector decalSuciedad;
+
+    [Tooltip("Para conjuntos de manchas, como una mesa.")]
+    [SerializeField] private DecalProjector[] decalsSuciedad;
 
     [Header("Animacion de mopa")]
     [SerializeField] private GameObject visualMopa;
     [SerializeField] private Animator animatorMopa;
-
-    [Tooltip("Nombre exacto del estado en el Animator.")]
     [SerializeField] private string estadoLimpieza = "LimpiarSuelo";
 
     [Header("Audio de limpieza")]
@@ -32,23 +35,21 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
     [Range(0f, 1f)]
     [SerializeField] private float volumenLimpieza = 0.8f;
 
-    // Estado de limpieza
-    private float progresoActual = 0f;
-    private bool estaCompletado = false;
-    private bool estaLimpiando = false;
+    private float progresoActual;
+    private bool estaCompletado;
+    private bool estaLimpiando;
 
-    // Control de animacion
-    private bool animacionActiva = false;
-    private bool detenerAlFinalizarCiclo = false;
+    private bool animacionActiva;
+    private bool detenerAlFinalizarCiclo;
 
-    private float tiempoAnimacion = 0f;
-    private float duracionCiclo = 0f;
+    private float tiempoAnimacion;
+    private float duracionCiclo;
 
-    // Materiales
     private Material materialInstanciado;
+    private float alfaInicialRenderer = 1f;
 
     private float opacidadInicialDecal = 1f;
-    private float alfaInicialRenderer = 1f;
+    private float[] opacidadesIniciales;
 
     // ==========================================
     // INICIALIZACION
@@ -76,7 +77,23 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
             opacidadInicialDecal = decalSuciedad.fadeFactor;
         }
 
-        if (visualMopa != null)
+        // Guardar la opacidad original de cada decal del conjunto.
+        if (decalsSuciedad != null)
+        {
+            opacidadesIniciales = new float[decalsSuciedad.Length];
+
+            for (int i = 0; i < decalsSuciedad.Length; i++)
+            {
+                if (decalsSuciedad[i] != null)
+                {
+                    opacidadesIniciales[i] =
+                        decalsSuciedad[i].fadeFactor;
+                }
+            }
+        }
+
+        if (tipoZona == TipoZonaLimpieza.Suelo &&
+            visualMopa != null)
         {
             visualMopa.SetActive(false);
         }
@@ -85,7 +102,6 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
         {
             audioMopa.playOnAwake = false;
             audioMopa.loop = true;
-            audioMopa.Stop();
         }
     }
 
@@ -96,11 +112,8 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
             ProcesarLimpieza();
         }
 
-        // La animacion puede continuar despues de soltar E.
         ActualizarAnimacion();
-
-        // El audio solo suena mientras se mantiene E.
-        ActualizarAudioMopa();
+        ActualizarAudioLimpieza();
     }
 
     // ==========================================
@@ -149,7 +162,6 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
 
         estaLimpiando = true;
 
-        // Iniciar la animacion incluso con una pulsacion breve.
         if (tipoZona == TipoZonaLimpieza.Suelo)
         {
             IniciarAnimacionMopa();
@@ -186,7 +198,6 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
         {
             estaLimpiando = false;
 
-            // La animacion termina el ciclo actual.
             if (animacionActiva)
             {
                 detenerAlFinalizarCiclo = true;
@@ -203,7 +214,6 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
         if (visualMopa == null || animatorMopa == null)
             return;
 
-        // No reiniciar una animacion que ya esta reproduciendose.
         if (animacionActiva)
         {
             detenerAlFinalizarCiclo = false;
@@ -243,7 +253,6 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
 
         detenerAlFinalizarCiclo = !mantenerLoop;
 
-        // Al terminar cada ciclo, decidir si continuar u ocultar.
         if (tiempoAnimacion >= duracionCiclo)
         {
             if (detenerAlFinalizarCiclo)
@@ -260,7 +269,6 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
     {
         animacionActiva = false;
         detenerAlFinalizarCiclo = false;
-
         tiempoAnimacion = 0f;
 
         if (animatorMopa != null)
@@ -277,42 +285,35 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
     // ==========================================
     // AUDIO DE LIMPIEZA
     // ==========================================
-    private void ActualizarAudioMopa()
-    {
-    if (audioMopa == null || sonidoLimpiezaLargo == null)
-        return;
 
-    bool debeSonar =
-        tipoZona == TipoZonaLimpieza.Suelo &&
-        estaLimpiando &&
-        Input.GetKey(KeyCode.E) &&
-        !estaCompletado;
-
-    if (debeSonar)
+    private void ActualizarAudioLimpieza()
     {
-        if (!audioMopa.isPlaying)
+        if (audioMopa == null || sonidoLimpiezaLargo == null)
+            return;
+
+        bool debeSonar =
+            estaLimpiando &&
+            Input.GetKey(KeyCode.E) &&
+            !estaCompletado;
+
+        if (debeSonar)
         {
-            audioMopa.clip = sonidoLimpiezaLargo;
-            audioMopa.loop = true;
-            audioMopa.volume = volumenLimpieza;
+            if (!audioMopa.isPlaying)
+            {
+                audioMopa.clip = sonidoLimpiezaLargo;
+                audioMopa.volume = volumenLimpieza;
+                audioMopa.loop = true;
 
-            audioMopa.Play();
-
-            Debug.Log("[MOPA] Audio iniciado");
+                audioMopa.Play();
+            }
+        }
+        else
+        {
+            DetenerAudioLimpieza();
         }
     }
-    else
-    {
-        if (audioMopa.isPlaying)
-        {
-            audioMopa.Stop();
 
-            Debug.Log("[MOPA] Audio detenido");
-        }
-    }
-    }
-
-    private void DetenerAudioMopa()
+    private void DetenerAudioLimpieza()
     {
         if (audioMopa != null && audioMopa.isPlaying)
         {
@@ -326,11 +327,25 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
 
     private void ActualizarTransparencia(float factor)
     {
-        // Decal Projector URP
+        // Decal individual
         if (decalSuciedad != null)
         {
             decalSuciedad.fadeFactor =
                 opacidadInicialDecal * factor;
+        }
+
+        // Conjunto de decals
+        if (decalsSuciedad != null &&
+            opacidadesIniciales != null)
+        {
+            for (int i = 0; i < decalsSuciedad.Length; i++)
+            {
+                if (decalsSuciedad[i] != null)
+                {
+                    decalsSuciedad[i].fadeFactor =
+                        opacidadesIniciales[i] * factor;
+                }
+            }
         }
 
         // Renderer tradicional
@@ -343,10 +358,7 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
 
                 color.a = alfaInicialRenderer * factor;
 
-                materialInstanciado.SetColor(
-                    "_BaseColor",
-                    color
-                );
+                materialInstanciado.SetColor("_BaseColor", color);
             }
             else if (materialInstanciado.HasProperty("_Color"))
             {
@@ -368,15 +380,26 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
         estaCompletado = true;
         estaLimpiando = false;
 
-        // El audio se corta, pero la animacion
-        // termina el ultimo movimiento.
-        DetenerAudioMopa();
+        DetenerAudioLimpieza();
 
         detenerAlFinalizarCiclo = true;
 
+        // Desactivar decal individual.
         if (decalSuciedad != null)
         {
             decalSuciedad.enabled = false;
+        }
+
+        // Desactivar todos los decals del conjunto.
+        if (decalsSuciedad != null)
+        {
+            foreach (DecalProjector decal in decalsSuciedad)
+            {
+                if (decal != null)
+                {
+                    decal.enabled = false;
+                }
+            }
         }
 
         if (rendererSuciedad != null)
@@ -391,6 +414,7 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
             col.enabled = false;
         }
 
+        // Registrar UNA tarea por zona, no una por decal.
         if (Act1Manager.Instance != null)
         {
             if (tipoZona == TipoZonaLimpieza.Suelo)
@@ -408,7 +432,11 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
     {
         estaLimpiando = false;
 
-        DetenerAudioMopa();
-        FinalizarAnimacion();
+        DetenerAudioLimpieza();
+
+        if (tipoZona == TipoZonaLimpieza.Suelo)
+        {
+            FinalizarAnimacion();
+        }
     }
 }
