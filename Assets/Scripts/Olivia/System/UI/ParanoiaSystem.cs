@@ -94,16 +94,15 @@ public class ParanoiaSystem : MonoBehaviour
         paranoiaActual = Mathf.Clamp(valor, 0f, paranoiaMaxima);
     }
 
-    private void ActualizarUI()
+   private void ActualizarUI()
     {
-        float porcentaje = paranoiaActual / paranoiaMaxima;
+        float porcentaje = Mathf.Clamp01(paranoiaActual / paranoiaMaxima);
 
         if (barraParanoiaImage != null)
         {
             barraParanoiaImage.fillAmount = porcentaje;
         }
-
-        if (barraParanoiaTransform != null)
+        else if (barraParanoiaTransform != null)
         {
             Vector3 escala = barraParanoiaTransform.localScale;
             escala.x = porcentaje;
