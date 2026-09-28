@@ -47,6 +47,12 @@ public class Act1Manager : MonoBehaviour
     [Header("Efectos")]
     public EffectoParpadeo effectoParpadeo;
 
+    [Header("Ajustes de Tiempo Narrativo")]
+    [Tooltip("Tiempo en segundos de espera tras el sonido de las cañerías antes de que inicien el parpadeo y la llegada de clientes.")]
+    public float tiempoEsperaCañerias = 3.5f;
+    [Tooltip("Duración en segundos de la secuencia de parpadeo antes de encender la luz de servicio.")]
+    public float duracionParpadeo = 2.0f;
+
     [Header("Sistemas de Iluminación")]
     public GameObject lucesNormales;   
     public GameObject lucesServicio;   
@@ -272,22 +278,28 @@ public class Act1Manager : MonoBehaviour
         MostrarDialogo("Lucas: Listo. Guardo la escoba...");
         yield return new WaitForSeconds(1.5f);
 
+        // 1. Sonido de cañerías / golpe y diálogo
         if (sonidoGolpeSuelo != null) sonidoGolpeSuelo.Play();
-        yield return new WaitForSeconds(1f);
-
         MostrarDialogo("Lucas: Ufff... Estas cañerías están cada vez peor...");
 
+        // 2. Tiempo de respiro para el audio y lectura
+        yield return new WaitForSeconds(tiempoEsperaCañerias);
+
+        // 3. Inicio del parpadeo
         if (effectoParpadeo != null)
         {
             Debug.Log("[Act1Manager] Ejecutando efecto de parpadeo.");
             effectoParpadeo.IniciarParpadeo();
-            yield return new WaitForSeconds(1.2f);
+            
+            // Esperamos la duración exacta del parpadeo para no cortar la animación a la mitad
+            yield return new WaitForSeconds(duracionParpadeo);
         }
         else
         {
             Debug.LogWarning("[Act1Manager] 'effectoParpadeo' no está asignado en el Inspector.");
         }
 
+        // 4. Sincronización final: Cambio de luz a Servicio y aparición de clientes al terminar el parpadeo
         CambiarIluminacion("Servicio");
         if (grupoClientes != null) grupoClientes.SetActive(true);
 
