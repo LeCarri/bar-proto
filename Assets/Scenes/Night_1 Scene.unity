@@ -33003,17 +33003,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 470173574}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 32.33, y: 0.13, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2036601555}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -19.8, y: -5.47}
-  m_SizeDelta: {x: 17.9, y: 140}
+  m_SizeDelta: {x: 17.9, y: 596.9}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &470173576
 MonoBehaviour:
@@ -33040,7 +33040,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -52336,15 +52336,15 @@ RectTransform:
   m_GameObject: {fileID: 711043868}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 32.6, y: 0.13, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2036601555}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -20.89, y: -6.25}
-  m_SizeDelta: {x: 17.9, y: 140}
+  m_AnchoredPosition: {x: -18.4, y: -7.1}
+  m_SizeDelta: {x: 580, y: 17}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &711043870
 MonoBehaviour:
@@ -131031,7 +131031,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.00024414062, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0.21435547, y: 0.12036133}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1855235857
@@ -142879,7 +142879,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 1
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -144814,8 +144814,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ParanoiaSystem
   paranoiaActual: 0
   paranoiaMaxima: 100
-  barraParanoiaImage: {fileID: 470173576}
-  barraParanoiaTransform: {fileID: 711043869}
+  barraParanoiaImage: {fileID: 711043870}
   globalVolume: {fileID: 1593695144}
   audioLatidos: {fileID: 553450747}
   audioRespiracion: {fileID: 1330690640}
