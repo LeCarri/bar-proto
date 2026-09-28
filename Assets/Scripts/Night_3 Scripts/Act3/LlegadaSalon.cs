@@ -10,49 +10,84 @@ public class LlegadaSalonAct3 : MonoBehaviour
 
     private bool activado = false;
 
-
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log(
-            "[SALON] ENTRÓ AL TRIGGER: " +
+            "[SALON] Entró algo al trigger: " +
             other.gameObject.name
         );
 
-        // Evita que se active más de una vez
+        Debug.Log(
+            "[SALON] Jugador asignado: " +
+            (jugador != null ? jugador.name : "NULL")
+        );
+
         if (activado)
+        {
+            Debug.Log("[SALON] Ya estaba activado.");
             return;
+        }
 
-
-        // Verifica que haya entrado Lucas
-        if (jugador != null && other.gameObject != jugador)
+        if (jugador == null)
+        {
+            Debug.Log("[SALON] ERROR: jugador está vacío.");
             return;
+        }
 
+        if (other.gameObject != jugador)
+        {
+            Debug.Log(
+                "[SALON] El objeto que entró NO coincide con jugador."
+            );
+            return;
+        }
 
-        // Verifica que exista el Act3Manager
+        Debug.Log("[SALON] El jugador coincide.");
+
         if (Act3Manager.Instance == null)
+        {
+            Debug.Log("[SALON] ERROR: no existe Act3Manager.");
             return;
+        }
 
+        Debug.Log(
+            "[SALON] elementosGuardados = " +
+            Act3Manager.Instance.elementosGuardados
+        );
 
         if (!Act3Manager.Instance.elementosGuardados)
+        {
+            Debug.Log(
+                "[SALON] Entró, pero todavía no guardó los elementos."
+            );
             return;
-
+        }
 
         activado = true;
 
-
         Debug.Log(
-            "[Act3] Lucas llegó al salón después de guardar los elementos."
+            "[SALON] ¡Llegó al salón después de guardar los elementos!"
         );
 
-
-        // Activa las siluetas
         if (clientesActo3 != null)
         {
             clientesActo3.SetActive(true);
+
+            Debug.Log(
+                "[SALON] clientesActo3 ACTIVADO."
+            );
+        }
+        else
+        {
+            Debug.Log(
+                "[SALON] ERROR: clientesActo3 está vacío."
+            );
         }
 
-
-        // Continúa la secuencia de la noche
         Act3Manager.Instance.IniciarSecuenciaSalon();
+
+        Debug.Log(
+            "[SALON] Secuencia del salón iniciada."
+        );
     }
 }

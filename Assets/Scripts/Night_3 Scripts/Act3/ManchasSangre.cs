@@ -65,6 +65,25 @@ public class ManchaSangre : MonoBehaviour
             colorInicial = material.color;
         }
 
+        Debug.Log(
+    "[SANGRE] Shader: " +
+    material.shader.name
+);
+
+        if (material.HasProperty("_BaseColor"))
+        {
+            Debug.Log("[SANGRE] Tiene propiedad _BaseColor.");
+        }
+
+        if (material.HasProperty("_Color"))
+        {
+            Debug.Log("[SANGRE] Tiene propiedad _Color.");
+        }
+
+        if (material.HasProperty("_Opacity"))
+        {
+            Debug.Log("[SANGRE] Tiene propiedad _Opacity.");
+        }
 
         // Las marcas empiezan ocultas
         if (marcasUnas != null)
