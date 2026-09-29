@@ -131,6 +131,9 @@ public class Act3Manager : MonoBehaviour
     private bool sirviendoCerveza = false;
     private bool servicioBebidasActivo = false;
 
+    [Header("Audio servicio de cerveza")]
+    public AudioSource audioServicioCerveza;
+    public AudioClip sonidoServirCerveza;
 
 
     // OBJETO ESPECIAL
@@ -276,18 +279,28 @@ public class Act3Manager : MonoBehaviour
 
         sirviendoCerveza = true;
 
+        if (audioServicioCerveza != null &&
+            sonidoServirCerveza != null)
+        {
+            audioServicioCerveza.clip = sonidoServirCerveza;
+            audioServicioCerveza.Play();
+        }
+
         servicioCervezaVisual.Servir(() =>
         {
+            if (audioServicioCerveza != null)
+            {
+                audioServicioCerveza.Stop();
+            }
+
             sirviendoCerveza = false;
             vasoEnCanilla = false;
 
-            // Desaparece el vaso de la máquina
             if (vasoServicio != null)
             {
                 vasoServicio.SetActive(false);
             }
 
-            // Aparece la cerveza llena en la mano
             if (ControladorMano3D.Instance != null)
             {
                 ControladorMano3D.Instance.EquiparItem(
@@ -295,9 +308,6 @@ public class Act3Manager : MonoBehaviour
                 );
             }
 
-            // NUEVO:
-            // Registramos la cerveza como pedido recogido.
-            // Solo será correcto si coincide con pedidoActual.
             RecogerPedido(nombrePedidoCerveza);
 
             Debug.Log(
@@ -825,7 +835,7 @@ public class Act3Manager : MonoBehaviour
         );
 
         MostrarDialogo(
-            "Bien... será mejor limpiar todo esto antes de empezar."
+            "Bueno... mejor limpio antes de arrancar."
         );
 
         ActualizarObjetivoLimpieza();
@@ -972,7 +982,7 @@ public class Act3Manager : MonoBehaviour
         );
 
         MostrarDialogo(
-            "Listo... ya está todo limpio. Ahora tengo que guardar los elementos."
+            "Listo... ya está todo limpio. guardo lo que use y ya estoy."
         );
 
         yield return
@@ -1021,7 +1031,7 @@ public class Act3Manager : MonoBehaviour
         ActualizarObjetivo("Vuelve al salón");
 
         MostrarDialogo(
-            "Listo. Ahora sí, puedo continuar."
+            "Listo. Ahora sí, puedo arrancar"
         );
     }
 
@@ -1162,14 +1172,11 @@ public class Act3Manager : MonoBehaviour
 
     public void EntregarPedido()
 {
-    // Sacamos de la mano cualquier objeto que Lucas
-    // acaba de entregar al cliente.
     if (ControladorMano3D.Instance != null)
     {
         ControladorMano3D.Instance.VaciarMano();
     }
 
-    // Limpiamos el pedido actual.
     tienePedido = false;
     tienePedidoBuscado = false;
     pedidoActual = "";
