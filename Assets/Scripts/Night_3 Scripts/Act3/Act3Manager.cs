@@ -32,6 +32,13 @@ public class Act3Manager : MonoBehaviour
     public string textoPuerta = "Abrir";
 
 
+    //LINTERNA EN MANO
+
+    [Header("Linterna")]
+    public GameObject linternaAct3;
+
+    private bool limpiandoMancha = false;
+
 
     // UI Y DIÁLOGOS
 
@@ -204,6 +211,53 @@ public class Act3Manager : MonoBehaviour
         ActualizarObjetivo("Busca los elementos de limpieza");
     }
 
+
+    //OCULTAR Y MOSTRAR LINTERNA 
+
+    public void OcultarLinterna()
+    {
+        if (linternaAct3 != null)
+        {
+            linternaAct3.SetActive(false);
+        }
+    }
+
+    public void MostrarLinterna()
+    {
+        if (linternaAct3 != null)
+        {
+            linternaAct3.SetActive(true);
+        }
+    }
+
+    public void SetLimpiandoMancha(bool limpiando)
+    {
+        limpiandoMancha = limpiando;
+        ActualizarEstadoLinterna();
+    }
+
+    private void ActualizarEstadoLinterna()
+    {
+        if (linternaAct3 == null)
+            return;
+
+        bool tieneObjetoEnMano = false;
+
+        if (ControladorMano3D.Instance != null)
+        {
+            tieneObjetoEnMano =
+                ControladorMano3D.Instance.ObtenerItemActual() != null;
+        }
+
+        if (limpiandoMancha || tieneObjetoEnMano)
+        {
+            linternaAct3.SetActive(false);
+        }
+        else
+        {
+            linternaAct3.SetActive(true);
+        }
+    }
 
 
     // SERVICIO DE BEBIDAS
