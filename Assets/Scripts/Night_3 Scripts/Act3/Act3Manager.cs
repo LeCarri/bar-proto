@@ -128,6 +128,7 @@ public class Act3Manager : MonoBehaviour
     [Header("Servicio de cerveza")]
     public ItemSO itemCerveza;
     public ItemSO itemVasoVacio;
+    public ItemSO itemVasoPilar;
 
     public GameObject vasoServicio;
     public ServicioCervezaVisual servicioCervezaVisual;
@@ -149,7 +150,6 @@ public class Act3Manager : MonoBehaviour
     [Header("Objeto especial")]
     public GameObject objetoEspecial;
     public string pedidoQueLoActiva = "Llave";
-
 
 
     // AWAKE
@@ -381,8 +381,15 @@ public class Act3Manager : MonoBehaviour
 
     void Update()
     {
-        if (Camera.main == null)
-            return;
+       
+       ActualizarEstadoLinterna();
+
+       if (Camera.main == null)
+       return;
+
+
+       if (Camera.main == null)
+       return;
 
         Ray ray = new Ray(
             Camera.main.transform.position,
@@ -1184,44 +1191,60 @@ public class Act3Manager : MonoBehaviour
         );
     }
 
-
     public void RecogerPedido(string objeto)
+{
+    Debug.Log(
+        "Objeto recogido: " +
+        objeto
+    );
+
+    Debug.Log(
+        "Pedido actual: " +
+        pedidoActual
+    );
+
+    if (
+        tienePedido &&
+        objeto.Trim().ToLower() ==
+        pedidoActual.Trim().ToLower()
+    )
     {
-        Debug.Log(
-            "Objeto recogido: " +
-            objeto
-        );
+        tienePedidoBuscado = true;
 
-        Debug.Log(
-            "Pedido actual: " +
-            pedidoActual
-        );
-
-
+        // Si es el pedido especial de Pilar
         if (
-            tienePedido &&
-            objeto.Trim().ToLower() ==
-            pedidoActual.Trim().ToLower()
+            pedidoActual.Trim().ToLower() ==
+            pedidoQueLoActiva.Trim().ToLower()
         )
         {
-            tienePedidoBuscado = true;
-
-            if (objetoEspecial != null)
+            if (
+                ControladorMano3D.Instance != null &&
+                itemVasoPilar != null
+            )
             {
-                objetoEspecial.SetActive(false);
+                ControladorMano3D.Instance.EquiparItem(
+                    itemVasoPilar
+                );
             }
-
-            Debug.Log(
-                "Pedido correcto."
-            );
-
-
-            ActualizarObjetivo(
-                "Entregar pedido: " +
-                pedidoActual
-            );
         }
+
+        if (objetoEspecial != null)
+        {
+            objetoEspecial.SetActive(false);
+        }
+
+        Debug.Log(
+            "Pedido correcto."
+        );
+
+        ActualizarObjetivo(
+            "Entregar pedido: " +
+            pedidoActual
+        );
     }
+}
+    
+    
 
 
     public void EntregarPedido()
@@ -1287,10 +1310,38 @@ public class Act3Manager : MonoBehaviour
             "Los dos clientes fueron atendidos"
         );
 
+        // Esperamos un momento después de atender al segundo cliente
+        yield return new WaitForSeconds(4f);
 
-        yield return
-            new WaitForSeconds(4f);
 
+        // DIÁLOGO DE PILAR
+
+        MostrarDialogo(
+            "Pilar: Gracias Pa!... ¿Te puedo pedir algo más?"
+        );
+
+        yield return new WaitForSeconds(3f);
+
+
+        // DIÁLOGO DE LUCAS
+
+        MostrarDialogo(
+            "Lucas: ¿Qué?"
+        );
+
+        yield return new WaitForSeconds(2f);
+
+
+        // DIÁLOGO DE PILAR
+
+        MostrarDialogo(
+            "Pilar: Irnos."
+        );
+
+        yield return new WaitForSeconds(2f);
+
+
+        // FLASHES NEGROS
 
         if (effectoParpadeo != null)
         {
@@ -1298,37 +1349,37 @@ public class Act3Manager : MonoBehaviour
         }
 
 
+        // DESAPARECEN LOS CLIENTES
+
         if (clientesActo3 != null)
         {
             clientesActo3.SetActive(false);
         }
 
 
-        yield return
-            new WaitForSeconds(3f);
+        yield return new WaitForSeconds(3f);
 
+
+        // CONTINÚA LA SECUENCIA 
 
         MostrarDialogo(
             "Listo... voy a buscarlas."
         );
 
-
         ActualizarObjetivo(
             "Ve al sótano"
         );
 
+        yield return new WaitForSeconds(5f);
 
-        yield return
-            new WaitForSeconds(5f);
 
+        // APAGAR LUCES
 
         CambiarIluminacion(
             "Apagado"
         );
 
-
-        yield return
-            new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(1.5f);
 
 
         if (enemigos != null)
@@ -1337,9 +1388,7 @@ public class Act3Manager : MonoBehaviour
         }
 
 
-
         // APARICIÓN DEL VIGILANTE
-
 
         if (
             vigilante != null &&
@@ -1349,40 +1398,32 @@ public class Act3Manager : MonoBehaviour
             Transform cam =
                 Camera.main.transform;
 
-
             Vector3 posicion =
                 cam.position +
                 cam.forward * 5f;
 
-
             posicion.y =
                 vigilante.transform.position.y;
 
-
             vigilante.transform.position =
                 posicion;
-
 
             Vector3 direccion =
                 cam.position -
                 vigilante.transform.position;
 
-
             direccion.y = 0f;
-
 
             vigilante.transform.rotation =
                 Quaternion.LookRotation(
                     direccion
                 );
 
-
             vigilante.transform.Rotate(
                 0,
                 90,
                 0
             );
-
 
             vigilante.SetActive(true);
         }
