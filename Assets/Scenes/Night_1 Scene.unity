@@ -3331,7 +3331,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -83754,7 +83754,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstNightManager
   estadoActual: 2
-  saltarLimpieza: 1
+  saltarLimpieza: 0
   textoSubtitulos: {fileID: 1970935855}
   canvasGroupDialogo: {fileID: 1651790477}
   textoObjetivo: {fileID: 1688540084}
@@ -83772,6 +83772,8 @@ MonoBehaviour:
   jugueteOso: {fileID: 0}
   fotoFamiliar: {fileID: 109567219}
   effectoParpadeo: {fileID: 1991974338}
+  "tiempoEsperaCa\xF1erias": 5
+  duracionParpadeo: 1
   lucesNormales: {fileID: 1560389704}
   lucesServicio: {fileID: 412008976}
   lucesCreepy: {fileID: 602502694}
@@ -98919,15 +98921,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 084c7f23359fa074db8f933bd0614031, type: 3}
       propertyPath: m_LocalScale.x
-      value: 6
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 084c7f23359fa074db8f933bd0614031, type: 3}
       propertyPath: m_LocalScale.y
-      value: 6
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 084c7f23359fa074db8f933bd0614031, type: 3}
       propertyPath: m_LocalScale.z
-      value: 6
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 084c7f23359fa074db8f933bd0614031, type: 3}
       propertyPath: m_LocalPosition.x
@@ -98980,6 +98982,10 @@ PrefabInstance:
     - target: {fileID: 4621265098329700539, guid: 084c7f23359fa074db8f933bd0614031, type: 3}
       propertyPath: m_LocalPosition.x
       value: -52.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5256165391187144686, guid: 084c7f23359fa074db8f933bd0614031, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -6
       objectReference: {fileID: 0}
     - target: {fileID: 5309420516490747788, guid: 084c7f23359fa074db8f933bd0614031, type: 3}
       propertyPath: m_Name
