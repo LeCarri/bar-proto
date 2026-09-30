@@ -21,6 +21,12 @@ public class ParpadeoBarCambio : MonoBehaviour
     public float velocidadParpadeo = 0.12f;
     public int cantidadParpadeos = 3;
 
+    [Header("Música de Suspenso (Último Cambio)")]
+    [Tooltip("AudioSource que reproducirá la música de suspenso en el último parpadeo")]
+    public AudioSource audioMusicaSuspenso;
+    [Tooltip("Clip de música de suspenso")]
+    public AudioClip clipSuspenso;
+
     /// <summary>
     /// Ejecuta un parpadeo y luego aplica el cambio del índice dado.
     /// Llamar desde Act2Manager en orden: 0, 1, 2.
@@ -69,6 +75,34 @@ public class ParpadeoBarCambio : MonoBehaviour
         // Desactiva los objetos del estado normal
         foreach (GameObject obj in cambio.objetosADesactivar)
             if (obj != null) obj.SetActive(false);
+
+        // --- DETECCIÓN DEL ÚLTIMO CAMBIO Y REPRODUCCIÓN DE MÚSICA ---
+        if (indice == cambiosSecuenciales.Length - 1)
+        {
+            ReproducirMusicaSuspenso();
+        }
+    }
+
+    void ReproducirMusicaSuspenso()
+    {
+        if (audioMusicaSuspenso != null)
+        {
+            if (clipSuspenso != null)
+            {
+                audioMusicaSuspenso.clip = clipSuspenso;
+            }
+
+            audioMusicaSuspenso.loop = true;
+
+            if (!audioMusicaSuspenso.isPlaying)
+            {
+                audioMusicaSuspenso.Play();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[ParpadeoBarCambio] No se asignó el AudioSource para la música de suspenso.");
+        }
     }
 
     void MostrarPantallaNegra(bool mostrar)

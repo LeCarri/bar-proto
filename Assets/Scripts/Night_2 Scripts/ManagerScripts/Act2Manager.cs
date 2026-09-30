@@ -101,6 +101,7 @@ public class Act2Manager : MonoBehaviour
     public AudioSource ambientBar;
     public AudioSource musicBar;
     public AudioSource audioBasement;
+    [SerializeField] private AudioSource musicaSuspenso;
 
     [Header("Objetivos")]
     public TextMeshProUGUI textoObjetivo;
@@ -252,7 +253,20 @@ public class Act2Manager : MonoBehaviour
         CambiarIluminacion("Servicio");
 
         if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(true);
-        if (ambientBar != null && !ambientBar.isPlaying) ambientBar.Play();
+
+        // Si había alguna música del bar sonando antes, la podés detener
+        if (musicBar != null && musicBar.isPlaying) musicBar.Stop();
+
+        // --- INICIO CON FADE IN ---
+        // Sube el volumen de 0 a 1.0f en 2.5 segundos (podés ajustar el tiempo)
+        if (musicaSuspenso != null)
+        {
+            StartCoroutine(FadeInAudio(musicaSuspenso, 3, 0.3f));
+        }
+        else if (ambientBar != null)
+        {
+            StartCoroutine(FadeInAudio(ambientBar, 3f, 0.3f));
+        }
 
         yield return new WaitForSeconds(3f);
 
@@ -892,5 +906,28 @@ public void ServirCerveza()
             if (sonidoEstatica  == null && nombre.Contains("static"))   { sonidoEstatica  = fuente; }
             if (sonidoGolpesSotano == null && (nombre.Contains("golpe") || nombre.Contains("knock"))) { sonidoGolpesSotano = fuente; }
         }
+    }
+
+    /// <summary>
+    /// Inicia la reproducción del AudioSource y sube su volumen suavemente desde 0 hasta el volumen objetivo.
+    /// </summary>
+    IEnumerator FadeInAudio(AudioSource audio, float duracionFade, float volumenObjetivo = 1f)
+    {
+        if (audio == null) yield break;
+
+        audio.volume = 0f;
+        audio.loop = true;
+        audio.Play();
+
+        float tiempo = 0f;
+
+        while (tiempo < duracionFade)
+        {
+            tiempo += Time.deltaTime;
+            audio.volume = Mathf.Lerp(0f, volumenObjetivo, tiempo / duracionFade);
+            yield return null;
+        }
+
+        audio.volume = volumenObjetivo;
     }
 }
