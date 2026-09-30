@@ -201,6 +201,7 @@ public class ManchaSangre : MonoBehaviour
 
         limpiando = true;
 
+        Act3Manager.Instance.SetLimpiandoMancha(true);
 
         // SOLO MANCHAS DE PISO
         if (!esManchaPared)
@@ -216,15 +217,9 @@ public class ManchaSangre : MonoBehaviour
     {
         limpiando = false;
 
-
-        // No desaparece inmediatamente.
-        // Primero termina el ciclo de la animación.
-        if (
-            !esManchaPared &&
-            animacionActiva
-        )
+        if (Act3Manager.Instance != null)
         {
-            detenerAlFinalizarCiclo = true;
+            Act3Manager.Instance.SetLimpiandoMancha(false);
         }
     }
 
@@ -420,6 +415,11 @@ public class ManchaSangre : MonoBehaviour
     {
         limpiando = false;
         limpiada = true;
+
+        if (Act3Manager.Instance != null)
+        {
+            Act3Manager.Instance.SetLimpiandoMancha(false);
+        }
 
 
         // Asegura que la mopa desaparezca

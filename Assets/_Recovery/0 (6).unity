@@ -18880,81 +18880,6 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!1 &261015724
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 261015727}
-  - component: {fileID: 261015726}
-  - component: {fileID: 261015725}
-  m_Layer: 5
-  m_Name: fade_inicio
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &261015725
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 261015724}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &261015726
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 261015724}
-  m_CullTransparentMesh: 1
---- !u!224 &261015727
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 261015724}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 21.13, y: 21.13, z: 21.13}
-  m_ConstrainProportionsScale: 1
-  m_Children: []
-  m_Father: {fileID: 1636692266}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!43 &262141002
 Mesh:
   m_ObjectHideFlags: 0
@@ -41285,7 +41210,7 @@ Transform:
   m_GameObject: {fileID: 563430316}
   serializedVersion: 2
   m_LocalRotation: {x: 1, y: -0, z: -0, w: 0}
-  m_LocalPosition: {x: 0.00145, y: 0.00026, z: -0.00201}
+  m_LocalPosition: {x: -0.0012199937, y: 0.00026000125, z: -0.0004587058}
   m_LocalScale: {x: 0.002, y: 0.0019999996, z: 0.0019999994}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -65418,7 +65343,7 @@ Transform:
   m_GameObject: {fileID: 892727828}
   serializedVersion: 2
   m_LocalRotation: {x: 1, y: -0, z: -0, w: 0}
-  m_LocalPosition: {x: -0.0012199937, y: 0.00026, z: -0.002}
+  m_LocalPosition: {x: -0.0012199937, y: 0.00026000125, z: -0.0004587058}
   m_LocalScale: {x: 0.002, y: 0.0019999996, z: 0.0019999994}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -76340,7 +76265,7 @@ MonoBehaviour:
   textoCliente: Interactuar
   textoPedido: Recoger
   textoPuerta: Abrir
-  linternaAct3: {fileID: 1226498960}
+  linternaAct3: {fileID: 0}
   textoSubtitulos: {fileID: 406202620}
   effectoParpadeo: {fileID: 1460422649}
   lucesNormales: {fileID: 354832640}
@@ -76364,12 +76289,12 @@ MonoBehaviour:
   nombrePedidoCerveza: Trago Especial
   itemCerveza: {fileID: 11400000, guid: d088918bb353a4e839d239be1eb42366, type: 2}
   itemVasoVacio: {fileID: 11400000, guid: d807adc115b484080a2397e8296d2eb9, type: 2}
-  itemVasoPilar: {fileID: 11400000, guid: 8f7095df14f229945b8a6755df0b8aba, type: 2}
+  itemVasoPilar: {fileID: 0}
   vasoServicio: {fileID: 1446332551}
   servicioCervezaVisual: {fileID: 1097552227}
   vasoEnCanilla: 0
-  audioServicioCerveza: {fileID: 1040453438}
-  sonidoServirCerveza: {fileID: 8300000, guid: 14eacec2f28b9e640959fc802031b27f, type: 3}
+  audioServicioCerveza: {fileID: 0}
+  sonidoServirCerveza: {fileID: 0}
   objetoEspecial: {fileID: 1305857760}
   pedidoQueLoActiva: vaso
 --- !u!82 &1040453438
@@ -76484,7 +76409,7 @@ MonoBehaviour:
   jugador: {fileID: 1607094334}
   uiParanoia: {fileID: 898041790}
   uiObjetivos: {fileID: 1162425464}
-  pantallaNegra: {fileID: 261015725}
+  pantallaNegra: {fileID: 1729261599}
   audioSource: {fileID: 1040453438}
   audio1: {fileID: 8300000, guid: 82b55047b2eda194393cfd63cd2b19fa, type: 3}
   audio2: {fileID: 8300000, guid: 555540bba401b34499d675ed14fb9a53, type: 3}
@@ -89080,7 +89005,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7058900763340401169, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7303343556027037844, guid: 181a591db194f96478abe2992843a1fc, type: 3}
       propertyPath: m_LocalPosition.y
@@ -89931,7 +89856,7 @@ Transform:
   m_GameObject: {fileID: 1252508647}
   serializedVersion: 2
   m_LocalRotation: {x: 1, y: -0, z: -0, w: 0}
-  m_LocalPosition: {x: -0.00083, y: 0.00026, z: -0.00183}
+  m_LocalPosition: {x: -0.0012199937, y: 0.00026000125, z: -0.0004587058}
   m_LocalScale: {x: 0.002, y: 0.0019999996, z: 0.0019999994}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -96098,7 +96023,7 @@ GameObject:
   - component: {fileID: 1366041213}
   - component: {fileID: 1366041212}
   m_Layer: 3
-  m_Name: mariela
+  m_Name: cliente_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -96136,7 +96061,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClienteAct3
   nombreCliente: Mariela
-  dialogoPedido: lo de siempre
+  dialogoPedido: Lo de siempre, Lucas. No hace falta que preguntes.
   itemPedido: Trago Especial
   respuesta: "Tardaste... pero todav\xEDa est\xE1s ac\xE1."
 --- !u!136 &1366041212
@@ -99661,7 +99586,7 @@ MonoBehaviour:
   nombreCliente: Pilar
   dialogoPedido: "Pap\xE1... \xBFme tra\xE9s mi vaso?"
   itemPedido: Vaso
-  respuesta: "Pens\xE9 que te hab\xEDas olvidado de m\xED."
+  respuesta: "Gracias, pa. Pens\xE9 que te hab\xEDas olvidado de m\xED."
 --- !u!54 &1446504325
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -102253,7 +102178,7 @@ Transform:
   m_GameObject: {fileID: 1499431938}
   serializedVersion: 2
   m_LocalRotation: {x: 1, y: -0, z: -0, w: 0}
-  m_LocalPosition: {x: 0.00061, y: 0.00026, z: -0.00186}
+  m_LocalPosition: {x: -0.0012199937, y: 0.00026000125, z: -0.0004587058}
   m_LocalScale: {x: 0.002, y: 0.0019999996, z: 0.0019999994}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -109563,7 +109488,7 @@ Transform:
   m_GameObject: {fileID: 1594470635}
   serializedVersion: 2
   m_LocalRotation: {x: 1, y: -0, z: -0, w: 0}
-  m_LocalPosition: {x: -0.0012199937, y: 0.00026, z: -0.00197}
+  m_LocalPosition: {x: -0.0012199937, y: 0.00026000125, z: -0.0004587058}
   m_LocalScale: {x: 0.002, y: 0.0019999996, z: 0.0019999994}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -112097,7 +112022,6 @@ RectTransform:
   m_Children:
   - {fileID: 1729261598}
   - {fileID: 724032440}
-  - {fileID: 261015727}
   m_Father: {fileID: 1413163329}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -139066,7 +138990,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1101246612537176159, guid: f744548aa5a16894591d125c88150616, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1159338162451511323, guid: f744548aa5a16894591d125c88150616, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -139244,49 +139168,9 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 2067113972}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.0783756
-      objectReference: {fileID: 0}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1.0598453
-      objectReference: {fileID: 0}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.12
-      objectReference: {fileID: 0}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -3.958
-      objectReference: {fileID: 0}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.1052
-      objectReference: {fileID: 0}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.0074941395
-      objectReference: {fileID: 0}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.999972
-      objectReference: {fileID: 0}
-    - target: {fileID: 5121111651295948280, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: -179.141
-      objectReference: {fileID: 0}
-    - target: {fileID: 5129447087631530362, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -1.862
-      objectReference: {fileID: 0}
     - target: {fileID: 5129447087631530362, guid: f744548aa5a16894591d125c88150616, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.411
+      value: -0.11
       objectReference: {fileID: 0}
     - target: {fileID: 5381615500909068765, guid: f744548aa5a16894591d125c88150616, type: 3}
       propertyPath: m_UnmodifiedMeshVersion
@@ -139304,10 +139188,6 @@ PrefabInstance:
       propertyPath: m_VolumeLayerMask.m_Bits
       value: 63
       objectReference: {fileID: 0}
-    - target: {fileID: 5516688230760586535, guid: f744548aa5a16894591d125c88150616, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 9ff2ec2ee81f5fb49822af064e622744, type: 2}
     - target: {fileID: 5658649699239071251, guid: f744548aa5a16894591d125c88150616, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -139594,9 +139474,7 @@ PrefabInstance:
       objectReference: {fileID: 2115574689}
     m_RemovedComponents:
     - {fileID: 1651822614102743330, guid: f744548aa5a16894591d125c88150616, type: 3}
-    m_RemovedGameObjects:
-    - {fileID: 4560392970993200947, guid: f744548aa5a16894591d125c88150616, type: 3}
-    - {fileID: 1101246612537176159, guid: f744548aa5a16894591d125c88150616, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f744548aa5a16894591d125c88150616, type: 3}
@@ -143227,7 +143105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c057b2fe7479b494297cdceccb843bb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LlegadaSalonAct3
-  jugador: {fileID: 2040330083}
+  jugador: {fileID: 1607094329}
   clientesActo3: {fileID: 1302803084}
 --- !u!1 &2052740878
 GameObject:
