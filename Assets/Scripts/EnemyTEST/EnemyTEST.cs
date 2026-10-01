@@ -1446,11 +1446,16 @@ public void DispararSecuenciaNaniela()
         
         yield return StartCoroutine(ParpadeoLinternaTerror());
 
-        // La visión comienza a recuperarse.
-        StartCoroutine(RecuperarVision());
+        
+        // Esperar a que la visión se recupere completamente.
+        yield return StartCoroutine(RecuperarVision());
 
-        // Pequeña pausa antes de permitir el evento.
-        yield return new WaitForSeconds(0.35f);
+        // Asegurar que el Volume anterior quede apagado.
+        if (volumenAlucinacion != null)
+            volumenAlucinacion.weight = 0f;
+
+        // Habilitar inmediatamente el siguiente evento.
+
 
         // Habilitar aparición fugaz en la cocina.
         if (sombraFugazCocina != null)

@@ -2,6 +2,8 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
+
 
 public class SombraFugazCocina : MonoBehaviour
 {
@@ -13,11 +15,20 @@ public class SombraFugazCocina : MonoBehaviour
     public Transform puntoC;
     public GameObject presenciaFugaz;
 
+    [Header("FX - Distorsión de la sombra")]
+    public Volume volumenSombra;
+    public float velocidadEntradaVolume = 12f;
+    public float velocidadSalidaVolume = 3f;
+
+    private Coroutine rutinaVolume;
+
+
     [Header("Detección de mirada")]
     [Range(0.01f, 0.5f)]
-    public float toleranciaMirada = 0.18f;
+    public float toleranciaMirada = 0.25f;
 
-    public float tiempoMirada = 0.15f;
+    [Min(0f)]
+    public float tiempoMirada = 0f;
 
     [Header("Movimiento")]
     public float duracionAB = 0.18f;
@@ -27,10 +38,15 @@ public class SombraFugazCocina : MonoBehaviour
     [Header("Audio")]
     public AudioSource sonidoDesplazamiento;
 
-    [Header("Continuación")]
-    public UnityEvent alLlegarAC;
+    [Tooltip("Distribuye la duración del audio entre los tramos A-B y B-C.")]
+    public bool ajustarRecorridoAlAudio = true;
+
     [Header("FX - Humo")]
     public ParticleSystem humoNegro;
+    public float tiempoDisipacion = 0.8f;
+
+    [Header("Continuación")]
+    public UnityEvent alLlegarAC;
 
     private bool habilitado;
     private bool ejecutado;
@@ -40,6 +56,9 @@ public class SombraFugazCocina : MonoBehaviour
     {
         if (presenciaFugaz != null)
             presenciaFugaz.SetActive(false);
+
+        if (sonidoDesplazamiento != null)
+            sonidoDesplazamiento.playOnAwake = false;
     }
 
     private void Update()
@@ -55,85 +74,139 @@ public class SombraFugazCocina : MonoBehaviour
 
         bool estaMirando =
             posicionPantalla.z > 0f &&
-            Mathf.Abs(posicionPantalla.x - 0.5f) < toleranciaMirada &&
-            Mathf.Abs(posicionPantalla.y - 0.5f) < toleranciaMirada;
+            Mathf.Abs(posicionPantalla.x - 0.5f) <= toleranciaMirada &&
+            Mathf.Abs(posicionPantalla.y - 0.5f) <= toleranciaMirada;
 
         if (estaMirando)
             acumuladoMirada += Time.deltaTime;
         else
             acumuladoMirada = 0f;
 
-        if (acumuladoMirada >= tiempoMirada)
+        if (estaMirando && acumuladoMirada >= tiempoMirada)
         {
             ejecutado = true;
+            habilitado = false;
+
             StartCoroutine(SecuenciaSombra());
         }
     }
 
     public void HabilitarEvento()
     {
-        if (ejecutado)
+        if (ejecutado || habilitado)
             return;
 
         habilitado = true;
         acumuladoMirada = 0f;
 
-        Debug.Log("[SombraCocina] Esperando mirada del jugador.");
+        Debug.Log("[SombraCocina] Evento habilitado. Esperando mirada.");
     }
 
-    
-private IEnumerator SecuenciaSombra()
-{
-    if (presenciaFugaz == null ||
-        puntoA == null || puntoB == null || puntoC == null)
+    private IEnumerator SecuenciaSombra()
     {
-        Debug.LogError("[SombraCocina] Faltan referencias.");
-        yield break;
+        if (presenciaFugaz == null ||
+            puntoA == null || puntoB == null || puntoC == null)
+        {
+            Debug.LogError("[SombraCocina] Faltan referencias.");
+            yield break;
+        }
+
+        float tiempoAB = Mathf.Max(0.01f, duracionAB);
+        float tiempoBC = Mathf.Max(0.01f, duracionBC);
+        float pausa = Mathf.Max(0f, pausaEnB);
+
+        // Si hay audio, repartir su duración entre ambos movimientos.
+        if (ajustarRecorridoAlAudio &&
+            sonidoDesplazamiento != null &&
+            sonidoDesplazamiento.clip != null)
+        {
+            float pitch = Mathf.Max(
+                0.01f,
+                Mathf.Abs(sonidoDesplazamiento.pitch)
+            );
+
+            float duracionAudio =
+                sonidoDesplazamiento.clip.length / pitch;
+
+            float tiempoDisponible =
+                Mathf.Max(
+                    tiempoAB + tiempoBC,
+                    duracionAudio - pausa
+                );
+
+            float proporcionAB =
+                tiempoAB / (tiempoAB + tiempoBC);
+
+            tiempoAB = tiempoDisponible * proporcionAB;
+            tiempoBC = tiempoDisponible * (1f - proporcionAB);
+        }
+
+        // A: aparición.
+        presenciaFugaz.transform.position = puntoA.position;
+        presenciaFugaz.SetActive(true);
+
+        CambiarVolume(1f, velocidadEntradaVolume);
+
+
+        IniciarHumo(true);
+
+        // Se reproduce una sola vez durante toda la secuencia.
+        if (sonidoDesplazamiento != null)
+        {
+            sonidoDesplazamiento.loop = false;
+            sonidoDesplazamiento.Play();
+        }
+
+        // A → B
+        yield return Mover(
+            puntoA.position,
+            puntoB.position,
+            tiempoAB
+        );
+
+        // En B dejamos de emitir, pero no borramos la estela.
+        DetenerHumo();
+        
+
+        yield return new WaitForSeconds(pausa);
+
+        // B → C: reanudamos la emisión sin limpiar partículas previas.
+        presenciaFugaz.transform.position = puntoB.position;
+
+        IniciarHumo(false);
+
+        yield return Mover(
+            puntoB.position,
+            puntoC.position,
+            tiempoBC
+        );
+
+        DetenerHumo();
+
+
+        Debug.Log("[SombraCocina] Llegó a C.");
+
+        // Ocultamos la presencia cuando el humo se haya disipado.
+        yield return new WaitForSeconds(
+            Mathf.Max(0f, tiempoDisipacion)
+        );
+
+        CambiarVolume(0f, velocidadSalidaVolume);
+
+        presenciaFugaz.SetActive(false);
+
+        // El audio no se detiene ni se reinicia.
+        // Esperamos a que termine antes de continuar el evento.
+        if (sonidoDesplazamiento != null)
+        {
+            while (sonidoDesplazamiento.isPlaying)
+                yield return null;
+        }
+
+        Debug.Log("[SombraCocina] Secuencia y audio finalizados.");
+
+        alLlegarAC?.Invoke();
     }
-
-    // PRIMER CRUCE: A → B
-    presenciaFugaz.transform.position = puntoA.position;
-    presenciaFugaz.SetActive(true);
-
-    IniciarHumo();
-
-    if (sonidoDesplazamiento != null)
-        sonidoDesplazamiento.Play();
-
-    yield return Mover(
-        puntoA.position,
-        puntoB.position,
-        duracionAB
-    );
-
-    // La presencia deja de emitir, pero conserva su estela.
-    DetenerHumo();
-
-    yield return new WaitForSeconds(pausaEnB);
-
-    // SEGUNDO CRUCE: B → C
-    presenciaFugaz.transform.position = puntoB.position;
-
-    IniciarHumo();
-
-    yield return Mover(
-        puntoB.position,
-        puntoC.position,
-        duracionBC
-    );
-
-    DetenerHumo();
-
-    // Dar tiempo a que se disipe el humo restante.
-    yield return new WaitForSeconds(0.8f);
-
-    presenciaFugaz.SetActive(false);
-
-    Debug.Log("[SombraCocina] Llegó a C.");
-
-    alLlegarAC?.Invoke();
-}
-
 
     private IEnumerator Mover(
         Vector3 origen,
@@ -158,23 +231,65 @@ private IEnumerator SecuenciaSombra()
         presenciaFugaz.transform.position = destino;
     }
 
-    private void IniciarHumo()
+    private void IniciarHumo(bool primeraVez)
     {
-        if (humoNegro == null) return;
+        if (humoNegro == null)
+            return;
 
-        humoNegro.Clear(true);
+        if (primeraVez)
+        {
+            humoNegro.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear
+            );
+
+            // Precalentamiento únicamente en A.
+            humoNegro.Simulate(0.35f, true, true, true);
+        }
+
         humoNegro.Play(true);
     }
 
     private void DetenerHumo()
     {
-        if (humoNegro == null) return;
+        if (humoNegro == null)
+            return;
 
-        // Detiene la emisión, pero deja que el humo existente se desvanezca.
         humoNegro.Stop(
             true,
             ParticleSystemStopBehavior.StopEmitting
         );
     }
+
+private void CambiarVolume(float objetivo, float velocidad)
+{
+    if (volumenSombra == null) return;
+
+    if (rutinaVolume != null)
+        StopCoroutine(rutinaVolume);
+
+    rutinaVolume = StartCoroutine(
+        TransicionarVolume(objetivo, velocidad)
+    );
+}
+
+private IEnumerator TransicionarVolume(
+    float objetivo,
+    float velocidad)
+{
+    while (Mathf.Abs(volumenSombra.weight - objetivo) > 0.01f)
+    {
+        volumenSombra.weight = Mathf.MoveTowards(
+            volumenSombra.weight,
+            objetivo,
+            velocidad * Time.deltaTime
+        );
+
+        yield return null;
+    }
+
+    volumenSombra.weight = objetivo;
+    rutinaVolume = null;
+}
 
 }
