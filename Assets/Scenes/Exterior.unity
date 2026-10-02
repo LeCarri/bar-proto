@@ -19853,19 +19853,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.99936837
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.035536706
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -19890,6 +19890,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
       propertyPath: m_Name
       value: Lucas Bartender
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
       propertyPath: m_Controller
@@ -30640,10 +30644,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 787348642}
-  - component: {fileID: 787348646}
-  - component: {fileID: 787348645}
+  - component: {fileID: 787348648}
   - component: {fileID: 787348644}
+  - component: {fileID: 787348649}
+  - component: {fileID: 787348645}
   - component: {fileID: 787348643}
+  - component: {fileID: 787348647}
   m_Layer: 0
   m_Name: Lucas Intro
   m_TagString: Player
@@ -30659,15 +30665,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 787348641}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.035536706, z: -0, w: 0.99936837}
-  m_LocalPosition: {x: 48.14, y: 1.9999998, z: -279.41}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 46.37, y: 1.9999998, z: -276.47}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1438159303}
   - {fileID: 526836007}
   m_Father: {fileID: 1230374150}
-  m_LocalEulerAnglesHint: {x: 0, y: 4.073, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &787348643
 AudioSource:
   m_ObjectHideFlags: 0
@@ -30804,30 +30810,80 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &787348646
+--- !u!95 &787348647
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 787348641}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 0272231e3cc124ddf849eae4d798be79, type: 3}
+  m_Controller: {fileID: 9100000, guid: 3f4f1cf820cb8364f98a6f63a628afc3, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &787348648
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 787348641}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5e91e3c00103f14b9b61e6f2320e790, type: 3}
+  m_Script: {fileID: 11500000, guid: 7537bee1f198ddb40935b70313fae00d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController_Intro
   walkSpeed: 10
   runSpeed: 15
-  gravity: -9.81
+  gravity: -10
   normalFOV: 60
   runFOV: 1000
   fovTransitionSpeed: 10
   audioPasos: {fileID: 787348643}
   cameraPivot: {fileID: 1438159303}
-  playerCamera: {fileID: 2014127781}
+  playerCamera: {fileID: 0}
   lookSpeed: 2
   lookXLimit: 75
   controlesBloqueados: 0
+  rb: {fileID: 0}
+--- !u!54 &787348649
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 787348641}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 112
+  m_CollisionDetection: 0
 --- !u!1 &789952285
 GameObject:
   m_ObjectHideFlags: 0
