@@ -11875,22 +11875,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
   m_PrefabInstance: {fileID: 239912954}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &127280759
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 127280757}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05592102ed7527240aff5fbf5f38a059, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SillaInteractuable
-  posicionCorrecta: {fileID: 0}
-  velocidad: 5
-  chairAudioSource: {fileID: 0}
-  chairMoveClip: {fileID: 0}
 --- !u!64 &127280760
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -12214,9 +12198,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1689099819}
-    - targetCorrespondingSourceObject: {fileID: 100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1689099818}
   m_SourcePrefab: {fileID: 100100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
 --- !u!1 &135180872
 GameObject:
@@ -23735,9 +23716,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 127280760}
-    - targetCorrespondingSourceObject: {fileID: 100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 127280759}
   m_SourcePrefab: {fileID: 100100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
 --- !u!1 &243884051
 GameObject:
@@ -55869,7 +55847,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80738187fa196bb479d1c83a94a1a19d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraShake
-  cineCam: {fileID: 0}
+  cineCam: {fileID: 1667675348}
 --- !u!1 &638611696
 GameObject:
   m_ObjectHideFlags: 0
@@ -90558,9 +90536,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2080834596}
-    - targetCorrespondingSourceObject: {fileID: 100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2080834595}
   m_SourcePrefab: {fileID: 100100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
 --- !u!1 &995623309
 GameObject:
@@ -123604,10 +123579,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 513422854697377999, guid: af6b1c48b1b498348a26f59bcaca2f20, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2095712865}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: af6b1c48b1b498348a26f59bcaca2f20, type: 3}
 --- !u!1 &1386247824
 GameObject:
@@ -145772,7 +145744,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de0a6ff5ec8022f45b11e8a2e269b0f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PasilloEfecto
-  cinemachineCam: {fileID: 0}
+  cinemachineCam: {fileID: 1667675348}
   fovNormal: 60
   fovMaximo: 120
   velocidadFOV: 25
@@ -147047,22 +147019,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
   m_PrefabInstance: {fileID: 129855534}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1689099818
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1689099816}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05592102ed7527240aff5fbf5f38a059, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SillaInteractuable
-  posicionCorrecta: {fileID: 0}
-  velocidad: 5
-  chairAudioSource: {fileID: 0}
-  chairMoveClip: {fileID: 0}
 --- !u!64 &1689099819
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -150391,7 +150347,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45eb097a003e7864d88db24d222b0a5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EfectoPsicosis
-  cinemachineCam: {fileID: 0}
+  cinemachineCam: {fileID: 1667675348}
   fovNormal: 60
   fovPsicosis: 85
   velocidadFOV: 3
@@ -184141,22 +184097,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
   m_PrefabInstance: {fileID: 990863957}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2080834595
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2080834593}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05592102ed7527240aff5fbf5f38a059, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SillaInteractuable
-  posicionCorrecta: {fileID: 0}
-  velocidad: 5
-  chairAudioSource: {fileID: 0}
-  chairMoveClip: {fileID: 0}
 --- !u!64 &2080834596
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -185138,32 +185078,11 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!1 &2095712863 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 513422854697377999, guid: af6b1c48b1b498348a26f59bcaca2f20, type: 3}
-  m_PrefabInstance: {fileID: 1385343105}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2095712864 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 895050779692218997, guid: af6b1c48b1b498348a26f59bcaca2f20, type: 3}
   m_PrefabInstance: {fileID: 1385343105}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2095712865
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2095712863}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05592102ed7527240aff5fbf5f38a059, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SillaInteractuable
-  posicionCorrecta: {fileID: 0}
-  velocidad: 5
-  chairAudioSource: {fileID: 0}
-  chairMoveClip: {fileID: 8300000, guid: 6b064488a0cfa4ee58f54229906f37da, type: 3}
 --- !u!43 &2099783578
 Mesh:
   m_ObjectHideFlags: 0
