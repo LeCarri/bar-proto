@@ -50,8 +50,6 @@ public class ManchaSangre : MonoBehaviour
     private Renderer rend;
     private Material material;
 
-    private Color colorInicial;
-
     private float opacidadInicial = 1f;
 
     // PROPIEDAD DEL SHADER
@@ -70,72 +68,41 @@ public class ManchaSangre : MonoBehaviour
         {
             material = rend.material;
 
-            colorInicial = material.color;
-
-            if (material.HasProperty(OpacityID))
-            {
-                opacidadInicial = material.GetFloat(OpacityID);
-            }
-        }
-
-
-        // DEBUG DEL SHADER
-
-        if (material != null)
-        {
             Debug.Log(
-                "[SANGRE] Shader: " +
+                "[SANGRE] OBJETO: " + gameObject.name
+            );
+
+            Debug.Log(
+                "[SANGRE] SHADER: " +
                 material.shader.name
             );
 
-            if (material.HasProperty("_BaseColor"))
-            {
-                Debug.Log(
-                    "[SANGRE] Tiene propiedad _BaseColor."
-                );
-            }
+            Debug.Log(
+                "[SANGRE] Tiene _Opacity: " +
+                material.HasProperty(OpacityID)
+            );
 
-            if (material.HasProperty("_Color"))
+            if (material.HasProperty(OpacityID))
             {
-                Debug.Log(
-                    "[SANGRE] Tiene propiedad _Color."
-                );
-            }
+                opacidadInicial =
+                    material.GetFloat(OpacityID);
 
-            if (material.HasProperty("_Opacity"))
-            {
                 Debug.Log(
-                    "[SANGRE] Tiene propiedad _Opacity."
-                );
-            }
-            else
-            {
-                Debug.LogWarning(
-                    "[SANGRE] NO tiene propiedad _Opacity."
+                    "[SANGRE] Opacidad inicial: " +
+                    opacidadInicial
                 );
             }
         }
-
-
-        // Las marcas empiezan ocultas
 
         if (marcasUnas != null)
         {
             marcasUnas.SetActive(false);
         }
 
-
-        // La mopa empieza oculta
-        // SOLO para manchas de piso
-
-        if (
-            !esManchaPared &&
-            visualMopa != null
-        )
+        if (!esManchaPared && visualMopa != null)
         {
             visualMopa.SetActive(false);
         }
-
 
         if (audioMopa != null)
         {
@@ -158,7 +125,6 @@ public class ManchaSangre : MonoBehaviour
         if (limpiando)
         {
             // Si se suelta E
-
             if (!Input.GetKey(KeyCode.E))
             {
                 DetenerLimpieza();
@@ -173,31 +139,29 @@ public class ManchaSangre : MonoBehaviour
                 progreso =
                     Mathf.Clamp01(progreso);
 
-
                 // DESVANECER MANCHA
-
-                if (material != null && material.HasProperty("_Opacity"))
+                if (material != null && material.HasProperty(OpacityID))
                 {
-                    float opacidad =
-                        Mathf.Lerp(opacidadInicial, 0f, progreso);
+                    float nuevaOpacidad =
+                        Mathf.Lerp(
+                            opacidadInicial,
+                            0f,
+                            progreso
+                        );
 
                     material.SetFloat(
-                        "_Opacity",
-                        opacidad
+                        OpacityID,
+                        nuevaOpacidad
                     );
 
                     Debug.Log(
                         "[SANGRE] Progreso: " + progreso +
-                        " | Opacidad: " + opacidad
+                        " | Opacidad: " + nuevaOpacidad
                     );
                 }
 
                 // Terminar limpieza
-
-                if (
-                    tiempoActual >=
-                    tiempoLimpieza
-                )
+                if (tiempoActual >= tiempoLimpieza)
                 {
                     TerminarLimpieza();
                 }
