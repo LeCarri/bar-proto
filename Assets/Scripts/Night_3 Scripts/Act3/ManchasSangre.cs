@@ -19,7 +19,7 @@ public class ManchaSangre : MonoBehaviour
     public string estadoLimpieza = "LimpiarSuelo";
 
 
-    //AUDIO LIMPIEZA
+    // AUDIO LIMPIEZA
 
     [Header("Audio de limpieza")]
     public AudioSource audioMopa;
@@ -50,7 +50,12 @@ public class ManchaSangre : MonoBehaviour
     private Renderer rend;
     private Material material;
 
-    private Color colorInicial;
+    private float opacidadInicial = 1f;
+
+    // PROPIEDAD DEL SHADER
+
+    private static readonly int OpacityID =
+        Shader.PropertyToID("_Opacity");
 
 
     // START
@@ -62,42 +67,39 @@ public class ManchaSangre : MonoBehaviour
         if (rend != null)
         {
             material = rend.material;
-            colorInicial = material.color;
+
+            Debug.Log(
+                "[SANGRE] OBJETO: " + gameObject.name
+            );
+
+            Debug.Log(
+                "[SANGRE] SHADER: " +
+                material.shader.name
+            );
+
+            Debug.Log(
+                "[SANGRE] Tiene _Opacity: " +
+                material.HasProperty(OpacityID)
+            );
+
+            if (material.HasProperty(OpacityID))
+            {
+                opacidadInicial =
+                    material.GetFloat(OpacityID);
+
+                Debug.Log(
+                    "[SANGRE] Opacidad inicial: " +
+                    opacidadInicial
+                );
+            }
         }
 
-        Debug.Log(
-    "[SANGRE] Shader: " +
-    material.shader.name
-);
-
-        if (material.HasProperty("_BaseColor"))
-        {
-            Debug.Log("[SANGRE] Tiene propiedad _BaseColor.");
-        }
-
-        if (material.HasProperty("_Color"))
-        {
-            Debug.Log("[SANGRE] Tiene propiedad _Color.");
-        }
-
-        if (material.HasProperty("_Opacity"))
-        {
-            Debug.Log("[SANGRE] Tiene propiedad _Opacity.");
-        }
-
-        // Las marcas empiezan ocultas
         if (marcasUnas != null)
         {
             marcasUnas.SetActive(false);
         }
 
-
-        // La mopa empieza oculta
-        // SOLO para manchas de piso
-        if (
-            !esManchaPared &&
-            visualMopa != null
-        )
+        if (!esManchaPared && visualMopa != null)
         {
             visualMopa.SetActive(false);
         }
@@ -119,6 +121,7 @@ public class ManchaSangre : MonoBehaviour
 
 
         // LIMPIEZA
+
         if (limpiando)
         {
             // Si se suelta E
@@ -136,30 +139,29 @@ public class ManchaSangre : MonoBehaviour
                 progreso =
                     Mathf.Clamp01(progreso);
 
-
-                // Desvanecer mancha
-                if (material != null)
+                // DESVANECER MANCHA
+                if (material != null && material.HasProperty(OpacityID))
                 {
-                    Color nuevoColor =
-                        colorInicial;
-
-                    nuevoColor.a =
+                    float nuevaOpacidad =
                         Mathf.Lerp(
-                            1f,
+                            opacidadInicial,
                             0f,
                             progreso
                         );
 
-                    material.color =
-                        nuevoColor;
+                    material.SetFloat(
+                        OpacityID,
+                        nuevaOpacidad
+                    );
+
+                    Debug.Log(
+                        "[SANGRE] Progreso: " + progreso +
+                        " | Opacidad: " + nuevaOpacidad
+                    );
                 }
 
-
                 // Terminar limpieza
-                if (
-                    tiempoActual >=
-                    tiempoLimpieza
-                )
+                if (tiempoActual >= tiempoLimpieza)
                 {
                     TerminarLimpieza();
                 }
@@ -168,7 +170,10 @@ public class ManchaSangre : MonoBehaviour
 
 
         // Actualizar animación de mopa
+
         ActualizarAnimacionMopa();
+
+        // Actualizar audio
 
         ActualizarAudioLimpieza();
     }
@@ -203,7 +208,9 @@ public class ManchaSangre : MonoBehaviour
 
         Act3Manager.Instance.SetLimpiandoMancha(true);
 
+
         // SOLO MANCHAS DE PISO
+
         if (!esManchaPared)
         {
             IniciarAnimacionMopa();
@@ -240,6 +247,7 @@ public class ManchaSangre : MonoBehaviour
 
         // Si ya está animándose,
         // simplemente seguimos el loop.
+
         if (animacionActiva)
         {
             detenerAlFinalizarCiclo = false;
@@ -248,7 +256,6 @@ public class ManchaSangre : MonoBehaviour
 
 
         visualMopa.SetActive(true);
-
 
         animatorMopa.speed = 1f;
 
@@ -323,13 +330,14 @@ public class ManchaSangre : MonoBehaviour
 
 
             // Comenzar otro ciclo
+
             tiempoAnimacion -=
                 duracionCiclo;
         }
     }
 
 
-    // FINALIZAR ANIMACIÓN
+    // FINALIZAR ANIMACIÓN DE MOPA
 
     private void FinalizarAnimacionMopa()
     {
@@ -352,13 +360,16 @@ public class ManchaSangre : MonoBehaviour
         }
     }
 
+
     // AUDIO DE LIMPIEZA
 
     private void ActualizarAudioLimpieza()
     {
         // Las manchas de pared no usan sonido de mopa
+
         if (esManchaPared)
             return;
+
 
         if (
             audioMopa == null ||
@@ -416,6 +427,7 @@ public class ManchaSangre : MonoBehaviour
         limpiando = false;
         limpiada = true;
 
+
         if (Act3Manager.Instance != null)
         {
             Act3Manager.Instance.SetLimpiandoMancha(false);
@@ -423,13 +435,30 @@ public class ManchaSangre : MonoBehaviour
 
 
         // Asegura que la mopa desaparezca
+
         if (!esManchaPared)
         {
             FinalizarAnimacionMopa();
         }
 
 
+        // Asegura que la sangre quede
+        // completamente transparente.
+
+        if (material != null)
+        {
+            if (material.HasProperty(OpacityID))
+            {
+                material.SetFloat(
+                    OpacityID,
+                    0f
+                );
+            }
+        }
+
+
         // Registrar limpieza
+
         if (Act3Manager.Instance != null)
         {
             if (esManchaPared)
@@ -446,6 +475,7 @@ public class ManchaSangre : MonoBehaviour
 
 
         // Mostrar marcas de uñas
+
         if (marcasUnas != null)
         {
             marcasUnas.SetActive(true);
@@ -453,9 +483,9 @@ public class ManchaSangre : MonoBehaviour
 
 
         // Desactivar mancha
+
         gameObject.SetActive(false);
     }
-
 
 
     // AL DESACTIVARSE
@@ -465,6 +495,7 @@ public class ManchaSangre : MonoBehaviour
         limpiando = false;
 
         DetenerAudioLimpieza();
+
 
         if (!esManchaPared)
         {
