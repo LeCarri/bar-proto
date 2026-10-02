@@ -7,6 +7,7 @@ public class Act3Manager : MonoBehaviour
 {
     public static Act3Manager Instance;
 
+    public DistorsionPasilloAct3 triggerDistorsion;
 
     // ESCENA
 
@@ -30,6 +31,13 @@ public class Act3Manager : MonoBehaviour
     public string textoPedido = "Recoger";
     public string textoPuerta = "Abrir";
 
+
+    //LINTERNA EN MANO
+
+    [Header("Linterna")]
+    public GameObject linternaAct3;
+
+    private bool limpiandoMancha = false;
 
 
     // UI Y DIÁLOGOS
@@ -96,7 +104,10 @@ public class Act3Manager : MonoBehaviour
 
     private bool limpiezaTerminada = false;
 
+    public bool sangreLimpiada = false;
+    public bool elementosGuardados = false;
 
+    private bool elementosYaGuardados = false;
 
     // PEDIDOS
 
@@ -117,6 +128,7 @@ public class Act3Manager : MonoBehaviour
     [Header("Servicio de cerveza")]
     public ItemSO itemCerveza;
     public ItemSO itemVasoVacio;
+    public ItemSO itemVasoPilar;
 
     public GameObject vasoServicio;
     public ServicioCervezaVisual servicioCervezaVisual;
@@ -127,6 +139,9 @@ public class Act3Manager : MonoBehaviour
     private bool sirviendoCerveza = false;
     private bool servicioBebidasActivo = false;
 
+    [Header("Audio servicio de cerveza")]
+    public AudioSource audioServicioCerveza;
+    public AudioClip sonidoServirCerveza;
 
 
     // OBJETO ESPECIAL
@@ -135,7 +150,6 @@ public class Act3Manager : MonoBehaviour
     [Header("Objeto especial")]
     public GameObject objetoEspecial;
     public string pedidoQueLoActiva = "Llave";
-
 
 
     // AWAKE
@@ -197,6 +211,53 @@ public class Act3Manager : MonoBehaviour
         ActualizarObjetivo("Busca los elementos de limpieza");
     }
 
+
+    //OCULTAR Y MOSTRAR LINTERNA 
+
+    public void OcultarLinterna()
+    {
+        if (linternaAct3 != null)
+        {
+            linternaAct3.SetActive(false);
+        }
+    }
+
+    public void MostrarLinterna()
+    {
+        if (linternaAct3 != null)
+        {
+            linternaAct3.SetActive(true);
+        }
+    }
+
+    public void SetLimpiandoMancha(bool limpiando)
+    {
+        limpiandoMancha = limpiando;
+        ActualizarEstadoLinterna();
+    }
+
+    private void ActualizarEstadoLinterna()
+    {
+        if (linternaAct3 == null)
+            return;
+
+        bool tieneObjetoEnMano = false;
+
+        if (ControladorMano3D.Instance != null)
+        {
+            tieneObjetoEnMano =
+                ControladorMano3D.Instance.ObtenerItemActual() != null;
+        }
+
+        if (limpiandoMancha || tieneObjetoEnMano)
+        {
+            linternaAct3.SetActive(false);
+        }
+        else
+        {
+            linternaAct3.SetActive(true);
+        }
+    }
 
 
     // SERVICIO DE BEBIDAS
@@ -272,18 +333,28 @@ public class Act3Manager : MonoBehaviour
 
         sirviendoCerveza = true;
 
+        if (audioServicioCerveza != null &&
+            sonidoServirCerveza != null)
+        {
+            audioServicioCerveza.clip = sonidoServirCerveza;
+            audioServicioCerveza.Play();
+        }
+
         servicioCervezaVisual.Servir(() =>
         {
+            if (audioServicioCerveza != null)
+            {
+                audioServicioCerveza.Stop();
+            }
+
             sirviendoCerveza = false;
             vasoEnCanilla = false;
 
-            // Desaparece el vaso de la máquina
             if (vasoServicio != null)
             {
                 vasoServicio.SetActive(false);
             }
 
-            // Aparece la cerveza llena en la mano
             if (ControladorMano3D.Instance != null)
             {
                 ControladorMano3D.Instance.EquiparItem(
@@ -291,9 +362,6 @@ public class Act3Manager : MonoBehaviour
                 );
             }
 
-            // NUEVO:
-            // Registramos la cerveza como pedido recogido.
-            // Solo será correcto si coincide con pedidoActual.
             RecogerPedido(nombrePedidoCerveza);
 
             Debug.Log(
@@ -313,8 +381,15 @@ public class Act3Manager : MonoBehaviour
 
     void Update()
     {
-        if (Camera.main == null)
-            return;
+       
+       ActualizarEstadoLinterna();
+
+       if (Camera.main == null)
+       return;
+
+
+       if (Camera.main == null)
+       return;
 
         Ray ray = new Ray(
             Camera.main.transform.position,
@@ -474,8 +549,36 @@ public class Act3Manager : MonoBehaviour
 
                 if (textoInteraccion != null)
                     textoInteraccion.text = "Recoger";
+
+                if (elementosYaGuardados)
+                {
+                    panelInteraccion.SetActive(false);
+                    return;
+                }
             }
 
+            // ARMARIO ELEMENTOS DE LIMPIEZA
+            ArmarioElementosLimpieza armario =
+                hit.collider.GetComponentInParent<
+                    ArmarioElementosLimpieza
+                >();
+
+            if (armario != null)
+            {
+                mirandoAlgo = true;
+
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
+
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "Guardar elementos";
+
+                if (elementosYaGuardados)
+                {
+                    panelInteraccion.SetActive(false);
+                    return;
+                }
+            }
 
             // OBJETO ESPECIAL
             ObjetosEspeciales objeto =
@@ -579,6 +682,17 @@ public class Act3Manager : MonoBehaviour
                     return;
                 }
 
+                // ARMARIO DE ELEMENTOS DE LIMPIEZA
+                ArmarioElementosLimpieza armario =
+                    hit.collider.GetComponentInParent<
+                        ArmarioElementosLimpieza
+                    >();
+
+                if (armario != null)
+                {
+                    armario.Interact();
+                    return;
+                }
 
                 // OBJETO ESPECIAL
                 ObjetosEspeciales objeto =
@@ -794,7 +908,7 @@ public class Act3Manager : MonoBehaviour
         );
 
         MostrarDialogo(
-            "Bien... será mejor limpiar todo esto antes de empezar."
+            "Bueno... mejor limpio antes de arrancar."
         );
 
         ActualizarObjetivoLimpieza();
@@ -934,26 +1048,88 @@ public class Act3Manager : MonoBehaviour
 
     IEnumerator FinalizarLimpieza()
     {
+        sangreLimpiada = true;
+
         ActualizarObjetivo(
-            "Limpieza completada"
+            "Ve al depósito y deja los elementos de limpieza en el armario"
         );
 
         MostrarDialogo(
-            "Listo... ya está todo limpio."
+            "Listo... ya está todo limpio. guardo lo que use y ya estoy."
         );
 
         yield return
             new WaitForSeconds(3f);
+    }
 
-        StartCoroutine(
-            SecuenciaInicio()
+
+    //guardar elementos de limpieza
+    public void GuardarElementosLimpieza()
+    {
+        Debug.Log("INTENTANDO GUARDAR ELEMENTOS");
+
+        if (elementosGuardados)
+        {
+            Debug.Log("[GUARDAR] Ya estaban guardados.");
+            return;
+        }
+
+        if (!sangreLimpiada)
+        {
+            Debug.Log("[GUARDAR] Todavía NO terminó de limpiar la sangre.");
+            return;
+        }
+
+        if (!tieneElementosLimpieza)
+        {
+            Debug.Log("[GUARDAR] NO tiene los elementos de limpieza.");
+            return;
+        }
+
+        elementosGuardados = true;
+        tieneElementosLimpieza = false;
+
+        if (ElementosLimpieza != null)
+        {
+            ElementosLimpieza.SetActive(true);
+        }
+
+        Debug.Log("[GUARDAR] ¡ELEMENTOS GUARDADOS CORRECTAMENTE!");
+
+        if (triggerDistorsion != null)
+        {
+            Debug.Log("[GUARDAR] triggerDistorsion está asignado.");
+            triggerDistorsion.ActivarTrigger();
+        }
+        else
+        {
+            Debug.LogError("[GUARDAR] triggerDistorsion NO está asignado en el Inspector.");
+        }
+
+        elementosYaGuardados = true;
+        tieneElementosLimpieza = false;
+
+        if (ElementosLimpieza != null)
+        {
+            ElementosLimpieza.SetActive(true);
+        }
+
+        ActualizarObjetivo("Vuelve al salón");
+
+        MostrarDialogo(
+            "Listo. Ahora sí, puedo arrancar"
         );
     }
 
 
+    // INICIAR SECUENCIA LLEGADA AL SALÓN
+    public void IniciarSecuenciaSalon()
+    {
+        StartCoroutine(SecuenciaInicio());
+    }
 
-    // INICIO DEL ACTO 3
 
+    // SECUENCIA INICIO 
 
     IEnumerator SecuenciaInicio()
     {
@@ -965,7 +1141,6 @@ public class Act3Manager : MonoBehaviour
         yield return
             new WaitForSeconds(1.5f);
 
-
         MostrarDialogo(
             "Ya casi... una ronda mas y bajo a buscarlas. Tienen que estar por despertar"
         );
@@ -973,25 +1148,16 @@ public class Act3Manager : MonoBehaviour
         yield return
             new WaitForSeconds(3f);
 
-
         CambiarIluminacion(
             "Servicio"
         );
-
 
         if (effectoParpadeo != null)
         {
             effectoParpadeo.IniciarParpadeo();
         }
 
-
-        if (clientesActo3 != null)
-        {
-            clientesActo3.SetActive(true);
-        }
-
         servicioBebidasActivo = true;
-
 
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (0/2)"
@@ -1050,56 +1216,69 @@ public class Act3Manager : MonoBehaviour
         );
     }
 
-
     public void RecogerPedido(string objeto)
+{
+    Debug.Log(
+        "Objeto recogido: " +
+        objeto
+    );
+
+    Debug.Log(
+        "Pedido actual: " +
+        pedidoActual
+    );
+
+    if (
+        tienePedido &&
+        objeto.Trim().ToLower() ==
+        pedidoActual.Trim().ToLower()
+    )
     {
-        Debug.Log(
-            "Objeto recogido: " +
-            objeto
-        );
+        tienePedidoBuscado = true;
 
-        Debug.Log(
-            "Pedido actual: " +
-            pedidoActual
-        );
-
-
+        // Si es el pedido especial de Pilar
         if (
-            tienePedido &&
-            objeto.Trim().ToLower() ==
-            pedidoActual.Trim().ToLower()
+            pedidoActual.Trim().ToLower() ==
+            pedidoQueLoActiva.Trim().ToLower()
         )
         {
-            tienePedidoBuscado = true;
-
-            if (objetoEspecial != null)
+            if (
+                ControladorMano3D.Instance != null &&
+                itemVasoPilar != null
+            )
             {
-                objetoEspecial.SetActive(false);
+                ControladorMano3D.Instance.EquiparItem(
+                    itemVasoPilar
+                );
             }
-
-            Debug.Log(
-                "Pedido correcto."
-            );
-
-
-            ActualizarObjetivo(
-                "Entregar pedido: " +
-                pedidoActual
-            );
         }
+
+        if (objetoEspecial != null)
+        {
+            objetoEspecial.SetActive(false);
+        }
+
+        Debug.Log(
+            "Pedido correcto."
+        );
+
+        ActualizarObjetivo(
+            "Entregar pedido: " +
+            pedidoActual
+        );
     }
+}
+    
+    
 
 
     public void EntregarPedido()
 {
-    // Sacamos de la mano cualquier objeto que Lucas
-    // acaba de entregar al cliente.
     if (ControladorMano3D.Instance != null)
     {
         ControladorMano3D.Instance.VaciarMano();
     }
 
-    // Limpiamos el pedido actual.
     tienePedido = false;
     tienePedidoBuscado = false;
     pedidoActual = "";
@@ -1156,10 +1335,38 @@ public class Act3Manager : MonoBehaviour
             "Los dos clientes fueron atendidos"
         );
 
+        // Esperamos un momento después de atender al segundo cliente
+        yield return new WaitForSeconds(4f);
 
-        yield return
-            new WaitForSeconds(4f);
 
+        // DIÁLOGO DE PILAR
+
+        MostrarDialogo(
+            "Pilar: Gracias Pa!... ¿Te puedo pedir algo más?"
+        );
+
+        yield return new WaitForSeconds(3f);
+
+
+        // DIÁLOGO DE LUCAS
+
+        MostrarDialogo(
+            "Lucas: ¿Qué?"
+        );
+
+        yield return new WaitForSeconds(2f);
+
+
+        // DIÁLOGO DE PILAR
+
+        MostrarDialogo(
+            "Pilar: Irnos."
+        );
+
+        yield return new WaitForSeconds(2f);
+
+
+        // FLASHES NEGROS
 
         if (effectoParpadeo != null)
         {
@@ -1167,37 +1374,37 @@ public class Act3Manager : MonoBehaviour
         }
 
 
+        // DESAPARECEN LOS CLIENTES
+
         if (clientesActo3 != null)
         {
             clientesActo3.SetActive(false);
         }
 
 
-        yield return
-            new WaitForSeconds(3f);
+        yield return new WaitForSeconds(3f);
 
+
+        // CONTINÚA LA SECUENCIA 
 
         MostrarDialogo(
             "Listo... voy a buscarlas."
         );
 
-
         ActualizarObjetivo(
             "Ve al sótano"
         );
 
+        yield return new WaitForSeconds(5f);
 
-        yield return
-            new WaitForSeconds(5f);
 
+        // APAGAR LUCES
 
         CambiarIluminacion(
             "Apagado"
         );
 
-
-        yield return
-            new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(1.5f);
 
 
         if (enemigos != null)
@@ -1206,9 +1413,7 @@ public class Act3Manager : MonoBehaviour
         }
 
 
-
         // APARICIÓN DEL VIGILANTE
-
 
         if (
             vigilante != null &&
@@ -1218,40 +1423,32 @@ public class Act3Manager : MonoBehaviour
             Transform cam =
                 Camera.main.transform;
 
-
             Vector3 posicion =
                 cam.position +
                 cam.forward * 5f;
 
-
             posicion.y =
                 vigilante.transform.position.y;
 
-
             vigilante.transform.position =
                 posicion;
-
 
             Vector3 direccion =
                 cam.position -
                 vigilante.transform.position;
 
-
             direccion.y = 0f;
-
 
             vigilante.transform.rotation =
                 Quaternion.LookRotation(
                     direccion
                 );
 
-
             vigilante.transform.Rotate(
                 0,
                 90,
                 0
             );
-
 
             vigilante.SetActive(true);
         }

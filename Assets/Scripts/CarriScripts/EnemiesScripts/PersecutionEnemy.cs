@@ -11,8 +11,8 @@ public class PersecutionEnemy : EnemyCore
     [SerializeField] private float damage = 25f;
     [SerializeField] private float attackCooldown = 1.5f;
 
-    [Tooltip("Distancia real a la que el enemigo puede atacar. Debe ser parecida o apenas mayor al Stopping Distance.")]
-    [SerializeField] private float attackRange = 10f;
+    [Tooltip("Distancia a la que atacará. DEBE ser un valor pequeño (ej: 1.5 a 2.5) acorde al cuerpo a cuerpo.")]
+    [SerializeField] private float attackRange = 2f; 
 
     private float nextAttackTime = 0f;
 
@@ -51,6 +51,11 @@ public class PersecutionEnemy : EnemyCore
     [SerializeField] private bool showDebugLogs = true;
 
     private bool wasBeingIlluminated = false;
+    private bool yaNotificoMuerte = false;
+
+    [Header("Integración Noche 1")]
+    [Tooltip("Marcar en TRUE solo para la sombra dentro del depósito (Tutorial).")]
+    [SerializeField] private bool esPrimeraSombraTutorial = false;
 
     void Start()
     {
@@ -67,7 +72,59 @@ public class PersecutionEnemy : EnemyCore
         }
 
         PrepararAudioSources();
+        BuscarJugador();
+        RevisarConfiguracionInicial();
+    }
 
+    private void OnEnable()
+    {
+        // Aseguramos que se enganche al NavMesh al reaparecer o activarse
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
+
+        if (agent != null && NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 2.5f, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+            agent.isStopped = false;
+        }
+
+        // Si el jugador no se había encontrado en Start (o se activó tarde), reintentamos
+        if (player == null)
+        {
+            BuscarJugador();
+        }
+
+        AsegurarPosicionEnNavMesh();
+    }
+
+   public void AsegurarPosicionEnNavMesh()
+{
+    if (agent == null) agent = GetComponent<NavMeshAgent>();
+
+    if (agent != null)
+    {
+        agent.enabled = false;
+
+        // Aumentamos a 20f para que encuentre la malla aunque haya mucha diferencia de Y
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 20.0f, NavMesh.AllAreas))
+        {
+            transform.position = hit.position; // Se teletransporta exacto a la superficie azul
+            agent.enabled = true;
+            agent.Warp(hit.position);
+            
+            if (showDebugLogs)
+            {
+                Debug.Log($"[{gameObject.name}] ¡Enganchado al NavMesh con éxito en {hit.position}!");
+            }
+        }
+        else
+        {
+            Debug.LogError($"[{gameObject.name}] Ni siquiera a 20m se encontró NavMesh.");
+        }
+    }
+}
+
+    private void BuscarJugador()
+    {
         GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
 
         if (playerGO != null)
@@ -83,29 +140,47 @@ public class PersecutionEnemy : EnemyCore
         {
             Debug.LogError($"[{gameObject.name}] No se encontró ningún GameObject con tag 'Player'.");
         }
-
-        RevisarConfiguracionInicial();
     }
 
-void Update()
+    void Update()
 {
-    if (health <= 0 || player == null || agent == null || !agent.isOnNavMesh)
+    // Depuración de bloqueo
+    if (player == null)
     {
+        Debug.LogWarning($"[{gameObject.name}] Detenido: Player es NULL.");
+        FrenarEnemigoPorCompleto();
+        return;
+    }
+
+    if (agent == null)
+    {
+        Debug.LogWarning($"[{gameObject.name}] Detenido: NavMeshAgent es NULL.");
+        FrenarEnemigoPorCompleto();
+        return;
+    }
+
+    if (!agent.isOnNavMesh)
+    {
+        Debug.LogWarning($"[{gameObject.name}] Detenido: ¡El agente NO está sobre el NavMesh!");
+        FrenarEnemigoPorCompleto();
+        return;
+    }
+
+    if (health <= 0)
+    {
+        Debug.LogWarning($"[{gameObject.name}] Detenido: La vida es <= 0.");
         FrenarEnemigoPorCompleto();
         return;
     }
 
     float distanciaAlJugador = Vector3.Distance(transform.position, player.position);
 
-    // Primero revisamos si está siendo iluminado.
-    // Esto tiene prioridad sobre atacar.
     if (isBeingIlluminated)
     {
         ProcesarEstadoCongelado();
         return;
     }
 
-    // Después recién revisamos si está en rango de ataque.
     if (distanciaAlJugador <= attackRange)
     {
         ProcesarEstadoAtaque();
@@ -114,6 +189,7 @@ void Update()
 
     ProcesarEstadoPersecucion();
 }
+
     private void ProcesarEstadoPersecucion()
     {
         wasBeingIlluminated = false;
@@ -191,25 +267,7 @@ void Update()
 
     private void GestionarBuclePasos(bool activar)
     {
-        if (footstepAudioSource == null)
-        {
-            if (showDebugLogs)
-            {
-                Debug.LogWarning($"[{gameObject.name}] No hay Footstep AudioSource asignado.");
-            }
-
-            return;
-        }
-
-        if (footstepSequenceClip == null)
-        {
-            if (showDebugLogs)
-            {
-                Debug.LogWarning($"[{gameObject.name}] No hay clip de pasos asignado.");
-            }
-
-            return;
-        }
+        if (footstepAudioSource == null || footstepSequenceClip == null) return;
 
         if (activar)
         {
@@ -248,17 +306,7 @@ void Update()
 
     private void ReproducirSFX(AudioClip clip, float volumen, string nombreDebug)
     {
-        if (sfxAudioSource == null)
-        {
-            Debug.LogWarning($"[{gameObject.name}] No hay SFX AudioSource asignado. No se puede reproducir {nombreDebug}.");
-            return;
-        }
-
-        if (clip == null)
-        {
-            Debug.LogWarning($"[{gameObject.name}] Falta asignar el clip de audio para {nombreDebug}.");
-            return;
-        }
+        if (sfxAudioSource == null || clip == null) return;
 
         sfxAudioSource.pitch = 1f;
         sfxAudioSource.volume = 1f;
@@ -307,74 +355,69 @@ void Update()
         if (footstepAudioSource == null)
         {
             footstepAudioSource = gameObject.AddComponent<AudioSource>();
-            footstepAudioSource.playOnAwake = false;
         }
 
         if (sfxAudioSource == null)
         {
             sfxAudioSource = gameObject.AddComponent<AudioSource>();
-            sfxAudioSource.playOnAwake = false;
         }
 
         ConfigurarAudioSource3D(footstepAudioSource, true);
         ConfigurarAudioSource3D(sfxAudioSource, false);
     }
 
-private void ConfigurarAudioSource3D(AudioSource source, bool esLoop)
-{
-    if (source == null) return;
-
-    source.playOnAwake = false;
-    source.loop = esLoop;
-    source.spatialBlend = spatialBlend;
-
-    // Linear hace que el sonido 3D no se apague tan brusco.
-    // Para pasos suele funcionar mejor que Logarithmic.
-    source.rolloffMode = AudioRolloffMode.Linear;
-
-    source.minDistance = minAudioDistance;
-    source.maxDistance = maxAudioDistance;
-    source.volume = 1f;
-    source.pitch = 1f;
-    source.mute = false;
-
-    // Muy importante: si estaba sonando al iniciar, lo cortamos.
-    if (source.isPlaying)
+    private void ConfigurarAudioSource3D(AudioSource source, bool esLoop)
     {
-        source.Stop();
+        if (source == null) return;
+
+        source.playOnAwake = false;
+        source.loop = esLoop;
+        source.spatialBlend = spatialBlend;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.minDistance = minAudioDistance;
+        source.maxDistance = maxAudioDistance;
+
+        if (source.isPlaying)
+        {
+            source.Stop();
+        }
     }
-}    private void RevisarConfiguracionInicial()
+
+    private void RevisarConfiguracionInicial()
     {
         if (!showDebugLogs) return;
 
-        if (animator == null)
-        {
-            Debug.LogWarning($"[{gameObject.name}] No hay Animator asignado.");
-        }
+        if (animator == null) Debug.LogWarning($"[{gameObject.name}] No hay Animator asignado.");
+        if (footstepSequenceClip == null) Debug.LogWarning($"[{gameObject.name}] Falta Footstep Sequence Clip.");
+        if (attackClip == null) Debug.LogWarning($"[{gameObject.name}] Falta Attack Clip.");
+        if (freezeClip == null) Debug.LogWarning($"[{gameObject.name}] Falta Freeze Clip.");
+    }
 
-        if (footstepSequenceClip == null)
-        {
-            Debug.LogWarning($"[{gameObject.name}] Falta Footstep Sequence Clip.");
-        }
+    public void NotificarMuerteAlManager()
+    {
+        if (yaNotificoMuerte) return;
+        yaNotificoMuerte = true;
 
-        if (attackClip == null)
-        {
-            Debug.LogWarning($"[{gameObject.name}] Falta Attack Clip.");
-        }
+        if (Act1Manager.Instance == null) return;
 
-        if (freezeClip == null)
+        if (esPrimeraSombraTutorial)
         {
-            Debug.LogWarning($"[{gameObject.name}] Falta Freeze Clip.");
+            Debug.Log($"[{gameObject.name}] Primera sombra derrotada. Avanzando tutorial.");
+            Act1Manager.Instance.PrimeraSombraDerrotada();
         }
-
-        if (footstepAudioSource != null)
+        else
         {
-            Debug.Log($"[{gameObject.name}] Footstep AudioSource listo. SpatialBlend: {footstepAudioSource.spatialBlend}, MaxDistance: {footstepAudioSource.maxDistance}");
+            Debug.Log($"[{gameObject.name}] Sombra de salón eliminada.");
+            Act1Manager.Instance.RegistarEnemigoEliminado();
         }
+    }
 
-        if (sfxAudioSource != null)
+    // Al destruirse o desactivarse tras morir
+    private void OnDisable()
+    {
+        if (health <= 0)
         {
-            Debug.Log($"[{gameObject.name}] SFX AudioSource listo. SpatialBlend: {sfxAudioSource.spatialBlend}, MaxDistance: {sfxAudioSource.maxDistance}");
+            NotificarMuerteAlManager();
         }
     }
 }

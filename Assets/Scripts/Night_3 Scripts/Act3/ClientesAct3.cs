@@ -16,7 +16,7 @@ public class ClienteAct3 : MonoBehaviour
 
     public void Interact()
     {
-        Debug.Log("ENTR� A INTERACT");
+        Debug.Log("ENTRO A INTERACT");
 
         // PRIMERA INTERACCI�N
         if (!pedidoTomado)
@@ -38,7 +38,7 @@ public class ClienteAct3 : MonoBehaviour
             pedidoTomado = true;
         }
 
-        // SEGUNDA INTERACCI�N
+        // SEGUNDA INTERACCION
         else
         {
             Debug.Log("Intentando entregar");

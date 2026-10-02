@@ -47,6 +47,12 @@ public class Act1Manager : MonoBehaviour
     [Header("Efectos")]
     public EffectoParpadeo effectoParpadeo;
 
+    [Header("Ajustes de Tiempo Narrativo")]
+    [Tooltip("Tiempo en segundos de espera tras el sonido de las cañerías antes de que inicien el parpadeo y la llegada de clientes.")]
+    public float tiempoEsperaCañerias = 3.5f;
+    [Tooltip("Duración en segundos de la secuencia de parpadeo antes de encender la luz de servicio.")]
+    public float duracionParpadeo = 2.0f;
+
     [Header("Sistemas de Iluminación")]
     public GameObject lucesNormales;   
     public GameObject lucesServicio;   
@@ -54,6 +60,7 @@ public class Act1Manager : MonoBehaviour
     public GameObject lucesCombate;    
 
     [Header("Audio General")]
+    public AudioSource neonSound;
     public AudioSource ambientBar;
     public AudioSource musicBar;
     public AudioSource sonidoCajitaMusica;
@@ -76,7 +83,7 @@ public class Act1Manager : MonoBehaviour
     [Header("Referencias del Quiebre / Caja Musical")]
     public GameObject cajaMusicalInteractuable; 
     public GameObject vasoWhiskyServido;       
-    public GameObject grupoClientesBar;         
+    public GameObject grupoClientesBar;        
     public GameObject lucesNormalesBar;
     public GameObject lucesEmergenciaBar;
 
@@ -86,10 +93,16 @@ public class Act1Manager : MonoBehaviour
     public AudioSource sonidoExplosionElectrica; 
     public AudioSource sonidoCorteDeLuz;
 
-    [Header("PostQuiebre")]
-    public GameObject linternaObjeto;
+    [Header("Quiebre - Linterna y Ñañiela")]
+    public GameObject linternaBarraInteractuable;
+    public Transform puntoAparicionLinterna;
+    public GameObject triggerSalidaBarra;
+    public GameObject nanielaGameObject;
+    public GameObject luzTaniela;
+    public AudioSource zumbidoAmbiente;
+
+    [Header("PostQuiebre & Depósito")]
     public GameObject botellaEspecial; 
-    public GameObject objetoMujer;
     public GameObject puertaDeposito;
     public AudioSource sonidoCierrePuerta;
 
@@ -98,8 +111,8 @@ public class Act1Manager : MonoBehaviour
     public GameObject[] sombrasSalon;
     public AudioSource sonidoMutacion;
     public CameraShake sacudidaCamara;
-    public int enemigosDerrotados = 0;
-    public int totalEnemigos = 4;
+    public int enemigosEliminados = 0;
+    public int enemigosTotalesNoche1 = 3;
 
     [Header("Cierre de Noche")]
     public GameObject vasoHoneySobreMesa;
@@ -139,6 +152,9 @@ public class Act1Manager : MonoBehaviour
         if (notificacionCelularUI != null) notificacionCelularUI.SetActive(false);
         if (cajaMusicalInteractuable != null) cajaMusicalInteractuable.SetActive(false);
         if (textoInstruccionF != null) textoInstruccionF.gameObject.SetActive(false);
+        if (triggerSalidaBarra != null) triggerSalidaBarra.SetActive(false);
+        if (nanielaGameObject != null) nanielaGameObject.SetActive(false);
+        if (luzTaniela != null) luzTaniela.SetActive(false);
 
         if (fadeCanvasGroup != null)
         {
@@ -147,14 +163,14 @@ public class Act1Manager : MonoBehaviour
         }
 
         if (saltarLimpieza)
-{
+        {
             IniciarServicioDirecto();
         }
         else
         {
             CambiarIluminacion("Normal");
             IniciarFaseTareas();
-}
+        }
     }
 
     private void IniciarServicioDirecto()
@@ -262,22 +278,28 @@ public class Act1Manager : MonoBehaviour
         MostrarDialogo("Lucas: Listo. Guardo la escoba...");
         yield return new WaitForSeconds(1.5f);
 
+        // 1. Sonido de cañerías / golpe y diálogo
         if (sonidoGolpeSuelo != null) sonidoGolpeSuelo.Play();
-        yield return new WaitForSeconds(1f);
-
         MostrarDialogo("Lucas: Ufff... Estas cañerías están cada vez peor...");
 
+        // 2. Tiempo de respiro para el audio y lectura
+        yield return new WaitForSeconds(tiempoEsperaCañerias);
+
+        // 3. Inicio del parpadeo
         if (effectoParpadeo != null)
         {
             Debug.Log("[Act1Manager] Ejecutando efecto de parpadeo.");
             effectoParpadeo.IniciarParpadeo();
-            yield return new WaitForSeconds(1.2f);
+            
+            // Esperamos la duración exacta del parpadeo para no cortar la animación a la mitad
+            yield return new WaitForSeconds(duracionParpadeo);
         }
         else
         {
             Debug.LogWarning("[Act1Manager] 'effectoParpadeo' no está asignado en el Inspector.");
         }
 
+        // 4. Sincronización final: Cambio de luz a Servicio y aparición de clientes al terminar el parpadeo
         CambiarIluminacion("Servicio");
         if (grupoClientes != null) grupoClientes.SetActive(true);
 
@@ -307,6 +329,11 @@ public class Act1Manager : MonoBehaviour
         }
 
         HabilitarClienteActual();
+
+         if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(10f);
+        }
     }
 
     public void AvanzarSiguienteCliente()
@@ -391,137 +418,195 @@ public class Act1Manager : MonoBehaviour
         }
     }
 
-    public void HabilitarTriggerCocinaFinal()
-    {
-        Debug.Log("[Act1Manager] Trigger Cocina Final habilitado.");
-    }
-
     // ==========================================
-    // 3. QUIEBRE Y APARICIÓN DE MARIELA
+    // 3. QUIEBRE, LINTERNA Y APARICIÓN DE ÑAÑIELA
     // ==========================================
     public void IniciarSecuenciaQuiebre()
     {
-        Debug.Log("[Act1Manager] INICIANDO SECUENCIA DE QUIEBRE");
+        Debug.Log("[Act1Manager] INICIANDO SECUENCIA DE QUIEBRE - CAMBIO EN EL ÚLTIMO PARPADEO");
 
-        estadoActual = ActoState.Quiebre; // Cambiamos el estado formalmente a Quiebre
+        estadoActual = ActoState.Quiebre;
 
+        StartCoroutine(SecuenciaParpadeoYTransicionLuces());
+    }
+
+    private IEnumerator SecuenciaParpadeoYTransicionLuces()
+    {
+        if (effectoParpadeo != null)
+        {
+            effectoParpadeo.IniciarParpadeo();
+        }
+        else
+        {
+            Debug.LogWarning("[Act1Manager] 'effectoParpadeo' no está asignado en el Inspector.");
+        }
+
+        yield return new WaitForSeconds(0.85f);
+
+        // SILENCIO ABSOLUTO (Ambiente)
+        if (ambientBar != null && ambientBar.isPlaying) ambientBar.Stop();
+        if (musicBar != null && musicBar.isPlaying) musicBar.Stop();
+        if (neonSound != null && neonSound.isPlaying) neonSound.Stop();
+
+        // CAMBIO DE ILUMINACIÓN
+        if (lucesServicio != null) lucesServicio.SetActive(false);
+        if (lucesNormales != null) lucesNormales.SetActive(true);
+        if (lucesNormalesBar != null) lucesNormalesBar.SetActive(true);
+
+        // CLIENTES Y ELEMENTOS
         if (grupoClientesBar != null) grupoClientesBar.SetActive(false);
         if (vasoWhiskyServido != null) vasoWhiskyServido.SetActive(true);
-        
-        // Habilitamos la caja en escena para ser interactuada
+
+        // APARICIÓN DE LA CAJA MUSICAL Y REPRODUCCIÓN AUTOMÁTICA
         if (cajaMusicalInteractuable != null) 
         {
             cajaMusicalInteractuable.SetActive(true);
-            Debug.Log("[Act1Manager] Caja musical activada en la escena.");
+
+            // PARANOIA: La música misteriosa desconcierta al jugador (+20)
+            if (ParanoiaSystem.Instance != null)
+            {
+                ParanoiaSystem.Instance.AddParanoia(20f);
+            }
+
+            AudioSource audioCaja = cajaMusicalInteractuable.GetComponent<AudioSource>();
+            if (audioCaja != null && !audioCaja.isPlaying)
+            {
+                audioCaja.Play();
+            }
+
+            CajaMusicalController controller = cajaMusicalInteractuable.GetComponent<CajaMusicalController>();
+            if (controller != null)
+            {
+                controller.ActivarCaja();
+            }
         }
 
-        if (lucesNormalesBar != null) lucesNormalesBar.SetActive(true);
         if (lucesEmergenciaBar != null) lucesEmergenciaBar.SetActive(false);
 
         MostrarDialogo("Lucas: ¿Pará... a dónde se fueron todos?");
-        ActualizarObjetivo("Investiga la caja musical sobre la barra");
+        ActualizarObjetivo("Investiga el origen de la música en la barra");
+
+        StartCoroutine(RutinaCajaMusicalYSusto());
     }
 
-    // Llamada de interacción directa para la Caja Musical
     public void InteractuarCajaMusical()
     {
         if (estadoActual == ActoState.Quiebre)
         {
-            ActivarSecuenciaCajaMusical();
+            StartCoroutine(RutinaCajaMusicalYSusto());
         }
-    }
-
-    public void ActivarSecuenciaCajaMusical()
-    {
-        StartCoroutine(RutinaCajaMusicalYSusto());
     }
 
     private IEnumerator RutinaCajaMusicalYSusto()
     {
-        if (sonidoCajaMusical != null)
-        {
-            sonidoCajaMusical.pitch = 1.0f;
-            sonidoCajaMusical.Play();
-        }
+        yield return new WaitForSeconds(20f);
 
-        yield return new WaitForSeconds(3.0f);
-
-        float tiempoAcelerando = 0f;
-        float duracionAceleracion = 2.5f;
-
-        while (tiempoAcelerando < duracionAceleracion)
-        {
-            tiempoAcelerando += Time.deltaTime;
-            if (sonidoCajaMusical != null)
-            {
-                sonidoCajaMusical.pitch = Mathf.Lerp(1.0f, 2.2f, tiempoAcelerando / duracionAceleracion);
-            }
-            yield return null;
-        }
-
-        if (sonidoCajaMusical != null) sonidoCajaMusical.Stop();
-
-        float duracionParpadeo = 1.2f;
+        // PARPADEO PREVIO AL APAGÓN
+        float duracionParpadeo = 1.5f;
         float tiempoParpadeo = 0f;
 
         while (tiempoParpadeo < duracionParpadeo)
         {
-            if (lucesNormalesBar != null)
-            {
-                lucesNormalesBar.SetActive(!lucesNormalesBar.activeSelf);
-            }
+            if (lucesNormalesBar != null) lucesNormalesBar.SetActive(!lucesNormalesBar.activeSelf);
+            if (lucesNormales != null) lucesNormales.SetActive(!lucesNormales.activeSelf);
+            if (lucesServicio != null) lucesServicio.SetActive(!lucesServicio.activeSelf);
         
             float intervaloAleatorio = Random.Range(0.04f, 0.12f);
             tiempoParpadeo += intervaloAleatorio;
             yield return new WaitForSeconds(intervaloAleatorio);
         }
 
+        // DETENER CAJA Y APAGÓN
+        CajaMusicalController controller = cajaMusicalInteractuable != null ? cajaMusicalInteractuable.GetComponent<CajaMusicalController>() : null;
+        if (controller != null) controller.DetenerCaja();
+
+        if (lucesNormalesBar != null) lucesNormalesBar.SetActive(false);
+        if (lucesNormales != null) lucesNormales.SetActive(false);
+        if (lucesServicio != null) lucesServicio.SetActive(false);
+
+        // LUCES DE EMERGENCIA Y REANUDAR NEÓN
+        if (lucesEmergenciaBar != null) lucesEmergenciaBar.SetActive(true);
+        if (neonSound != null) neonSound.Play();
+
+        // FX SONOROS
         if (sonidoExplosionElectrica != null) sonidoExplosionElectrica.Play();
         if (sonidoGritoNina != null) sonidoGritoNina.Play();
         if (sonidoCorteDeLuz != null) sonidoCorteDeLuz.Play();
 
-        if (lucesNormalesBar != null) lucesNormalesBar.SetActive(false);
-        if (lucesEmergenciaBar != null) lucesEmergenciaBar.SetActive(true);
+        // PARANOIA: El apagón repentino y el grito elevan la tensión (+25)
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(25f);
+        }
 
         yield return new WaitForSeconds(1.8f);
 
-        MostrarDialogo("Lucas: ¡Hijos de puta! Se reventó todo... Necesito la linterna ya.");
-        HabilitarTriggerCocinaFinal();
+        MostrarDialogo("Lucas: ¿Justo ahora?... Menos mal que tengo la linterna acá en la barra.");
+        ActualizarObjetivo("Busca la linterna detrás de la barra");
     }
 
-    public void RecogerLinterna()
+    public void AlRecogerLinternaBarra()
     {
-        if (estadoActual != ActoState.Quiebre) return;
+        Debug.Log("[Act1Manager] Linterna recogida de la barra.");
 
-        if (linternaObjeto != null) linternaObjeto.SetActive(false);
         MostrarDialogo("Lucas: Seguro saltó la térmica de nuevo... Tengo que revisar los tapones en el sótano...");
+        ActualizarObjetivo("Revisa los tapones en el sótano");
+
+        HabilitarTriggerSalidaBarra();
     }
 
-    public void TriggerSalidaBarraAparicion()
+    public void HabilitarTriggerSalidaBarra()
     {
-        if (estadoActual == ActoState.Quiebre)
+        if (triggerSalidaBarra != null)
         {
-            StartCoroutine(SecuenciaAparicionMariela());
+            triggerSalidaBarra.SetActive(true);
         }
     }
 
-    IEnumerator SecuenciaAparicionMariela()
+    public void DispararSecuenciaNaniela()
     {
-        yield return new WaitForSeconds(0.5f);
-        CambiarIluminacion("Creepy");
+        if (estadoActual == ActoState.Quiebre)
+        {
+            StartCoroutine(RutinaEncuentroNaniela());
+        }
+    }
 
-        if (objetoMujer != null) objetoMujer.SetActive(true);
+    private IEnumerator RutinaEncuentroNaniela()
+    {
+        // Flashazos negros
+        if (effectoParpadeo != null) effectoParpadeo.IniciarParpadeo();
+        yield return new WaitForSeconds(0.85f);
 
-        MostrarDialogo("Mujer: ¿Seguís sirviendo lo mismo de siempre?... Cerveza. Tragos... Excusas.");
-        yield return new WaitForSeconds(4f);
+        // Iluminación tétrica focalizada en la barra
+        if (lucesEmergenciaBar != null) lucesEmergenciaBar.SetActive(false);
+        if (luzTaniela != null) luzTaniela.SetActive(true);
+
+        // Aparición de Ñañiela
+        if (nanielaGameObject != null) nanielaGameObject.SetActive(true);
+
+        // PARANOIA: Encuentro inquietante con Ñañiela (+15)
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(15f);
+        }
+
+        // Cambio de audio: apagar neón y encender zumbido ambiental
+        if (neonSound != null && neonSound.isPlaying) neonSound.Stop();
+        if (zumbidoAmbiente != null) zumbidoAmbiente.Play();
+
+        // Diálogos según GDD
+        MostrarDialogo("Mujer: ¿Seguís sirviendo lo mismo de siempre...?... Cerveza. Tragos... Excusas.");
+        yield return new WaitForSeconds(4.5f);
 
         MostrarDialogo("Lucas: Esa voz... ¿Te conozco?");
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(3.0f);
 
         MostrarDialogo("Mujer: Quizás el tiempo borró más que los nombres. ¿No tenés algo mejor para ofrecer?");
         yield return new WaitForSeconds(4.5f);
 
         MostrarDialogo("Lucas: Tengo algo especial en el depósito. Es... de la casa. Ya vuelvo.");
+        yield return new WaitForSeconds(4.0f);
+
         ActualizarObjetivo("Busca la botella especial en el depósito");
 
         if (indicadorDeposito != null) indicadorDeposito.SetActive(true);
@@ -531,44 +616,76 @@ public class Act1Manager : MonoBehaviour
     }
 
     // ==========================================
-    // 4. COMBATE
+    // 4. DEPÓSITO Y COMBATE
     // ==========================================
     public void AlRecogerBotellaEspecial()
     {
-        if (estadoActual != ActoState.AparicionBarra) return;
-
-        if (botellaEspecial != null) botellaEspecial.SetActive(false);
-        if (indicadorDeposito != null) indicadorDeposito.SetActive(false);
-
         StartCoroutine(SecuenciaOscuridadYLinterna());
     }
 
     IEnumerator SecuenciaOscuridadYLinterna()
     {
+        // 1. Apagón y sonido de tensión
         CambiarIluminacion("Combate"); 
-        if (objetoMujer != null) objetoMujer.SetActive(false);
+        if (nanielaGameObject != null) nanielaGameObject.SetActive(false);
+        if (luzTaniela != null) luzTaniela.SetActive(false);
+        if (botellaEspecial != null) botellaEspecial.SetActive(false);
 
-        yield return new WaitForSeconds(1.5f);
+        // Espera en la oscuridad (respiración)
+        yield return new WaitForSeconds(2.5f);
 
+        // 2. Mostrar la indicación de [F]
         if (textoInstruccionF != null)
         {
             textoInstruccionF.text = "PRESIONA [F] PARA USAR LA LINTERNA";
             textoInstruccionF.gameObject.SetActive(true);
         }
 
+        // Esperar a que el jugador presione F
         yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.F));
 
         if (textoInstruccionF != null) textoInstruccionF.gameObject.SetActive(false);
+
+        // 3. Parpadeo y Aparición de la primera sombra
+        yield return new WaitForSeconds(1.0f);
 
         if (primeraSombra != null) primeraSombra.SetActive(true);
         if (sonidoMutacion != null) sonidoMutacion.Play();
         if (sacudidaCamara != null) StartCoroutine(sacudidaCamara.Shake(0.6f, 0.2f));
 
+        // PARANOIA: Jump scare con la primera sombra pegada (+30) -> Dispara estática y latidos al máximo
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(30f);
+        }
+
         MostrarDialogo("Lucas: ¿¡Qué carajos!?");
+
+        // 4. Cartel tutorial de ataque con Click Derecho
+        yield return new WaitForSeconds(1.2f);
+
+        if (textoInstruccionF != null) 
+        {
+            textoInstruccionF.text = "MANTENÉ [CLICK DERECHO] PARA APUNTAR Y DAÑAR";
+            textoInstruccionF.gameObject.SetActive(true);
+        }
+
+        // Esperar a que empiece a atacar
+        yield return new WaitUntil(() => Input.GetMouseButton(1));
+
+        yield return new WaitForSeconds(1.5f);
+
+        if (textoInstruccionF != null) textoInstruccionF.gameObject.SetActive(false);
     }
 
     public void PrimeraSombraDerrotada()
     {
+        // PARANOIA: Alivio momentáneo al destruir al primer enemigo (-15)
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(-15f);
+        }
+
         StartCoroutine(SecuenciaTransicionSalonCombate());
     }
 
@@ -582,6 +699,12 @@ public class Act1Manager : MonoBehaviour
         if (puertaDeposito != null) puertaDeposito.SetActive(true); 
         if (sonidoCierrePuerta != null) sonidoCierrePuerta.Play();
 
+        // PARANOIA: Portazo y atrapado a oscuras (+15)
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(15f);
+        }
+
         estadoActual = ActoState.Combate;
         ActualizarObjetivo("¡SOBREVIVE! Disipa a las Sombras con tu linterna");
 
@@ -592,24 +715,45 @@ public class Act1Manager : MonoBehaviour
         }
     }
 
-    public void EnemigoEliminado()
+    public void RegistarEnemigoEliminado()
     {
-        enemigosDerrotados++;
-        if (enemigosDerrotados >= totalEnemigos)
+        enemigosEliminados++;
+
+        // PARANOIA: Recompensa de cordura al destruir cada sombra (-15)
+        if (ParanoiaSystem.Instance != null)
+        {
+            //ParanoiaSystem.Instance.AddParanoia(15f);
+        }
+
+        // Solo iniciamos el cierre si eliminó a TODOS los enemigos de la oleada
+        if (enemigosEliminados >= enemigosTotalesNoche1 && estadoActual != ActoState.Cierre)
         {
             IniciarCierreNoche();
         }
     }
 
     // ==========================================
-    // 5. CIERRE Y SALIDA
+    // 5. CIERRE Y SALIDA DE LA NOCHE 1
     // ==========================================
     void IniciarCierreNoche()
     {
         estadoActual = ActoState.Cierre;
-        CambiarIluminacion("Servicio");
-        if (ambientBar != null) ambientBar.Play();
 
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.ResetParanoia();
+        }
+        
+        // Volvemos a la iluminación Normal del bar (luces cálidas)
+        CambiarIluminacion("Normal");
+        if (lucesNormales != null) lucesNormales.SetActive(true);
+        if (lucesCombate != null) lucesCombate.SetActive(false);
+        
+        // Mantenemos el bar en SILENCIO (apagamos zumbido y NO reactivamos ambientBar)
+        if (zumbidoAmbiente != null && zumbidoAmbiente.isPlaying) zumbidoAmbiente.Stop();
+        if (ambientBar != null && ambientBar.isPlaying) ambientBar.Stop();
+
+        // Activar el vaso sobre la mesa para interacción
         if (vasoHoneySobreMesa != null) vasoHoneySobreMesa.SetActive(true);
 
         StartCoroutine(SecuenciaPostCombate());
@@ -617,11 +761,14 @@ public class Act1Manager : MonoBehaviour
 
     IEnumerator SecuenciaPostCombate()
     {
+        yield return new WaitForSeconds(1.5f); // Calma tras matar al último enemigo
         MostrarDialogo("Lucas: ¿Qué fue todo eso...?... Estoy cansado... nada más.");
         yield return new WaitForSeconds(4f);
 
         MostrarDialogo("Lucas: Mejor guardo esto y mañana sigo...");
         ActualizarObjetivo("Guarda el vaso en la barra y retírate");
+
+        StartCoroutine(SecuenciaFinalPantalla());
     }
 
     public void InteractuarVasoHoneyCierre()
@@ -655,17 +802,25 @@ public class Act1Manager : MonoBehaviour
     IEnumerator SecuenciaFinalPantalla()
     {
         MostrarDialogo("Lucas: ¡Qué día!... ¿¡Qué hora es ya!?");
-        yield return new WaitForSeconds(3f);
-
-        DispararVibracionCelular();
-        yield return new WaitForSeconds(1f);
-
-        MostrarDialogo("Notificación: Mariela — 1 mensaje nuevo");
-        yield return new WaitForSeconds(3f);
-
-        MostrarDialogo("Lucas: Después.");
         yield return new WaitForSeconds(2.5f);
 
+        DispararVibracionCelular();
+        
+        if (SistemaCelular.Instance != null)
+        {
+            SistemaCelular.Instance.RecibirNotificacionSinLeer("Mariela");
+        }
+
+        ActualizarObjetivo("Presiona [T] para revisar el teléfono");
+
+        yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.T));
+
+        yield return new WaitForSeconds(3.0f);
+
+        MostrarDialogo("Lucas: Después le respondo...");
+        yield return new WaitForSeconds(2.5f); 
+
+        // Fade a negro y cambio a Noche 2...
         if (fadeCanvasGroup != null)
         {
             fadeCanvasGroup.gameObject.SetActive(true);
@@ -678,7 +833,8 @@ public class Act1Manager : MonoBehaviour
             }
         }
 
-        SceneManager.LoadScene("Night_2 Scene");
+        yield return new WaitForSeconds(1.5f); 
+        SceneManager.LoadScene("Night_2 Demo");
     }
 
     // ==========================================

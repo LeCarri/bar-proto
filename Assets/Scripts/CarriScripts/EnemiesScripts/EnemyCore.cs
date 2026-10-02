@@ -34,7 +34,7 @@ public class EnemyCore : MonoBehaviour
         Act1Manager manager = Object.FindAnyObjectByType<Act1Manager>();
         if (manager != null) 
         {
-            manager.EnemigoEliminado();
+            manager.RegistarEnemigoEliminado();
         }
 
         // Desactivamos el Collider para evitar falsas colisiones antes de ser destruido

@@ -1,35 +1,45 @@
 using UnityEngine;
 
-// Agregamos ", IInteractable" para que el Raycast de Lucas lo reconozca
-public class BotellaEspecial : MonoBehaviour, IInteractable 
+public class BotellaEspecial : MonoBehaviour, IInteractable
 {
-    public string GetDescription() 
-    {
-        return "Presiona E para recoger la botella";
-    }
+    private bool recogida = false;
 
+    // --- MÉTODOS DE IINTERACTABLE ---
     public bool CanInteract()
     {
-        return true;
+        return !recogida; // Devuelve true para que el Raycast se ponga VERDE
     }
 
-    // Esta es la función que va a llamar tu script de PlayerInteraction
-    public void Interact() 
+    public string GetDescription()
     {
-        Debug.Log("¡Lucas recogió la botella usando la E!");
-
-        // Buscamos al manager (usamos tu lógica de FindAnyObjectByType)
-        Act1Manager manager = Object.FindAnyObjectByType<Act1Manager>();
-
-        if (manager != null)
-        {
-            manager.AlRecogerBotellaEspecial();
-            gameObject.SetActive(false); // La botella desaparece
-        }
-        else 
-        {
-            Debug.LogError("Ojo: No se encontró el Act1Manager en la escena.");
-        }
+        return "Presiona [E] para tomar la botella";
     }
 
+    public void Interact()
+    {
+        RecogerBotella();
+    }
+
+    // --- LÓGICA DE LA BOTELLA ---
+    public void RecogerBotella()
+    {
+        if (recogida) return;
+        recogida = true;
+
+        if (Act1Manager.Instance != null)
+        {
+            Act1Manager.Instance.AlRecogerBotellaEspecial();
+        }
+
+        OcultarBotella();
+    }
+
+    private void OcultarBotella()
+    {
+        MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+        foreach (MeshRenderer r in renderers) r.enabled = false;
+
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach (Collider c in colliders) c.enabled = false;
+    }
 }
