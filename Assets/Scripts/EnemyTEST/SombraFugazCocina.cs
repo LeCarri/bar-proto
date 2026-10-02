@@ -19,6 +19,8 @@ public class SombraFugazCocina : MonoBehaviour
     public Volume volumenSombra;
     public float velocidadEntradaVolume = 12f;
     public float velocidadSalidaVolume = 3f;
+    [Range(0f, 1f)]
+    public float intensidadVolumeFugaz = 0.25f;
 
     private Coroutine rutinaVolume;
 
@@ -36,10 +38,8 @@ public class SombraFugazCocina : MonoBehaviour
     public float duracionBC = 0.12f;
 
     [Header("Audio")]
-    public AudioSource sonidoDesplazamiento;
-
-    [Tooltip("Distribuye la duración del audio entre los tramos A-B y B-C.")]
-    public bool ajustarRecorridoAlAudio = true;
+    public AudioSource sonidoAB;
+    public AudioSource sonidoBC;
 
     [Header("FX - Humo")]
     public ParticleSystem humoNegro;
@@ -57,8 +57,17 @@ public class SombraFugazCocina : MonoBehaviour
         if (presenciaFugaz != null)
             presenciaFugaz.SetActive(false);
 
-        if (sonidoDesplazamiento != null)
-            sonidoDesplazamiento.playOnAwake = false;
+        if (sonidoAB != null)
+        {
+            sonidoAB.playOnAwake = false;
+            sonidoAB.loop = false;
+        }
+
+        if (sonidoBC != null)
+        {
+            sonidoBC.playOnAwake = false;
+            sonidoBC.loop = false;
+        }
     }
 
     private void Update()
@@ -105,7 +114,9 @@ public class SombraFugazCocina : MonoBehaviour
     private IEnumerator SecuenciaSombra()
     {
         if (presenciaFugaz == null ||
-            puntoA == null || puntoB == null || puntoC == null)
+            puntoA == null ||
+            puntoB == null ||
+            puntoC == null)
         {
             Debug.LogError("[SombraCocina] Faltan referencias.");
             yield break;
@@ -115,65 +126,75 @@ public class SombraFugazCocina : MonoBehaviour
         float tiempoBC = Mathf.Max(0.01f, duracionBC);
         float pausa = Mathf.Max(0f, pausaEnB);
 
-        // Si hay audio, repartir su duración entre ambos movimientos.
-        if (ajustarRecorridoAlAudio &&
-            sonidoDesplazamiento != null &&
-            sonidoDesplazamiento.clip != null)
-        {
-            float pitch = Mathf.Max(
-                0.01f,
-                Mathf.Abs(sonidoDesplazamiento.pitch)
-            );
 
-            float duracionAudio =
-                sonidoDesplazamiento.clip.length / pitch;
+        // ==================================================
+        // APARICIÓN EN A
+        // ==================================================
 
-            float tiempoDisponible =
-                Mathf.Max(
-                    tiempoAB + tiempoBC,
-                    duracionAudio - pausa
-                );
-
-            float proporcionAB =
-                tiempoAB / (tiempoAB + tiempoBC);
-
-            tiempoAB = tiempoDisponible * proporcionAB;
-            tiempoBC = tiempoDisponible * (1f - proporcionAB);
-        }
-
-        // A: aparición.
         presenciaFugaz.transform.position = puntoA.position;
         presenciaFugaz.SetActive(true);
 
-        CambiarVolume(1f, velocidadEntradaVolume);
-
+        CambiarVolume(intensidadVolumeFugaz, velocidadEntradaVolume);
 
         IniciarHumo(true);
 
-        // Se reproduce una sola vez durante toda la secuencia.
-        if (sonidoDesplazamiento != null)
+
+        // ==================================================
+        // A → B + AUDIO AB
+        // ==================================================
+
+        if (sonidoAB != null)
         {
-            sonidoDesplazamiento.loop = false;
-            sonidoDesplazamiento.Play();
+            sonidoAB.loop = false;
+            sonidoAB.Play();
         }
 
-        // A → B
         yield return Mover(
             puntoA.position,
             puntoB.position,
             tiempoAB
         );
 
-        // En B dejamos de emitir, pero no borramos la estela.
+        // Llegamos a B.
         DetenerHumo();
-        
 
-        yield return new WaitForSeconds(pausa);
+        Debug.Log("[SombraCocina] Llegó a B.");
 
-        // B → C: reanudamos la emisión sin limpiar partículas previas.
+
+        // ==================================================
+        // ESPERAR A QUE TERMINE AUDIO AB
+        // ==================================================
+
+        if (sonidoAB != null)
+        {
+            while (sonidoAB.isPlaying)
+                yield return null;
+        }
+
+        Debug.Log("[SombraCocina] Audio AB finalizado.");
+
+
+        // ==================================================
+        // PAUSA EN B
+        // ==================================================
+
+        if (pausa > 0f)
+            yield return new WaitForSeconds(pausa);
+
+
+        // ==================================================
+        // B → C + AUDIO BC
+        // ==================================================
+
         presenciaFugaz.transform.position = puntoB.position;
 
         IniciarHumo(false);
+
+        if (sonidoBC != null)
+        {
+            sonidoBC.loop = false;
+            sonidoBC.Play();
+        }
 
         yield return Mover(
             puntoB.position,
@@ -183,10 +204,26 @@ public class SombraFugazCocina : MonoBehaviour
 
         DetenerHumo();
 
-
         Debug.Log("[SombraCocina] Llegó a C.");
 
-        // Ocultamos la presencia cuando el humo se haya disipado.
+
+        // ==================================================
+        // ESPERAR A QUE TERMINE AUDIO BC
+        // ==================================================
+
+        if (sonidoBC != null)
+        {
+            while (sonidoBC.isPlaying)
+                yield return null;
+        }
+
+        Debug.Log("[SombraCocina] Audio BC finalizado.");
+
+
+        // ==================================================
+        // DISIPACIÓN FINAL
+        // ==================================================
+
         yield return new WaitForSeconds(
             Mathf.Max(0f, tiempoDisipacion)
         );
@@ -195,15 +232,7 @@ public class SombraFugazCocina : MonoBehaviour
 
         presenciaFugaz.SetActive(false);
 
-        // El audio no se detiene ni se reinicia.
-        // Esperamos a que termine antes de continuar el evento.
-        if (sonidoDesplazamiento != null)
-        {
-            while (sonidoDesplazamiento.isPlaying)
-                yield return null;
-        }
-
-        Debug.Log("[SombraCocina] Secuencia y audio finalizados.");
+        Debug.Log("[SombraCocina] Secuencia completa finalizada.");
 
         alLlegarAC?.Invoke();
     }
