@@ -1,11 +1,41 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class SombraWalkTest : MonoBehaviour
 {
-    public float velocidad = 1.2f;
+    [Header("Referencias")]
+    public Transform jugador;
 
-    void Update()
+    [Header("Persecución")]
+    public float distanciaDetencion = 1.5f;
+
+    private NavMeshAgent agente;
+
+    private void Awake()
     {
-        transform.Translate(Vector3.forward * velocidad * Time.deltaTime);
+        agente = GetComponent<NavMeshAgent>();
+    }
+
+    private void Start()
+    {
+        if (agente == null)
+        {
+            Debug.LogError("[SombraWalkTest] No hay NavMeshAgent.");
+            enabled = false;
+            return;
+        }
+
+        agente.stoppingDistance = distanciaDetencion;
+    }
+
+    private void Update()
+    {
+        if (jugador == null)
+            return;
+
+        if (agente == null || !agente.isOnNavMesh)
+            return;
+
+        agente.SetDestination(jugador.position);
     }
 }
