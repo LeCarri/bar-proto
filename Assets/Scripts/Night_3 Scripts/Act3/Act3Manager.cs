@@ -107,7 +107,7 @@ public class Act3Manager : MonoBehaviour
     public bool sangreLimpiada = false;
     public bool elementosGuardados = false;
 
-
+    private bool elementosYaGuardados = false;
 
     // PEDIDOS
 
@@ -549,6 +549,12 @@ public class Act3Manager : MonoBehaviour
 
                 if (textoInteraccion != null)
                     textoInteraccion.text = "Recoger";
+
+                if (elementosYaGuardados)
+                {
+                    panelInteraccion.SetActive(false);
+                    return;
+                }
             }
 
             // ARMARIO ELEMENTOS DE LIMPIEZA
@@ -566,6 +572,12 @@ public class Act3Manager : MonoBehaviour
 
                 if (textoInteraccion != null)
                     textoInteraccion.text = "Guardar elementos";
+
+                if (elementosYaGuardados)
+                {
+                    panelInteraccion.SetActive(false);
+                    return;
+                }
             }
 
             // OBJETO ESPECIAL
@@ -1077,6 +1089,11 @@ public class Act3Manager : MonoBehaviour
         elementosGuardados = true;
         tieneElementosLimpieza = false;
 
+        if (ElementosLimpieza != null)
+        {
+            ElementosLimpieza.SetActive(true);
+        }
+
         Debug.Log("[GUARDAR] ¡ELEMENTOS GUARDADOS CORRECTAMENTE!");
 
         if (triggerDistorsion != null)
@@ -1087,6 +1104,14 @@ public class Act3Manager : MonoBehaviour
         else
         {
             Debug.LogError("[GUARDAR] triggerDistorsion NO está asignado en el Inspector.");
+        }
+
+        elementosYaGuardados = true;
+        tieneElementosLimpieza = false;
+
+        if (ElementosLimpieza != null)
+        {
+            ElementosLimpieza.SetActive(true);
         }
 
         ActualizarObjetivo("Vuelve al salón");
