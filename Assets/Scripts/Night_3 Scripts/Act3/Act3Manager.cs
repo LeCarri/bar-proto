@@ -152,6 +152,12 @@ public class Act3Manager : MonoBehaviour
     public string pedidoQueLoActiva = "Llave";
 
 
+    [Header("Combate Final")]
+    public GameObject laberintoCombate;
+    public GameObject InterriorObject;
+    public GameObject triggerInicioCombate;
+
+
     // AWAKE
 
 
@@ -188,6 +194,11 @@ public class Act3Manager : MonoBehaviour
         if (clientesActo3 != null)
         {
             clientesActo3.SetActive(false);
+        }
+
+        if (triggerInicioCombate != null)
+        {
+            triggerInicioCombate.SetActive(false);
         }
 
         tieneElementosLimpieza = false;
@@ -1323,10 +1334,51 @@ public class Act3Manager : MonoBehaviour
     }
 
 
+    //INICIO COMBATE FINAL
+    public void ActivarTriggerInicioCombate()
+    {
+        if (triggerInicioCombate != null)
+        {
+            triggerInicioCombate.SetActive(true);
+
+            Debug.Log("[COMBATE ACT3] Trigger de inicio de combate activado.");
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[COMBATE ACT3] No hay trigger de inicio de combate asignado."
+            );
+        }
+    }
+
+    public void IniciarCombateFinal()
+    {
+        Debug.Log("[COMBATE ACT3] INICIANDO COMBATE FINAL");
+
+        if (laberintoCombate != null)
+        {
+            laberintoCombate.SetActive(true);
+
+            Debug.Log(
+                "[COMBATE ACT3] Laberinto activado."
+            );
+        }
+
+        if (InterriorObject != null)
+        {
+            InterriorObject.SetActive(false);
+
+            Debug.Log(
+                "[COMBATE ACT3] Objeto desactivado."
+            );
+        }
+
+        ActualizarObjetivo("Escapa del bar");
+    }
+
+
 
     // AVANZAR NOCHE
-
-
     IEnumerator AvanzarNoche()
     {
         servicioBebidasActivo = false;
@@ -1335,7 +1387,7 @@ public class Act3Manager : MonoBehaviour
             "Los dos clientes fueron atendidos"
         );
 
-        // Esperamos un momento después de atender al segundo cliente
+       
         yield return new WaitForSeconds(4f);
 
 
@@ -1385,79 +1437,23 @@ public class Act3Manager : MonoBehaviour
         yield return new WaitForSeconds(3f);
 
 
-        // CONTINÚA LA SECUENCIA 
+        // CONTINÚA LA SECUENCIA
 
         MostrarDialogo(
             "Listo... voy a buscarlas."
         );
 
         ActualizarObjetivo(
-            "Ve al sótano"
+            "Ve detrás de la barra"
         );
 
-        yield return new WaitForSeconds(5f);
-
-
-        // APAGAR LUCES
-
-        CambiarIluminacion(
-            "Apagado"
-        );
-
-        yield return new WaitForSeconds(1.5f);
-
-
-        if (enemigos != null)
-        {
-            enemigos.SetActive(true);
-        }
-
-
-        // APARICIÓN DEL VIGILANTE
-
-        if (
-            vigilante != null &&
-            Camera.main != null
-        )
-        {
-            Transform cam =
-                Camera.main.transform;
-
-            Vector3 posicion =
-                cam.position +
-                cam.forward * 5f;
-
-            posicion.y =
-                vigilante.transform.position.y;
-
-            vigilante.transform.position =
-                posicion;
-
-            Vector3 direccion =
-                cam.position -
-                vigilante.transform.position;
-
-            direccion.y = 0f;
-
-            vigilante.transform.rotation =
-                Quaternion.LookRotation(
-                    direccion
-                );
-
-            vigilante.transform.Rotate(
-                0,
-                90,
-                0
-            );
-
-            vigilante.SetActive(true);
-        }
+        // ACTIVO EL TRIGGER
+        ActivarTriggerInicioCombate();
     }
 
 
 
     // PARANOIA
-
 
     IEnumerator MantenerParanoiaMinima()
     {
