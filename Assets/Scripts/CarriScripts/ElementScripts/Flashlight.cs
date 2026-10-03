@@ -29,11 +29,16 @@ public class Flashlight : MonoBehaviour
     [SerializeField] GameObject particlesObj;
     private ParticleSystem particlesSys;
 
+    [Header("Audio - Linterna")]
+    public AudioSource laserFlashLight;
+
     private bool isFocused = false;
 
     void Start()
     {
-        if (flashlightLight == null) flashlightLight = GetComponent<Light>();
+        if (flashlightLight == null)
+            flashlightLight = GetComponent<Light>();
+
         flashlightLight.spotAngle = explorationAngle;
         flashlightLight.intensity = explorationIntensity;
     
@@ -42,6 +47,12 @@ public class Flashlight : MonoBehaviour
             particlesSys = particlesObj.GetComponent<ParticleSystem>();
             particlesObj.SetActive(false);
         }
+
+        if (laserFlashLight != null)
+        {
+            laserFlashLight.playOnAwake = false;
+            laserFlashLight.loop = true;
+        }
     }
 
     void Update()
@@ -49,6 +60,7 @@ public class Flashlight : MonoBehaviour
         HandleInput();
         HandleBattery();
         HandleCombat();
+        HandleLaserAudio();
         UpdateLightVisuals();
     }
 
@@ -73,27 +85,48 @@ public class Flashlight : MonoBehaviour
         }
     }
 
+    void HandleLaserAudio()
+    {
+        if (laserFlashLight == null)
+            return;
+
+        if (isFocused)
+        {
+            if (!laserFlashLight.isPlaying)
+                laserFlashLight.Play();
+        }
+        else
+        {
+            if (laserFlashLight.isPlaying)
+                laserFlashLight.Stop();
+        }
+    }
+
     void HandleCombat()
     {
         if (isFocused)
         {
             RaycastHit hit;
             Camera mainCam = Camera.main; 
-            if (mainCam == null) return;
 
-            // Raycast desde el centro exacto de la pantalla
-            Ray ray = mainCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+            if (mainCam == null)
+                return;
+
+            Ray ray = mainCam.ViewportPointToRay(
+                new Vector3(0.5f, 0.5f, 0)
+            );
 
             if (Physics.Raycast(ray, out hit, range, enemyLayer))
             {
-                EnemyCore enemy = hit.collider.GetComponentInParent<EnemyCore>();
+                EnemyCore enemy =
+                    hit.collider.GetComponentInParent<EnemyCore>();
                 
                 if (enemy != null)
                 {
-                    // Inflige daño por segundo de manera fluida
-                    enemy.TakeDamage(damagePerSecond * Time.deltaTime);
+                    enemy.TakeDamage(
+                        damagePerSecond * Time.deltaTime
+                    );
 
-                    // Activa y posiciona las partículas solo si golpea al enemigo
                     if (particlesObj != null)
                     {
                         ProcessParticles(hit);
@@ -115,43 +148,58 @@ public class Flashlight : MonoBehaviour
         }
     }
 
-   private void ProcessParticles(RaycastHit rayHit) 
-{
-    if (particlesObj == null) return;
-    
-    // Si estaba apagado, lo prendemos
-    if (!particlesObj.activeSelf) particlesObj.SetActive(true);
-    
-    // Posicionamos y orientamos
-    particlesObj.transform.position = rayHit.point;
-    particlesObj.transform.forward = rayHit.normal; 
-
-    // Si no estaba reproduciendo, le damos Play
-    if (!particlesSys.isPlaying) particlesSys.Play();
-}
-
-private void StopParticles()
-{
-    if (particlesObj != null)
+    private void ProcessParticles(RaycastHit rayHit) 
     {
-        if (particlesSys != null)
-        {
-            particlesSys.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear); // 🔥 Fuerza el frenado y limpia el buffer
-            particlesSys.Clear(); // Doble limpieza por seguridad
-        }
-        
-        // ¡LA CLAVE! Apagamos el objeto de raíz. Si está apagado, no puede haber humo flotando.
-        particlesObj.SetActive(false); 
+        if (particlesObj == null)
+            return;
+    
+        if (!particlesObj.activeSelf)
+            particlesObj.SetActive(true);
+    
+        particlesObj.transform.position = rayHit.point;
+        particlesObj.transform.forward = rayHit.normal; 
+
+        if (!particlesSys.isPlaying)
+            particlesSys.Play();
     }
-}
+
+    private void StopParticles()
+    {
+        if (particlesObj != null)
+        {
+            if (particlesSys != null)
+            {
+                particlesSys.Stop(
+                    true,
+                    ParticleSystemStopBehavior.StopEmittingAndClear
+                );
+
+                particlesSys.Clear();
+            }
+        
+            particlesObj.SetActive(false); 
+        }
+    }
 
     void UpdateLightVisuals()
     {
-        float targetAngle = isFocused ? focusedAngle : explorationAngle;
-        float targetIntensity = isFocused ? focusedIntensity : explorationIntensity;
+        float targetAngle =
+            isFocused ? focusedAngle : explorationAngle;
 
-        flashlightLight.spotAngle = Mathf.Lerp(flashlightLight.spotAngle, targetAngle, Time.deltaTime * 10f);
-        flashlightLight.intensity = Mathf.Lerp(flashlightLight.intensity, targetIntensity, Time.deltaTime * 10f);
+        float targetIntensity =
+            isFocused ? focusedIntensity : explorationIntensity;
+
+        flashlightLight.spotAngle = Mathf.Lerp(
+            flashlightLight.spotAngle,
+            targetAngle,
+            Time.deltaTime * 10f
+        );
+
+        flashlightLight.intensity = Mathf.Lerp(
+            flashlightLight.intensity,
+            targetIntensity,
+            Time.deltaTime * 10f
+        );
 
         if (battery <= 0 && isFocused)
         {
@@ -162,6 +210,18 @@ private void StopParticles()
 
     public void Recharge(float amount)
     {
-        battery = Mathf.Clamp(battery + amount, 0, maxBattery);
+        battery = Mathf.Clamp(
+            battery + amount,
+            0,
+            maxBattery
+        );
+    }
+
+    private void OnDisable()
+    {
+        if (laserFlashLight != null)
+            laserFlashLight.Stop();
+
+        StopParticles();
     }
 }

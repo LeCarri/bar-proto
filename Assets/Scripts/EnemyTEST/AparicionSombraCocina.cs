@@ -37,6 +37,11 @@ public class AparicionSombraCocina : MonoBehaviour
 
     [Header("Audio aparición")]
     public AudioSource sonidoAparicion;
+    [Header("Audio - Combate")]
+    public AudioSource baseEnemy1;
+    public AudioSource baseEnemy2;
+    public AudioSource enemyVoices;
+    public AudioSource deadCreature;
 
     [Header("Persecución")]
     public SombraWalkTest scriptPersecucion;
@@ -74,6 +79,34 @@ public class AparicionSombraCocina : MonoBehaviour
 
         if (sonidoAparicion != null)
             sonidoAparicion.playOnAwake = false;
+
+        // El efecto de combate comienza apagado.
+        if (volumenCombate != null)
+            volumenCombate.weight = 0f;
+
+        if (baseEnemy1 != null)
+        {
+            baseEnemy1.playOnAwake = false;
+            baseEnemy1.loop = true;
+        }
+
+        if (baseEnemy2 != null)
+        {
+            baseEnemy2.playOnAwake = false;
+            baseEnemy2.loop = true;
+        }
+
+        if (enemyVoices != null)
+        {
+            enemyVoices.playOnAwake = false;
+            enemyVoices.loop = true;
+        }
+
+        if (deadCreature != null)
+        {
+            deadCreature.playOnAwake = false;
+            deadCreature.loop = false;
+        }
     }
 
     private void Update()
@@ -219,6 +252,28 @@ public class AparicionSombraCocina : MonoBehaviour
             sonidoAparicion.loop = false;
             sonidoAparicion.Play();
         }
+        // SONIDO FUERTE DE APARICIÓN
+        if (sonidoAparicion != null)
+        {
+            sonidoAparicion.loop = false;
+            sonidoAparicion.Play();
+        }
+
+        // AUDIOS PERMANENTES DEL COMBATE
+        if (baseEnemy1 != null && !baseEnemy1.isPlaying)
+            baseEnemy1.Play();
+
+        if (baseEnemy2 != null && !baseEnemy2.isPlaying)
+            baseEnemy2.Play();
+
+        if (enemyVoices != null && !enemyVoices.isPlaying)
+            enemyVoices.Play();
+
+        // SACUDIDA
+        StartCoroutine(SacudirCamara());
+
+        // VOLUME
+        ActivarVolumeCombate();
 
         // SACUDIDA BRUSCA
         StartCoroutine(SacudirCamara());
