@@ -117,8 +117,7 @@ public class PlayerController_Intro : MonoBehaviour
     float targetFOV = isRunning ? runFOV : normalFOV;
     playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFOV, Time.deltaTime * fovTransitionSpeed);
 }
-        bool caminando =
-        (inputX != 0 || inputY != 0);
+        bool caminando = (inputX != 0 || inputY != 0);
 
         if (audioPasos != null)
         {
