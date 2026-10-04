@@ -18,21 +18,27 @@ public class TriggerDesaparicion : MonoBehaviour
         // Solo dispara si el jugador tiene la llave (state Psicosis o posterior)
         if (!manager.TieneLlave())
         {
-            Debug.Log("[TriggerDesaparicion] El jugador pasó por el trigger pero no tiene la llave todavía.");
+            Debug.Log("[TriggerDesaparicion] El jugador pasï¿½ por el trigger pero no tiene la llave todavï¿½a.");
             return;
         }
 
         disparado2 = true;
 
-        // Buscar una instancia de FiguraNino en la escena y llamar al método de instancia
+        // Buscar una instancia de FiguraNino en la escena y llamar al mï¿½todo de instancia
         FiguraNino figuraNino = FindAnyObjectByType<FiguraNino>();
         if (figuraNino != null)
         {
-            StartCoroutine(figuraNino.DesapareceYVozSotano());
+            // ---- VERSIÃ“N ANTERIOR (comentada en la reestructura) ----
+            // StartCoroutine(figuraNino.DesapareceYVozSotano());
+
+            // ---- REESTRUCTURA NOCHE 2 ----
+            // La niÃ±a desaparece y queda el dibujo familiar (FiguraNino ya lo hace solo por cercanÃ­a;
+            // este trigger es una alternativa si preferÃ­s marcar el punto exacto).
+            figuraNino.Desaparecer();
         }
         else
         {
-            Debug.LogWarning("[TriggerDesaparicion] No se encontró ninguna instancia de FiguraNino en la escena.");
+            Debug.LogWarning("[TriggerDesaparicion] No se encontrï¿½ ninguna instancia de FiguraNino en la escena.");
         }
     }
 }

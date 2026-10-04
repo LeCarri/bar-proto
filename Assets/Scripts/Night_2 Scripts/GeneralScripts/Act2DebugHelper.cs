@@ -60,14 +60,25 @@ public class Act2DebugHelper : MonoBehaviour
         Act2Manager m = Act2Manager.Instance;
         if (m == null) return;
 
-        // Saltar estados
-        if (Input.GetKeyDown(KeyCode.Alpha1)) SaltarA(Act2Manager.Act2State.Inicio);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) SaltarA(Act2Manager.Act2State.Servicio);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) SaltarA(Act2Manager.Act2State.Pasillo);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) SaltarA(Act2Manager.Act2State.Sotano);
-        if (Input.GetKeyDown(KeyCode.Alpha5)) SaltarA(Act2Manager.Act2State.Bano);
-        if (Input.GetKeyDown(KeyCode.Alpha6)) SaltarA(Act2Manager.Act2State.Psicosis);
-        if (Input.GetKeyDown(KeyCode.Alpha7)) SaltarA(Act2Manager.Act2State.Cierre);
+        // ---- VERSIÓN ANTERIOR (comentada en la reestructura) ----
+        // if (Input.GetKeyDown(KeyCode.Alpha1)) SaltarA(Act2Manager.Act2State.Inicio);
+        // if (Input.GetKeyDown(KeyCode.Alpha2)) SaltarA(Act2Manager.Act2State.Servicio);
+        // if (Input.GetKeyDown(KeyCode.Alpha3)) SaltarA(Act2Manager.Act2State.Pasillo);
+        // if (Input.GetKeyDown(KeyCode.Alpha4)) SaltarA(Act2Manager.Act2State.Sotano);
+        // if (Input.GetKeyDown(KeyCode.Alpha5)) SaltarA(Act2Manager.Act2State.Bano);
+        // if (Input.GetKeyDown(KeyCode.Alpha6)) SaltarA(Act2Manager.Act2State.Psicosis);
+        // if (Input.GetKeyDown(KeyCode.Alpha7)) SaltarA(Act2Manager.Act2State.Cierre);
+
+        // ---- REESTRUCTURA NOCHE 2: teclas 1-9 = fases nuevas ----
+        if (Input.GetKeyDown(KeyCode.Alpha1)) m.DebugSaltarA(FaseDebugAct2.Tareas);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) m.DebugSaltarA(FaseDebugAct2.Servicio);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) m.DebugSaltarA(FaseDebugAct2.ClienteCorrupto);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) m.DebugSaltarA(FaseDebugAct2.Pasillo);
+        if (Input.GetKeyDown(KeyCode.Alpha5)) m.DebugSaltarA(FaseDebugAct2.PuertaSotano);
+        if (Input.GetKeyDown(KeyCode.Alpha6)) m.DebugSaltarA(FaseDebugAct2.RegresoBano);
+        if (Input.GetKeyDown(KeyCode.Alpha7)) m.DebugSaltarA(FaseDebugAct2.Vigilante);
+        if (Input.GetKeyDown(KeyCode.Alpha8)) m.DebugSaltarA(FaseDebugAct2.Combate);
+        if (Input.GetKeyDown(KeyCode.Alpha9)) m.DebugSaltarA(FaseDebugAct2.Cierre);
 
         // Paranoia
         if (Input.GetKeyDown(KeyCode.Plus)  || Input.GetKeyDown(KeyCode.KeypadPlus))
@@ -131,7 +142,7 @@ public class Act2DebugHelper : MonoBehaviour
 
         // Fondo semitransparente
         GUI.color = new Color(0, 0, 0, 0.6f);
-        GUI.DrawTexture(new Rect(8, 8, 230, 230), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(8, 8, 230, 300), Texture2D.whiteTexture);
         GUI.color = Color.white;
 
         string texto =
@@ -140,11 +151,12 @@ public class Act2DebugHelper : MonoBehaviour
             //$"Paranoia: <color=#FF6B6B>{paranoia:F0}/100</color>\n" +
             $"Llave: {(m != null && m.TieneLlave() ? "<color=#6BCB77>SÍ</color>" : "<color=#FF6B6B>NO</color>")}\n" +
             "──────────────────\n" +
-            "<color=#AAAAAA>[1-7] Saltar estado\n" +
+            // "<color=#AAAAAA>[1-7] Saltar estado\n" +   // VERSIÓN ANTERIOR
+            "<color=#AAAAAA>1 Tareas  2 Servicio\n3 Corrupto  4 Pasillo\n5 Pta.Sótano  6 Baño\n7 Vigilante  8 Combate\n9 Cierre\n" +
             "[+/-] Paranoia ±20</color>";
 
         if (estilo == null) ConfigurarEstilos();
-        GUI.Label(new Rect(14, 12, 220, 230), texto, estilo);
+        GUI.Label(new Rect(14, 12, 220, 300), texto, estilo);
     }
 
 #endif

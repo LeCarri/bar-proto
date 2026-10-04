@@ -11,8 +11,12 @@ using UnityEngine.SceneManagement;
 /// TIP RÁPIDO: Hacé clic derecho sobre este componente en el Inspector
 /// y elegí "Auto-buscar referencias" para conectar todo automáticamente.
 /// Solo asigná a mano lo que no encuentre.
+///
+/// REESTRUCTURA NOCHE 2: esta clase ahora es "partial". La lógica nueva del guion
+/// (intro, tareas, servicio, vigilante, cierre) está en Act2Manager_Reestructura.cs.
+/// Lo que se reemplazó acá quedó COMENTADO (marcado "VERSIÓN ANTERIOR"), no borrado.
 /// </summary>
-public class Act2Manager : MonoBehaviour
+public partial class Act2Manager : MonoBehaviour
 {
     public static Act2Manager Instance { get; private set; }
 
@@ -24,7 +28,10 @@ public class Act2Manager : MonoBehaviour
         Sotano,     // Puerta del sótano: golpes y nota
         Bano,       // Baño: buscar la llave
         Psicosis,   // Combate de sombras + figura del niño
-        Cierre      // La llave se rompe, el bar vuelve a la normalidad
+        Cierre,     // La llave se rompe, el bar vuelve a la normalidad
+        // ---- REESTRUCTURA NOCHE 2 (agregados al final para no romper valores guardados) ----
+        Tareas,     // Barrer, barra/exhibidor, baños
+        Vigilante   // Después de la llave: apariciones del Vigilante
     }
 
     [Header("Estado Actual")]
@@ -141,10 +148,12 @@ public class Act2Manager : MonoBehaviour
         if (figuraNino != null)             figuraNino.gameObject.SetActive(true);
         if (notaPuerta != null)             notaPuerta.gameObject.SetActive(false);
 
-        StartCoroutine(SecuenciaInicio());
+        // ---- VERSIÓN ANTERIOR (comentada en la reestructura) ----
+        // StartCoroutine(SecuenciaInicio());
+        // ActualizarObjetivo("Preparate para el servicio...");
 
-
-        ActualizarObjetivo("Preparate para el servicio...");
+        // ---- REESTRUCTURA NOCHE 2 ---- (ver Act2Manager_Reestructura.cs)
+        IniciarNoche2();
     }
 
     public void ActualizarObjetivo(string nuevoObjetivo)
@@ -280,7 +289,11 @@ public class Act2Manager : MonoBehaviour
     {
         estadoActual = Act2State.Pasillo;
 
-        ActualizarObjetivo("Busca la bebida especial en la cocina.");
+        // ---- VERSIÓN ANTERIOR ----
+        // ActualizarObjetivo("Busca la bebida especial en la cocina.");
+
+        // ---- REESTRUCTURA NOCHE 2 ----
+        ActualizarObjetivo("Buscá lo que pidió en el depósito");
     }
 
     // =========================================================
@@ -290,6 +303,11 @@ public class Act2Manager : MonoBehaviour
     {
         if (estadoActual != Act2State.Pasillo) return;
 
+        // ---- REESTRUCTURA NOCHE 2 ----
+        // "No... No deberían estar acá..." → luces tensas → golpes → la cámara gira hacia la puerta del sótano.
+        StartCoroutine(SecuenciaZapatosNueva());
+
+        /* ---- VERSIÓN ANTERIOR (comentada en la reestructura) ----
         // Clientes desaparecen cuando el jugador ya está en la cocina (fuera de su vista)
         if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(false);
 
@@ -311,6 +329,7 @@ public class Act2Manager : MonoBehaviour
             StartCoroutine(sacudidaCamara.Shake(0.5f, 5f));
 
         StartCoroutine(SecuenciaDespuesZapatos());
+        ---- FIN VERSIÓN ANTERIOR ---- */
     }
 
     IEnumerator ParpadeoLucesServicio()
@@ -345,12 +364,16 @@ public class Act2Manager : MonoBehaviour
     // =========================================================
     public void NotaLeida()
     {
-    
-    MostrarDialogo("Lucas: \"La guardé donde nadie limpia\"... el baño.");
-        estadoActual = Act2State.Bano;
-        ActualizarObjetivo("Ir a buscar la llave del sotano al baño");
-        // Activar la llave en el baño
-        if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(true);
+        // ---- VERSIÓN ANTERIOR (comentada en la reestructura) ----
+        // MostrarDialogo("Lucas: \"La guardé donde nadie limpia\"... el baño.");
+        // estadoActual = Act2State.Bano;
+        // ActualizarObjetivo("Ir a buscar la llave del sotano al baño");
+        // // Activar la llave en el baño
+        // if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(true);
+
+        // ---- REESTRUCTURA NOCHE 2 ----
+        // La nota dice "La llave está FUERA DE SERVICIO". El bar se destruye, luces rojas, el cubículo cede.
+        StartCoroutine(SecuenciaNotaLeidaNueva());
     }
 
     // =========================================================
@@ -358,6 +381,12 @@ public class Act2Manager : MonoBehaviour
     // =========================================================
     public void LlaveRecogida()
     {
+        // ---- REESTRUCTURA NOCHE 2 ----
+        // Ya no se usa: ahora la llave llama a LlaveTomadaEnCubiculo() (Act2Manager_Reestructura.cs).
+        // Se deja el código viejo comentado por si hay que volver atrás.
+        Debug.Log("[Act2Manager] LlaveRecogida() es de la versión anterior y quedó desactivada.");
+
+        /* ---- VERSIÓN ANTERIOR ----
         parpadeandoLuces = false;
 
         if (triggerCierreSotano == null)
@@ -370,6 +399,7 @@ public class Act2Manager : MonoBehaviour
 
         parpadeandoLuces2 = true;
         StartCoroutine(ParpadeoLucesPsicosis());
+        ---- FIN VERSIÓN ANTERIOR ---- */
     }
     IEnumerator ParpadeoLucesPsicosis()
     {
@@ -429,7 +459,14 @@ public class Act2Manager : MonoBehaviour
     public void UsarLlave()
     {
         if (!llaveTenida) return;
-        StartCoroutine(SecuenciaCierre());
+
+        // ---- VERSIÓN ANTERIOR (la llave se rompía en la cerradura) ----
+        // StartCoroutine(SecuenciaCierre());
+
+        // ---- REESTRUCTURA NOCHE 2 ----
+        // Lucas introduce la llave y la puerta se abre; todo vuelve a la normalidad; Lucas no baja.
+        if (estadoActual == Act2State.Cierre) return;
+        StartCoroutine(SecuenciaAperturaSotano());
     }
 
     IEnumerator SecuenciaCierre()
@@ -651,7 +688,10 @@ public void ServirCerveza()
     // Wrapper seguro para paranoia (evita NullRef si ParanoiaSystem no está en la escena)
     void Paranoia(float valor)
     {
-        if (ParanoiaSystem.Instance != null)
+        // REESTRUCTURA: ParanoiaSystem.AddParanoia ignora los valores negativos, así que para bajar se usa SetParanoia
+        if (ParanoiaSystem.Instance != null && valor < 0f)
+            ParanoiaSystem.Instance.SetParanoia(ParanoiaSystem.Instance.paranoiaActual + valor);
+        else if (ParanoiaSystem.Instance != null)
             ParanoiaSystem.Instance.AddParanoia(valor);
         else
             Debug.LogWarning($"[Act2Manager] ParanoiaSystem no encontrado. Valor ignorado: {valor}");
@@ -662,12 +702,23 @@ public void ServirCerveza()
         if (lucesNormales  != null) lucesNormales.SetActive(false);
         if (lucesServicio  != null) lucesServicio.SetActive(false);
         if (lucesPsicosis  != null) lucesPsicosis.SetActive(false);
+        if (lucesTension   != null) lucesTension.SetActive(false);   // REESTRUCTURA
 
         switch (estado)
         {
             case "Normal":   if (lucesNormales  != null) lucesNormales.SetActive(true);  break;
             case "Servicio": if (lucesServicio  != null) lucesServicio.SetActive(true);  break;
             case "Psicosis": if (lucesPsicosis  != null) lucesPsicosis.SetActive(true);  break;
+            // ---- REESTRUCTURA NOCHE 2: "todo tenso y oscuro" después de los zapatos ----
+            case "Tension":
+                if (lucesTension != null) lucesTension.SetActive(true);
+                else
+                {
+                    // Sin luces de tensión: las de servicio parpadeando cada 3 s (como estaba antes)
+                    if (lucesServicio != null) lucesServicio.SetActive(true);
+                    if (!parpadeandoLuces) { parpadeandoLuces = true; StartCoroutine(ParpadeoLucesServicio()); }
+                }
+                break;
             default: Debug.LogWarning("Estado de luz desconocido: " + estado); break;
         }
     }
