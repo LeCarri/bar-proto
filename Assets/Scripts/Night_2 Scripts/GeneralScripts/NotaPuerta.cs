@@ -61,7 +61,7 @@ public class NotaPuerta : MonoBehaviour, IInteractable
 
     void ReaccionLucas()
     {
-        Act2Manager.Instance?.NotaLeida();
+        Act2ManagerDemo.Instance?.NotaLeida();
     }
     public bool CanInteract()
     {
