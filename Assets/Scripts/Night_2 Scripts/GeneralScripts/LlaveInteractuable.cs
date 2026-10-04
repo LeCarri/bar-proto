@@ -44,6 +44,10 @@ public class LlaveInteractuable : MonoBehaviour, IInteractable
         if (Act2Manager.Instance != null)
         {
             Act2Manager.Instance.llaveTenida = true;
+
+            // ---- REESTRUCTURA NOCHE 2 ----
+            // Portazos de los cubículos de al lado + empieza la fase del Vigilante.
+            Act2Manager.Instance.LlaveTomadaEnCubiculo();
         }
     }
     public bool CanInteract()

@@ -17,6 +17,14 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
     [Tooltip("Si es false, este cliente es decorativo y no tiene interacción")]
     public bool hacePedido = true;
 
+    // ---- REESTRUCTURA NOCHE 2 ----
+    [Tooltip("Lo maneja el Act2Manager: el corrupto es el ÚLTIMO cliente, solo se puede atender cuando le toca.")]
+    public bool esSuTurno = true;
+    [Tooltip("Parte que gira lentamente hacia Lucas durante el glitch (la cabeza). Vacío = todo el cliente.")]
+    public Transform cabeza;
+    [Tooltip("Si el modelo queda de costado o de espaldas al girar, corregilo acá (90, -90, 180).")]
+    public float correccionGiroY = 0f;
+
     [Header("Diálogo (distorsionado)")]
     public string nombreCliente = "???";
     [TextArea] public string dialogoPedido = "Servime lo más fuerte que tengas...";
@@ -47,12 +55,56 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
     {
         if (!hacePedido) return;
         if (estadoActual != EstadoCliente.EsperandoAtencion) return;
+        if (!esSuTurno) return;
 
-        TomarPedido();
+        // ---- VERSIÓN ANTERIOR (comentada en la reestructura) ----
+        // TomarPedido();
+
+        // ---- REESTRUCTURA NOCHE 2 ----
+        // El Act2Manager maneja toda la escena: "¿Qué le sirvo?" → glitch → "Traeme lo más fuerte que tengas."
+        estadoActual = EstadoCliente.EsperandoPedido;
+        if (Act2Manager.Instance != null)
+            Act2Manager.Instance.IniciarSecuenciaClienteCorrupto(this);
     }
     public bool CanInteract()
     {
-        return true;
+        // ---- VERSIÓN ANTERIOR ----
+        // return true;
+        return hacePedido && esSuTurno && estadoActual == EstadoCliente.EsperandoAtencion;
+    }
+
+    // ---- REESTRUCTURA NOCHE 2 ----
+    /// <summary>"El cliente gira lentamente la cabeza hacia Lucas" (la usa el Act2Manager).</summary>
+    public IEnumerator GirarHaciaJugador(Transform jugador, float duracion)
+    {
+        Transform t = cabeza != null ? cabeza : transform;
+        if (jugador == null) yield break;
+
+        Quaternion inicio = t.rotation;
+        Vector3 dir = jugador.position - t.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.001f) yield break;
+        Quaternion fin = Quaternion.LookRotation(dir) * Quaternion.Euler(0f, correccionGiroY, 0f);
+
+        float tiempo = 0f;
+        while (tiempo < duracion)
+        {
+            tiempo += Time.deltaTime;
+            t.rotation = Quaternion.Slerp(inicio, fin, Mathf.SmoothStep(0f, 1f, tiempo / duracion));
+            yield return null;
+        }
+        t.rotation = fin;
+    }
+
+    /// <summary>Reproduce la voz distorsionada (si tiene clip asignado).</summary>
+    public void ReproducirVozDistorsionada()
+    {
+        if (vozDistorsionada != null && clipPedido != null)
+        {
+            vozDistorsionada.pitch = pitchDistorsion;
+            vozDistorsionada.clip = clipPedido;
+            vozDistorsionada.Play();
+        }
     }
     void TomarPedido()
     {
@@ -103,6 +155,7 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
     public string GetDescription()
     {
         if (!hacePedido) return "";
+        if (!esSuTurno) return "";
         if (estadoActual == EstadoCliente.EsperandoAtencion) return "Presiona [E] para atender al cliente";
         return "";
     }

@@ -92,7 +92,8 @@ public class PuertaSotanoAct2 : MonoBehaviour, IInteractable
         else
         {
             // Sin llave: el jugador escucha los golpes y no puede abrir
-            manager.MostrarDialogo("Lucas: Está cerrada... y hay algo golpeando desde adentro...");
+            // ---- VERSIÓN ANTERIOR (diálogo que no está en el guion nuevo) ----
+            // manager.MostrarDialogo("Lucas: Está cerrada... y hay algo golpeando desde adentro...");
             if (sonidoGolpesRitmicos != null && !sonidoGolpesRitmicos.isPlaying)
                 sonidoGolpesRitmicos.PlayOneShot(sonidoGolpesRitmicos.clip);
         }

@@ -25,14 +25,47 @@ public class ZapatosNino : MonoBehaviour, IInteractable
     [Tooltip("Cuánta paranoia sube al encontrar los zapatos. El guion pide llegar al 50%.")]
     public float paranoiaAlEncontrar = 30f;
 
+    // ---- REESTRUCTURA NOCHE 2 ----
+    [Header("Reestructura Noche 2")]
+    [Tooltip("Los zapatos están ocultos hasta que el cliente corrupto hace el pedido (en las tareas el jugador pasa por el depósito a buscar la escoba).")]
+    public bool ocultarHastaElPedido = true;
+    [Tooltip("OPCIONAL: la botella que está en el estante durante las tareas. \"Al llegar y buscar, la botella no está\": se oculta cuando aparecen los zapatos.")]
+    public GameObject botellaEnElEstante;
+    private bool visibles = true;
+
     void Start()
     {
         if (indicadorFlotante != null) indicadorFlotante.SetActive(true);
+
+        // REESTRUCTURA
+        if (ocultarHastaElPedido) MostrarZapatos(false);
+    }
+
+    // REESTRUCTURA: aparecen en cuanto empieza la fase Pasillo
+    void Update()
+    {
+        if (visibles) return;
+        Act2Manager m = Act2Manager.Instance;
+        if (m != null && m.estadoActual == Act2Manager.Act2State.Pasillo) MostrarZapatos(true);
+    }
+
+    void MostrarZapatos(bool mostrar)
+    {
+        visibles = mostrar;
+        foreach (Renderer r in GetComponentsInChildren<Renderer>()) r.enabled = mostrar;
+        foreach (Collider c in GetComponentsInChildren<Collider>()) c.enabled = mostrar;
+        if (indicadorFlotante != null) indicadorFlotante.SetActive(mostrar && !yaInteractuado);
+        if (mostrar && botellaEnElEstante != null) botellaEnElEstante.SetActive(false);
     }
 
     public void Interact()
     {
         if (yaInteractuado) return;
+
+        // REESTRUCTURA: solo en la fase Pasillo (si no, quedaban "usados" antes de tiempo)
+        Act2Manager manager = Act2Manager.Instance;
+        if (manager != null && manager.estadoActual != Act2Manager.Act2State.Pasillo) return;
+
         yaInteractuado = true;
 
         if (indicadorFlotante != null) indicadorFlotante.SetActive(false);
@@ -46,7 +79,13 @@ public class ZapatosNino : MonoBehaviour, IInteractable
     }
     public bool CanInteract()
     {
-        return true;
+        // ---- VERSIÓN ANTERIOR ----
+        // return true;
+
+        // ---- REESTRUCTURA NOCHE 2 ----
+        if (yaInteractuado || !visibles) return false;
+        Act2Manager m = Act2Manager.Instance;
+        return m == null || m.estadoActual == Act2Manager.Act2State.Pasillo;
     }
 
     public string GetDescription()

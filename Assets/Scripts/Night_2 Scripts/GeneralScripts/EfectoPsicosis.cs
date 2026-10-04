@@ -49,9 +49,22 @@ public class EfectoPsicosis : MonoBehaviour
         if (overlayPsicosis != null) overlayPsicosis.alpha = 0f;
     }
 
+    // REESTRUCTURA NOCHE 2: antes este Update forzaba el FOV a fovNormal TODO el tiempo,
+    // y eso anulaba el efecto del pasillo (PasilloEfecto). Ahora solo controla el FOV
+    // mientras la psicosis está activa y mientras vuelve a la normalidad.
+    private bool restaurandoFOV = false;
+
     void Update()
     {
         if (cinemachineCam == null) return;
+
+        // ---- REESTRUCTURA ----
+        if (!psicosisActiva && !restaurandoFOV) return;
+        if (!psicosisActiva && Mathf.Abs(cinemachineCam.Lens.FieldOfView - fovNormal) < 0.1f)
+        {
+            restaurandoFOV = false;
+            return;
+        }
 
         float fovObjetivo = psicosisActiva ? fovPsicosis : fovNormal;
         // Solución: Usar cinemachineCam.Lens.FieldOfView en vez de cinemachineCam.fieldOfView
@@ -85,6 +98,7 @@ public class EfectoPsicosis : MonoBehaviour
     public void DesactivarPsicosis()
     {
         psicosisActiva = false;
+        restaurandoFOV = true;   // REESTRUCTURA
 
         if (sonidoEstatica != null) sonidoEstatica.Stop();
 
