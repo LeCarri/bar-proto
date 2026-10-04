@@ -382,4 +382,45 @@ public class Flashlight : MonoBehaviour
             cameraShakePivot.localPosition = originalCameraPos;
         }
     }
+    public void ForzarApagado()
+    {
+        // Sincronizar estado interno
+        isOn = false;
+        isAttacking = false;
+
+        // Apagar luz
+        if (spotLight != null)
+            spotLight.enabled = false;
+
+        // Volver a valores normales
+        currentTargetIntensity = normalIntensity;
+
+        // Apagar haz visual
+        if (lightBeamMesh != null)
+            lightBeamMesh.gameObject.SetActive(false);
+
+        // Detener partículas
+        if (dustParticles != null)
+            dustParticles.Stop();
+
+        if (sparksParticles != null)
+            sparksParticles.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear
+            );
+
+        if (lensSmokeParticles != null)
+            lensSmokeParticles.Stop();
+
+        StopImpactParticles();
+
+        // Cortar sonido de ataque
+        if (audioSourceLoop != null && audioSourceLoop.isPlaying)
+            audioSourceLoop.Stop();
+
+        // Restaurar cámara
+        ResetCameraPosition();
+
+        Debug.Log("[Flashlight] Apagado forzado.");
+    }           
 }

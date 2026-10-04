@@ -33,6 +33,7 @@ public class Act1Manager : MonoBehaviour
     [SerializeField] private bool iniciarDesdeLinterna = false;
 
     [SerializeField] private bool debugLinternaYaRecogida = true;
+    [SerializeField] private bool iniciarDesdeNanielaBotella = false;
 
 
 
@@ -40,6 +41,8 @@ public class Act1Manager : MonoBehaviour
 
     public Light luzLinternaJugador;
 
+    [Header("Control de Linterna")]
+    public Flashlight controladorLinterna;
 
 
     [Header("FX - Fallo de linterna")]
@@ -374,33 +377,24 @@ public class Act1Manager : MonoBehaviour
 
 
 
-        if (iniciarDesdeLinterna)
-
+        if (iniciarDesdeNanielaBotella)
         {
-
+            PrepararDebugNanielaBotella();
+        }
+        else if (iniciarDesdeLinterna)
+        {
             PrepararDebugLinterna();
-
         }
-
         else if (saltarLimpieza)
-
         {
-
             IniciarServicioDirecto();
-
         }
-
         else
-
         {
-
             CambiarIluminacion("Normal");
-
             IniciarFaseTareas();
-
         }
-
-    }
+        }
 
 
 
@@ -1283,49 +1277,39 @@ public class Act1Manager : MonoBehaviour
     // ==========================================
 
     public void AlRecogerBotellaEspecial()
-
     {
-
         Debug.Log("[Act1Manager] Botella recogida.");
 
+            if (controladorLinterna != null)
+    {
+        controladorLinterna.ForzarApagado();
+    }
+    else
+    {
+        Debug.LogWarning(
+            "[Act1Manager] Controlador Linterna no asignado."
+        );
+    }
 
-
+        // SONIDO DEL APAGÓN
         if (sonidoApagonBotella != null)
-
         {
-
             Debug.Log(
-
                 "[Act1Manager] Reproduciendo apagón: " +
-
                 sonidoApagonBotella.gameObject.name
-
             );
-
-
 
             sonidoApagonBotella.Stop();
-
             sonidoApagonBotella.Play();
-
         }
-
         else
-
         {
-
             Debug.LogError(
-
                 "[Act1Manager] Sonido Apagon Botella NO asignado."
-
             );
-
         }
-
-
 
         StartCoroutine(SecuenciaOscuridadYLinterna());
-
     }
 
 
@@ -2438,6 +2422,216 @@ private IEnumerator SubirVolumeGlobalNarrativo()
 
     Debug.Log(
         "[Act1Manager] Volume Global narrativo completamente activo."
+    );
+}
+
+private void PrepararDebugNanielaBotella()
+{
+    Debug.Log(
+        "[Act1Manager] DEBUG: iniciando desde Ñañiela en la barra, " +
+        "antes de buscar la botella especial."
+    );
+
+    // ==========================================
+    // ESTADO NARRATIVO
+    // ==========================================
+
+    estadoActual = ActoState.AparicionBarra;
+
+    enemigosEliminados = 0;
+    vasoRecogidoCierre = false;
+    vasoDejadoEnBarra = false;
+
+
+    // ==========================================
+    // CLIENTES / SERVICIO
+    // ==========================================
+
+    if (grupoClientes != null)
+        grupoClientes.SetActive(false);
+
+    if (grupoClientesBar != null)
+        grupoClientesBar.SetActive(false);
+
+
+    // ==========================================
+    // CAJA MUSICAL
+    // ==========================================
+
+    if (cajaMusicalInteractuable != null)
+    {
+        CajaMusicalController caja =
+            cajaMusicalInteractuable
+                .GetComponent<CajaMusicalController>();
+
+        if (caja != null)
+            caja.DetenerCaja();
+
+        AudioSource audioCaja =
+            cajaMusicalInteractuable.GetComponent<AudioSource>();
+
+        if (audioCaja != null)
+            audioCaja.Stop();
+
+        cajaMusicalInteractuable.SetActive(false);
+    }
+
+
+    // ==========================================
+    // ILUMINACIÓN
+    // Estado correspondiente al encuentro
+    // con Ñañiela
+    // ==========================================
+
+    if (lucesNormales != null)
+        lucesNormales.SetActive(false);
+
+    if (lucesServicio != null)
+        lucesServicio.SetActive(false);
+
+    if (lucesCreepy != null)
+        lucesCreepy.SetActive(false);
+
+    if (lucesCombate != null)
+        lucesCombate.SetActive(false);
+
+    if (lucesNormalesBar != null)
+        lucesNormalesBar.SetActive(false);
+
+    if (lucesEmergenciaBar != null)
+        lucesEmergenciaBar.SetActive(false);
+
+    // Luz especial de Ñañiela.
+    if (luzTaniela != null)
+        luzTaniela.SetActive(true);
+
+    RenderSettings.ambientLight =
+        new Color(0.05f, 0.05f, 0.05f);
+
+
+    // ==========================================
+    // ÑAÑIELA
+    // ==========================================
+
+    if (nanielaGameObject != null)
+        nanielaGameObject.SetActive(true);
+
+
+    // ==========================================
+    // AUDIO
+    // ==========================================
+
+    if (ambientBar != null)
+        ambientBar.Stop();
+
+    if (musicBar != null)
+        musicBar.Stop();
+
+    if (neonSound != null)
+        neonSound.Stop();
+
+    // En este punto del flujo normal queda
+    // el zumbido inquietante de Ñañiela.
+    if (zumbidoAmbiente != null &&
+        !zumbidoAmbiente.isPlaying)
+    {
+        zumbidoAmbiente.Play();
+    }
+
+
+    // ==========================================
+    // VOLUMES
+    // ==========================================
+
+    // El Volume narrativo ya llegó a 1
+    // durante la caja musical y debe seguir activo.
+    if (volumenGlobalNarrativo != null)
+        volumenGlobalNarrativo.weight = 1f;
+
+    // El desenfoque de fallo de linterna
+    // todavía NO está activo.
+    if (volumenAlucinacion != null)
+        volumenAlucinacion.weight = 0f;
+
+
+    // ==========================================
+    // LINTERNA
+    // Lucas ya la recogió antes de llegar acá.
+    // ==========================================
+
+    if (linternaBarraInteractuable != null)
+        linternaBarraInteractuable.SetActive(false);
+
+    // Ya no queremos volver a disparar
+    // el trigger de salida de la barra.
+    if (triggerSalidaBarra != null)
+        triggerSalidaBarra.SetActive(false);
+
+
+    // ==========================================
+    // OBJETOS DEL QUIEBRE
+    // ==========================================
+
+    if (vasoWhiskyServido != null)
+        vasoWhiskyServido.SetActive(true);
+
+
+    // ==========================================
+    // BOTELLA ESPECIAL
+    // ==========================================
+
+    if (indicadorDeposito != null)
+        indicadorDeposito.SetActive(true);
+
+    if (botellaEspecial != null)
+        botellaEspecial.SetActive(true);
+
+
+    // ==========================================
+    // ENEMIGOS
+    // Todavía no aparecieron.
+    // ==========================================
+
+    if (primeraSombra != null)
+        primeraSombra.SetActive(false);
+
+    if (sombrasSalon != null)
+    {
+        foreach (GameObject sombra in sombrasSalon)
+        {
+            if (sombra != null)
+                sombra.SetActive(false);
+        }
+    }
+
+
+    // ==========================================
+    // UI
+    // ==========================================
+
+    if (textoInstruccionF != null)
+        textoInstruccionF.gameObject.SetActive(false);
+
+    ActualizarObjetivo(
+        "Busca la botella especial en el depósito"
+    );
+
+
+    // ==========================================
+    // FADE
+    // ==========================================
+
+    if (fadeCanvasGroup != null)
+    {
+        fadeCanvasGroup.alpha = 0f;
+        fadeCanvasGroup.blocksRaycasts = false;
+        fadeCanvasGroup.gameObject.SetActive(false);
+    }
+
+
+    Debug.Log(
+        "[Act1Manager] DEBUG listo: Ñañiela activa, " +
+        "botella especial disponible y Volume Global en 1."
     );
 }
 
