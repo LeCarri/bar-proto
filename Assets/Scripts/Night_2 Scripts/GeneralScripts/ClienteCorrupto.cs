@@ -18,7 +18,7 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
     public bool hacePedido = true;
 
     // ---- REESTRUCTURA NOCHE 2 ----
-    [Tooltip("Lo maneja el Act2Manager: el corrupto es el ÚLTIMO cliente, solo se puede atender cuando le toca.")]
+    [Tooltip("Lo maneja el Act2ManagerDemo: el corrupto es el ÚLTIMO cliente, solo se puede atender cuando le toca.")]
     public bool esSuTurno = true;
     [Tooltip("Parte que gira lentamente hacia Lucas durante el glitch (la cabeza). Vacío = todo el cliente.")]
     public Transform cabeza;
@@ -27,7 +27,7 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
 
     [Header("Diálogo (distorsionado)")]
     public string nombreCliente = "???";
-    [TextArea] public string dialogoPedido = "Servime lo más fuerte que tengas...";
+    [TextArea] public string dialogoPedido = "<shake>Servime lo más fuerte que tengas...</shake>";
     [TextArea] public string dialogoEspera = "...";
     [TextArea] public string dialogoGracias = "Esto... es lo que necesitaba.";
 
@@ -52,29 +52,36 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
     }
 
     public void Interact()
+{
+    if (!hacePedido || !esSuTurno) return;
+    if (estadoActual != EstadoCliente.EsperandoAtencion) return;
+
+    Debug.Log("Interactuando con el cliente. Enviando pedido: " + dialogoPedido);
+
+    // 1. Cambiamos el estado del cliente para que no se pueda volver a interactuar
+    estadoActual = EstadoCliente.EsperandoPedido;
+
+    if (Act2ManagerDemo.Instance != null)
     {
-        if (!hacePedido) return;
-        if (estadoActual != EstadoCliente.EsperandoAtencion) return;
-        if (!esSuTurno) return;
+        // 2. Iniciamos la secuencia visual y de audio en el Manager
+        Act2ManagerDemo.Instance.IniciarSecuenciaClienteCorrupto(this);
 
-        // ---- VERSIÓN ANTERIOR (comentada en la reestructura) ----
-        // TomarPedido();
-
-        // ---- REESTRUCTURA NOCHE 2 ----
-        // El Act2Manager maneja toda la escena: "¿Qué le sirvo?" → glitch → "Traeme lo más fuerte que tengas."
-        estadoActual = EstadoCliente.EsperandoPedido;
-        if (Act2Manager.Instance != null)
-            Act2Manager.Instance.IniciarSecuenciaClienteCorrupto(this);
+        // 3. Programamos el avance del evento (ir a la cocina) después de dar tiempo a leer el diálogo
+        StartCoroutine(DelayIrACocina());
     }
+    else
+    {
+        Debug.LogError("Act2ManagerDemo.Instance sigue siendo NULL.");
+    }
+}
+
     public bool CanInteract()
     {
-        // ---- VERSIÓN ANTERIOR ----
-        // return true;
         return hacePedido && esSuTurno && estadoActual == EstadoCliente.EsperandoAtencion;
     }
 
     // ---- REESTRUCTURA NOCHE 2 ----
-    /// <summary>"El cliente gira lentamente la cabeza hacia Lucas" (la usa el Act2Manager).</summary>
+    /// <summary>"El cliente gira lentamente la cabeza hacia Lucas" (la usa el Act2ManagerDemo).</summary>
     public IEnumerator GirarHaciaJugador(Transform jugador, float duracion)
     {
         Transform t = cabeza != null ? cabeza : transform;
@@ -106,9 +113,10 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
             vozDistorsionada.Play();
         }
     }
+
     void TomarPedido()
     {
-        Act2Manager manager = Act2Manager.Instance;
+        Act2ManagerDemo manager = Act2ManagerDemo.Instance;
         if (manager == null) return;
 
         // Reproducir voz distorsionada
@@ -129,7 +137,7 @@ public class ClienteCorrupto : MonoBehaviour, IInteractable
     IEnumerator DelayIrACocina()
     {
         yield return new WaitForSeconds(2f);
-        Act2Manager.Instance?.IrACocina();
+        Act2ManagerDemo.Instance?.IrACocina();
     }
 
     IEnumerator DesvanecerCliente()

@@ -5,12 +5,6 @@ using System.Collections;
 /// El Vigilante aparece reflejado en el espejo del baño justo cuando el jugador
 /// recoge la llave. La aparición es breve: aparece, el jugador lo ve por un instante,
 /// y cuando mira más de cerca ya no está.
-///
-/// SETUP:
-///  - Colocar este script en un GameObject vacío cerca del espejo del baño.
-///  - modeloVigilante: el prefab/GameObject del Vigilante (debe empezar DESACTIVADO).
-///  - El modelo debe estar posicionado DETRÁS del espejo o en el espacio del reflejo.
-///  - Añadir un AudioSource con un sonido de respiración/susurro.
 /// </summary>
 public class VigenteMirror : MonoBehaviour
 {
@@ -28,23 +22,48 @@ public class VigenteMirror : MonoBehaviour
     [Tooltip("AudioSource con un stinger de susto (jump scare suave)")]
     public AudioSource sonidoSusto;
 
-    [Header("Tiempos")]
+    [Header("Tiempos y Sacudida")]
     [Tooltip("Cuántos segundos se queda visible el Vigilante en el espejo")]
     public float duracionAparicion = 2.2f;
 
+    [Header("Ajustes de Sacudida Leve")]
+    public bool usarSacudidaCamara = true;
+    [Tooltip("Duración de la sacudida en segundos")]
+    public float duracionShake = 0.3f;
+    [Tooltip("Intensidad de la sacudida (reducida para que sea sutil)")]
+    public float intensidadShake = 1.0f;
 
     /// <summary>
-    /// Coroutine llamada por Act2Manager.LlaveRecogida().
+    /// Método público para iniciar la secuencia desde Act2ManagerDemo.
+    /// </summary>
+    public void Aparecer()
+{
+    gameObject.SetActive(true);
+    if (modeloVigilante != null) 
+    {
+        modeloVigilante.SetActive(true); // <--- Forzamos la activación del objeto 3D
+    }
+    
+    // Inicia la corrutina
+    StopAllCoroutines();
+    StartCoroutine(AparicionEnEspejo());
+}
+
+    /// <summary>
+    /// Coroutine llamada por Act2ManagerDemo al recoger la llave / iniciar psicosis.
     /// </summary>
     public IEnumerator AparicionEnEspejo()
     {
         // Aparece el Vigilante en el espejo
         if (modeloVigilante != null) modeloVigilante.SetActive(true);
         if (sonidoVigilante != null) sonidoVigilante.Play();
-        // Susto suave + shake de cámara
         if (sonidoSusto != null) sonidoSusto.Play();
-        if (sacudidaCamara != null)
-            yield return StartCoroutine(sacudidaCamara.Shake(1f, 4f));
+
+        // Sacudida leve de cámara (si está habilitada)
+        if (usarSacudidaCamara && sacudidaCamara != null)
+        {
+            StartCoroutine(sacudidaCamara.Shake(duracionShake, intensidadShake));
+        }
 
         yield return new WaitForSeconds(duracionAparicion);
 

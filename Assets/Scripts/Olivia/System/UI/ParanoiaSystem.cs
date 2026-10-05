@@ -149,7 +149,7 @@ public class ParanoiaSystem : MonoBehaviour
         // 3. Distorsión de Lente
         if (lensDistortion != null)
         {
-            float baseDistorsion = Mathf.Lerp(-0.25f, -0.65f, factorEfectos);
+            float baseDistorsion = Mathf.Lerp(-0.5f, -0.20f, factorEfectos);
             
             if (paranoiaActual >= 70f)
             {
