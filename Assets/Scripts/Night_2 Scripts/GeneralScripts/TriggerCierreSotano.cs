@@ -24,7 +24,7 @@ public class TriggerCierreSotano : MonoBehaviour
         if (disparado) return;
         if (!other.CompareTag("Player")) return;
 
-        Act2Manager manager = Act2Manager.Instance;
+        Act2ManagerDemo manager = Act2ManagerDemo.Instance;
         if (manager == null)
         {
             Debug.LogError("[TriggerCierreSotano] Act2Manager no encontrado en la escena.");

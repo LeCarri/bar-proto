@@ -23,29 +23,12 @@ public class NotaPuerta : MonoBehaviour, IInteractable
     public AudioSource sonidoPapel;
     public GameObject NotaImagen;
 
-    // ---- REESTRUCTURA NOCHE 2 ----
-    [Header("Reestructura Noche 2")]
-    [Tooltip("\"Al interactuar agarramos la nota (desaparece de la puerta)\". El cuchillo puede quedar clavado.")]
-    public bool desaparecerDeLaPuerta = true;
-    [Tooltip("Objetos extra que se ocultan al agarrar la nota (NO pongas el cuchillo si querés que quede).")]
-    public GameObject[] ocultarAlAgarrar;
-
     public void Interact()
     {
         if (yaLeida) return;
         yaLeida = true;
 
         if (sonidoPapel != null) sonidoPapel.Play();
-
-        // REESTRUCTURA: la nota se saca de la puerta (se ocultan sus renderers y su collider,
-        // no el GameObject, para que el Invoke de abajo siga funcionando)
-        if (desaparecerDeLaPuerta)
-        {
-            foreach (Renderer r in GetComponentsInChildren<Renderer>()) r.enabled = false;
-            foreach (Collider c in GetComponentsInChildren<Collider>()) c.enabled = false;
-            if (ocultarAlAgarrar != null)
-                foreach (GameObject g in ocultarAlAgarrar) if (g != null) g.SetActive(false);
-        }
         if (NotaImagen != null) NotaImagen.gameObject.SetActive(true);
         StartCoroutine(DesactivarNotaImagen());
 
@@ -61,13 +44,11 @@ public class NotaPuerta : MonoBehaviour, IInteractable
 
     void ReaccionLucas()
     {
-        Act2Manager.Instance?.NotaLeida();
+        Act2ManagerDemo.Instance?.NotaLeida();
     }
     public bool CanInteract()
     {
-        // ---- VERSIÓN ANTERIOR ----
-        // return true;
-        return !(yaLeida && desaparecerDeLaPuerta);
+        return true;
     }
 
     public string GetDescription()

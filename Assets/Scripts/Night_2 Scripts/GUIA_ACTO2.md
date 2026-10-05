@@ -1,8 +1,5 @@
 # GUÍA COMPLETA — ACTO 2: La Fisura de la Realidad
 
-> ⚠ **DESACTUALIZADA.** Esta guía describe la versión ANTERIOR de la Noche 2.
-> Para la reestructura (guion "NOCHE 2.3") usá **Tutorial_Noche2_Reestructura.pdf** (en esta misma carpeta).
-
 > Leé esta guía de arriba a abajo la primera vez. Después podés ir directo a la sección que necesitás.
 
 ---
