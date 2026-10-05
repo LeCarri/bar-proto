@@ -1,49 +1,107 @@
 using UnityEngine;
 
-// Este va en todos los enemigos, es para manejar el dema de la vida, el daño, que mueran etc.
-// Las caracteristicas especiales de cada uno seran scripts de la clase EnemyCore
+// Este va en todos los enemigos.
+// Maneja vida, daño y muerte.
+// Los efectos especiales son opcionales mediante otros componentes.
 
 public class EnemyCore : MonoBehaviour
 {
     public float health = 100f;
-    public float deathSpeed = 20f; // Qué tan rápido se desvanece
+    public float deathSpeed = 20f;
+
     protected bool isBeingIlluminated = false;
 
-    // 🛡️ CANDADO DE SEGURIDAD ABSOLUTO
+    // Vida inicial para calcular porcentaje de desintegración
+    private float maxHealth;
+
+    // Efecto opcional para las sombras nuevas
+    private SombraDesintegracion sombraDesintegracion;
+
+    // Candado para evitar procesar muerte varias veces
     private bool isDead = false;
+
+    protected virtual void Awake()
+    {
+        // Guardamos la vida inicial
+        maxHealth = health;
+
+        // Si este enemigo tiene el nuevo sistema,
+        // lo encontramos automáticamente.
+        sombraDesintegracion =
+            GetComponent<SombraDesintegracion>();
+    }
 
     public void TakeDamage(float amount)
     {
-        // Si ya empezó el proceso de muerte, ignoramos cualquier daño extra en este frame
-        if (isDead) return;
+        if (isDead)
+            return;
 
         health -= amount;
+
+        health = Mathf.Clamp(
+            health,
+            0f,
+            maxHealth
+        );
+
         isBeingIlluminated = true;
 
-        Debug.Log("Daño recibido. Vida actual: " + health);
+        // ==============================
+        // DESINTEGRACIÓN VISUAL
+        // ==============================
 
-        if (health <= 0) 
+        if (sombraDesintegracion != null)
         {
-            isDead = true; // Cerramos el candado inmediatamente antes de procesar la muerte
+            sombraDesintegracion.ActualizarDesintegracion(
+                health,
+                maxHealth
+            );
+        }
+
+        Debug.Log(
+            "Daño recibido. Vida actual: " + health
+        );
+
+        // ==============================
+        // MUERTE
+        // ==============================
+
+        if (health <= 0f)
+        {
+            isDead = true;
+
+            if (sombraDesintegracion != null)
+            {
+                sombraDesintegracion
+                    .ForzarDesintegracionCompleta();
+            }
+
             Die();
         }
     }
 
     protected virtual void Die()
     {
-        Act1Manager manager = Object.FindAnyObjectByType<Act1Manager>();
-        if (manager != null) 
+        Act1Manager manager =
+            Object.FindAnyObjectByType<Act1Manager>();
+
+        if (manager != null)
         {
             manager.RegistarEnemigoEliminado();
         }
 
-        // Desactivamos el Collider para evitar falsas colisiones antes de ser destruido
+        // Evita falsas colisiones antes de destruirse.
         Collider col = GetComponent<Collider>();
-        if (col != null) col.enabled = false;
+
+        if (col != null)
+            col.enabled = false;
 
         Destroy(gameObject);
     }
 
-    // Resetear el flag cada frame para que el jugador deba mantener la luz
-    protected void LateUpdate() => isBeingIlluminated = false;
+    // El jugador debe mantener la luz sobre el enemigo.
+    protected void LateUpdate()
+    {
+        isBeingIlluminated = false;
+    }
 }

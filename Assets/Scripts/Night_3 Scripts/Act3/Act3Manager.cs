@@ -157,6 +157,7 @@ public class Act3Manager : MonoBehaviour
     public GameObject InterriorObject;
     public GameObject triggerInicioCombate;
 
+    public LlegadaSalonAct3 llegadaSalon;
 
     // AWAKE
 
@@ -1373,9 +1374,25 @@ public class Act3Manager : MonoBehaviour
             );
         }
 
-        ActualizarObjetivo("Escapa del bar");
-    }
+        // REACTIVAR SALIDA DE LA BARRA
 
+        if (llegadaSalon != null)
+        {
+            llegadaSalon.ReactivarSalida();
+
+            Debug.Log(
+                "[COMBATE ACT3] Salida de la barra reactivada."
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[COMBATE ACT3] No hay LlegadaSalonAct3 asignado."
+            );
+        }
+
+        ActualizarObjetivo("Llega al sotano");
+    }
 
 
     // AVANZAR NOCHE
@@ -1415,8 +1432,7 @@ public class Act3Manager : MonoBehaviour
             "Pilar: Irnos."
         );
 
-        yield return new WaitForSeconds(2f);
-
+        yield return new WaitForSeconds(1.5f);
 
         // FLASHES NEGROS
 
@@ -1424,7 +1440,7 @@ public class Act3Manager : MonoBehaviour
         {
             effectoParpadeo.IniciarParpadeo();
         }
-
+       
 
         // DESAPARECEN LOS CLIENTES
 
@@ -1433,19 +1449,12 @@ public class Act3Manager : MonoBehaviour
             clientesActo3.SetActive(false);
         }
 
+        if (effectoParpadeo != null)
+        {
+            effectoParpadeo.IniciarParpadeo();
+        }
 
-        yield return new WaitForSeconds(3f);
-
-
-        // CONTINÚA LA SECUENCIA
-
-        MostrarDialogo(
-            "Listo... voy a buscarlas."
-        );
-
-        ActualizarObjetivo(
-            "Ve detrás de la barra"
-        );
+        yield return new WaitForSeconds(1f);
 
         // ACTIVO EL TRIGGER
         ActivarTriggerInicioCombate();
