@@ -37,30 +37,6 @@ public class PasilloEfecto : MonoBehaviour
     [Tooltip("Segundos hasta que el efecto llega al máximo antes de que el jugador avance")]
     public float duracionEfecto = 8f;
 
-    // ================= REESTRUCTURA NOCHE 2 =================
-    [Header("Reestructura Noche 2")]
-    [Tooltip("Solo funciona cuando el Act2Manager está en la fase Pasillo (después del pedido del cliente corrupto). " +
-             "Así no se dispara cuando vas al depósito a buscar la escoba en las tareas.")]
-    public bool soloEnFasePasillo = true;
-
-    [Tooltip("\"La música del bar empieza a alejarse. Cada vez más.\" Arrastrá la música/ambiente del bar.")]
-    public AudioSource[] musicaQueSeAleja;
-
-    [TextArea] public string dialogoPasillo = "Lucas: ¿Siempre fue tan largo?";
-    public float segundosHastaDialogo = 2.5f;
-
-    [Tooltip("Hacia dónde está el depósito. Vacío = el eje azul (forward) de este trigger.")]
-    public Transform direccionDeposito;
-    [Tooltip("FOV cuando el jugador mira hacia atrás: el bar parece mucho más lejos.")]
-    public float fovMirandoAtras = 115f;
-    // REVERTIDO: ya no se usa (el efecto solo se apaga al encontrar los zapatos)
-    [HideInInspector] public bool normalizarAlVolverAMirar = false;
-
-    private bool miroHaciaAtras = false;
-    private bool dialogoMostrado = false;
-    private float[] volumenesMusica;
-    // =========================================================
-
     private bool efectoActivo = false;
     private float fovOriginal;
     private Vector3 posOriginalCamara;
@@ -85,15 +61,6 @@ public class PasilloEfecto : MonoBehaviour
         if (ambiencePasillo != null) ambiencePasillo.Play();
         if (sonidoTension != null)   sonidoTension.Play();
 
-        // REESTRUCTURA: guardar el volumen de la música para alejarla
-        if (musicaQueSeAleja != null)
-        {
-            volumenesMusica = new float[musicaQueSeAleja.Length];
-            for (int i = 0; i < musicaQueSeAleja.Length; i++)
-                volumenesMusica[i] = musicaQueSeAleja[i] != null ? musicaQueSeAleja[i].volume : 0f;
-        }
-        miroHaciaAtras = false;
-
         coroutinaEfecto = StartCoroutine(EfectoCorredorInfinito());
     }
 
@@ -102,8 +69,7 @@ public class PasilloEfecto : MonoBehaviour
         efectoActivo = false;
 
         if (coroutinaEfecto != null) StopCoroutine(coroutinaEfecto);
-        // StartCoroutine(RestaurarFOV());   // VERSIÓN ANTERIOR (fallaba si no había cámara asignada)
-        if (cinemachineCam != null && isActiveAndEnabled) StartCoroutine(RestaurarFOV());
+        StartCoroutine(RestaurarFOV());
 
         if (ambiencePasillo != null) ambiencePasillo.Stop();
         if (sonidoTension != null)   sonidoTension.Stop();
@@ -113,69 +79,6 @@ public class PasilloEfecto : MonoBehaviour
             col.enabled = false;
     }
 
-    // ================= REESTRUCTURA NOCHE 2 =================
-    // Versión nueva del corredor: además del FOV, la música del bar se aleja, Lucas dice
-    // "¿Siempre fue tan largo?", y si el jugador mira hacia atrás el bar parece muchísimo más lejos.
-    // El efecto sigue activo hasta que Act2Manager.ZapatosEncontrados() lo apaga para el resto de la noche.
-    IEnumerator EfectoCorredorInfinito()
-    {
-        float tiempoTranscurrido = 0f;
-        Transform cam = Camera.main != null ? Camera.main.transform : null;
-
-        while (efectoActivo)
-        {
-            tiempoTranscurrido += Time.deltaTime;
-            float progreso = Mathf.Clamp01(tiempoTranscurrido / Mathf.Max(0.01f, duracionEfecto));
-
-            // Diálogo
-            if (!dialogoMostrado && tiempoTranscurrido >= segundosHastaDialogo && !string.IsNullOrEmpty(dialogoPasillo))
-            {
-                dialogoMostrado = true;
-                Act2Manager.Instance?.MostrarDialogo(dialogoPasillo);
-            }
-
-            // La música del bar se aleja
-            if (musicaQueSeAleja != null && volumenesMusica != null)
-                for (int i = 0; i < musicaQueSeAleja.Length; i++)
-                    if (musicaQueSeAleja[i] != null)
-                        musicaQueSeAleja[i].volume = Mathf.Lerp(volumenesMusica[i], 0f, progreso);
-
-            // ¿Mira hacia atrás?
-            if (cam != null)
-            {
-                Vector3 haciaDeposito = direccionDeposito != null ? direccionDeposito.forward : transform.forward;
-                haciaDeposito.y = 0f;
-                Vector3 mirada = cam.forward;
-                mirada.y = 0f;
-                float dot = Vector3.Dot(mirada.normalized, haciaDeposito.normalized);
-
-                // Mientras mira hacia atrás, el bar parece mucho más lejos. Al volver a mirar adelante
-                // sigue el efecto normal del pasillo: NO se apaga (se apaga recién al encontrar los zapatos).
-                miroHaciaAtras = dot < -0.3f;
-
-                // ---- REVERTIDO: esto apagaba el efecto para siempre ANTES de llegar a los zapatos ----
-                // if (dot < -0.3f) miroHaciaAtras = true;
-                // else if (miroHaciaAtras && dot > 0.6f && normalizarAlVolverAMirar)
-                // {
-                //     DesactivarEfecto();
-                //     yield break;
-                // }
-            }
-
-            if (cinemachineCam != null)
-            {
-                float fovObjetivo = miroHaciaAtras ? fovMirandoAtras : Mathf.Lerp(fovNormal, fovMaximo, progreso);
-                cinemachineCam.Lens.FieldOfView = Mathf.Lerp(cinemachineCam.Lens.FieldOfView, fovObjetivo, Time.deltaTime * velocidadFOV);
-            }
-
-            if (sonidoTension != null)
-                sonidoTension.volume = progreso;
-
-            yield return null;
-        }
-    }
-
-    /* ---- VERSIÓN ANTERIOR (comentada en la reestructura) ----
     IEnumerator EfectoCorredorInfinito()
     {
         float tiempoTranscurrido = 0f;
@@ -209,7 +112,6 @@ public class PasilloEfecto : MonoBehaviour
         if (cinemachineCam != null)
             cinemachineCam.Lens.FieldOfView = fovMaximo;
     }
-    ---- FIN VERSIÓN ANTERIOR ---- */
 
     IEnumerator RestaurarFOV()
     {
@@ -230,37 +132,13 @@ public class PasilloEfecto : MonoBehaviour
     // Trigger opcional: si el jugador entra al pasillo activa automáticamente
     void OnTriggerEnter(Collider other)
     {
-        // ---- VERSIÓN ANTERIOR ----
-        // if (other.CompareTag("Player"))
-        //     ActivarEfecto();
-
-        // ---- REESTRUCTURA: solo en la fase Pasillo ----
-        if (other.CompareTag("Player") && EsFasePasillo())
-            ActivarEfecto();
-    }
-
-    // REESTRUCTURA: si el jugador ya estaba adentro del trigger cuando empieza la fase Pasillo
-    void OnTriggerStay(Collider other)
-    {
-        if (!efectoActivo && !dialogoMostrado && other.CompareTag("Player") && EsFasePasillo())
+        if (other.CompareTag("Player"))
             ActivarEfecto();
     }
 
     void OnTriggerExit(Collider other)
     {
-        // ---- VERSIÓN ANTERIOR ----
-        // if (other.CompareTag("Player"))
-        //     DesactivarEfecto();
-
-        // ---- REESTRUCTURA: solo si el efecto estaba activo (si no, apagaba el trigger para siempre al pasar en las tareas) ----
-        if (other.CompareTag("Player") && efectoActivo)
+        if (other.CompareTag("Player"))
             DesactivarEfecto();
-    }
-
-    bool EsFasePasillo()
-    {
-        if (!soloEnFasePasillo) return true;
-        Act2Manager m = Act2Manager.Instance;
-        return m == null || m.estadoActual == Act2Manager.Act2State.Pasillo;
     }
 }

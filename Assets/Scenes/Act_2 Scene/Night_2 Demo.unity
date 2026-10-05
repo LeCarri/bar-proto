@@ -73874,7 +73874,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b79e8ff5589876344abf663dea8d72f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZapatosNinoDemo
-  indicadorFlotante: {fileID: 1988204993}
+  indicadorFlotante: {fileID: 401757836}
   sonidoDescubrimiento: {fileID: 645358145}
   paranoiaAlEncontrar: 30
   ocultarHastaElPedido: 0
@@ -87342,11 +87342,6 @@ MonoBehaviour:
   delayEntreSombras: 0.6
   sonidoAparicion: {fileID: 159842859}
   ambienceCombate: {fileID: 352119829}
-  spawnContinuo: 1
-  intervaloSpawnContinuo: 4
-  maxSombrasVivas: 6
-  aparecerDetrasDelJugador: 1
-  ignorarBloqueadores: 1
 --- !u!1 &899927953 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: e5f6c578761bc4e41a03985bf01ba61b, type: 3}
@@ -135293,8 +135288,6 @@ MonoBehaviour:
   rendererNota: {fileID: 1364168031}
   sonidoPapel: {fileID: 35402789}
   NotaImagen: {fileID: 608383133}
-  desaparecerDeLaPuerta: 1
-  ocultarAlAgarrar: []
 --- !u!54 &1364168029
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -159887,20 +159880,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PasilloEfecto
   cinemachineCam: {fileID: 1667675348}
   fovNormal: 60
-  fovMaximo: 0
-  velocidadFOV: 0
+  fovMaximo: 120
+  velocidadFOV: 8
   desplazamientoCamara: -0.5
   velocidadDesplazamiento: 2
   ambiencePasillo: {fileID: 0}
   sonidoTension: {fileID: 0}
   duracionEfecto: 0
-  soloEnFasePasillo: 1
-  musicaQueSeAleja: []
-  dialogoPasillo: "Lucas: \xBFSiempre fue tan largo?"
-  segundosHastaDialogo: 2.5
-  direccionDeposito: {fileID: 0}
-  fovMirandoAtras: 115
-  normalizarAlVolverAMirar: 1
 --- !u!1 &1676285452
 GameObject:
   m_ObjectHideFlags: 0
@@ -178673,7 +178659,7 @@ MonoBehaviour:
   triggerDesaparicion: {fileID: 88221100}
   triggerAparicionJumpscare: {fileID: 1663789617}
   totalSombras: 3
-  fadeCanvasGroup: {fileID: 0}
+  fadeCanvasGroup: {fileID: 1513513867}
   sonidoLlaveCrack: {fileID: 1834672090}
   sonidoEstatica: {fileID: 967874240}
   triggerCierreSotano: {fileID: 817372668}
@@ -202004,11 +201990,6 @@ MonoBehaviour:
   clipVozNino: {fileID: 8300000, guid: 871a23a376c79784bbd49999110b3a78, type: 3}
   vozSotano: {fileID: 788156237}
   clipVozSotano: {fileID: 8300000, guid: 871a23a376c79784bbd49999110b3a78, type: 3}
-  sombrasAlrededor: {fileID: 0}
-  dibujoQueQueda: {fileID: 0}
-  dialogoAlVerla: "Lucas: Pilar\u2026 \xBFSos vos?"
-  distanciaDialogo: 6
-  distanciaDesaparicion: 2.5
 --- !u!1001 &2131732641
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -203841,7 +203822,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.016666668
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: ec32fa41c3c51544f967eaa7efdba6d4, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 0f2a633ece3d3a746b20ad71a825f371, type: 2}
   m_BuildHeightMesh: 0
 --- !u!4 &2146285960
 Transform:
