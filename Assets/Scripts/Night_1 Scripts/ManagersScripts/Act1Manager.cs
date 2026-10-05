@@ -79,8 +79,6 @@ public class Act1Manager : MonoBehaviour
 
     public TextMeshProUGUI textoObjetivo;
 
-    public TextMeshProUGUI textoInstruccionF; 
-
     public float velocidadEscritura = 0.04f;
 
     public float velocidadFade = 3f;
@@ -311,6 +309,10 @@ public class Act1Manager : MonoBehaviour
 
     public bool tieneObjetoEnMano = false;
 
+    [Header("Segunda criatura")]
+    public GameObject segundaCriatura;
+    public SegundaCriaturaPared segundaCriaturaPared;
+
 
 
     public static Act1Manager Instance { get; private set; }
@@ -351,8 +353,6 @@ public class Act1Manager : MonoBehaviour
 
         if (cajaMusicalInteractuable != null) cajaMusicalInteractuable.SetActive(false);
 
-        if (textoInstruccionF != null) textoInstruccionF.gameObject.SetActive(false);
-
         if (triggerSalidaBarra != null) triggerSalidaBarra.SetActive(false);
 
         if (nanielaGameObject != null) nanielaGameObject.SetActive(false);
@@ -362,6 +362,8 @@ public class Act1Manager : MonoBehaviour
         if (volumenAlucinacion != null) volumenAlucinacion.weight = 0f;
         
         if (volumenGlobalNarrativo != null) volumenGlobalNarrativo.weight = 0f;
+
+        if (segundaCriatura != null) segundaCriatura.SetActive(false);
 
 
 
@@ -860,7 +862,7 @@ public class Act1Manager : MonoBehaviour
 
     {
 
-        MostrarDialogo("Lucas: Me acuerdo de cuando se preocupaba de verdad...");
+        MostrarDialogo("Lucas: Me acuerdo cuando se preocupaba de verdad...");
 
         Debug.Log("[Act1Manager] Mensaje leído. Avanzando narrativa.");
 
@@ -1348,63 +1350,47 @@ public class Act1Manager : MonoBehaviour
 
 
 
-        // Mostrar F solamente si la linterna todavía está apagada
+        // ==========================================
+        // TUTORIAL: ENCENDER LINTERNA
+        // ==========================================
 
         bool luzEncendida =
-
             luzLinternaJugador != null &&
-
             luzLinternaJugador.isActiveAndEnabled;
 
-
-
-        if (textoInstruccionF != null)
-
+        if (!luzEncendida)
         {
-
-            textoInstruccionF.text =
-
-                "PRESIONA [F] PARA USAR LA LINTERNA";
-
-
-
-            textoInstruccionF.gameObject.SetActive(!luzEncendida);
-
+            MostrarDialogo(
+                "Presiona [F] para encender la linterna."
+            );
         }
-
-
 
         if (luzLinternaJugador == null)
-
         {
-
             Debug.LogError(
-
                 "[Act1Manager] Asigná Luz Linterna Jugador en el Inspector."
-
             );
-
         }
 
-
-
-        // Espera al estado REAL de la linterna,
-
-        // no simplemente a que se pulse F.
-
+        // Esperamos al estado REAL de la linterna.
         yield return new WaitUntil(() =>
-
             luzLinternaJugador != null &&
-
             luzLinternaJugador.isActiveAndEnabled
-
         );
 
+        // Si el jugador encendió la linterna antes de que
+        // termine el diálogo, lo cerramos inmediatamente.
+        if (corrutinaActiva != null)
+        {
+            StopCoroutine(corrutinaActiva);
+            corrutinaActiva = null;
+        }
 
-
-        if (textoInstruccionF != null)
-
-            textoInstruccionF.gameObject.SetActive(false);
+        if (canvasGroupDialogo != null)
+        {
+            canvasGroupDialogo.alpha = 0f;
+            canvasGroupDialogo.gameObject.SetActive(false);
+        }
 
 
 
@@ -1464,84 +1450,58 @@ public class Act1Manager : MonoBehaviour
 
         }
 
-
-
-        MostrarDialogo("Lucas: ¿¡Qué carajos!?");
-
-
-
-        // Tutorial ataque
-
-        yield return new WaitForSeconds(1.2f);
-
-
-
-        if (textoInstruccionF != null)
-
-        {
-
-            textoInstruccionF.text =
-
-                "MANTENÉ [CLICK DERECHO] PARA APUNTAR Y DAÑAR";
-
-
-
-            textoInstruccionF.gameObject.SetActive(true);
-
-        }
-
-
-
-        yield return new WaitUntil(
-
-            () => Input.GetMouseButton(1)
-
-        );
-
-
-
-        yield return new WaitForSeconds(1.5f);
-
-
-
-        if (textoInstruccionF != null)
-
-            textoInstruccionF.gameObject.SetActive(false);
-
     }
 
 
 
     public void RegistarEnemigoEliminado()
-
     {
-
         enemigosEliminados++;
 
+        Debug.Log(
+            "[Act1Manager] Enemigo eliminado: " +
+            enemigosEliminados
+        );
 
+        // ==========================================
+        // MURIÓ EL PRIMER ESPECTRO
+        // ==========================================
 
-        // PARANOIA: Recompensa de cordura al destruir cada sombra (-15)
-
-        if (ParanoiaSystem.Instance != null)
-
+        if (enemigosEliminados == 1)
         {
-
-            //ParanoiaSystem.Instance.AddParanoia(15f);
-
+            IniciarSegundaCriatura();
+            return;
         }
 
 
+        // ==========================================
+        // FINAL DE LA OLEADA
+        // ==========================================
 
-        // Solo iniciamos el cierre si eliminó a TODOS los enemigos de la oleada
-
-        if (enemigosEliminados >= enemigosTotalesNoche1 && estadoActual != ActoState.Cierre)
-
+        if (enemigosEliminados >= enemigosTotalesNoche1 &&
+            estadoActual != ActoState.Cierre)
         {
-
             IniciarCierreNoche();
+        }
+    }
 
+    private void IniciarSegundaCriatura()
+    {
+        if (segundaCriatura == null)
+        {
+            Debug.LogWarning(
+                "[Act1Manager] Segunda criatura no asignada."
+            );
+
+            return;
         }
 
+        segundaCriatura.SetActive(true);
+
+        if (segundaCriaturaPared != null)
+        {
+            segundaCriaturaPared.IniciarSecuencia();
+        }
     }
 
 
@@ -1828,82 +1788,104 @@ public class Act1Manager : MonoBehaviour
 
     // ==========================================
 
-    public void MostrarDialogo(string mensaje)
-
+    public void MostrarDialogo(string mensaje, bool ignorarTimeScale = false)
     {
+        if (textoSubtitulos == null || canvasGroupDialogo == null)
+            return;
 
-        if (textoSubtitulos == null || canvasGroupDialogo == null) return;
+        if (corrutinaActiva != null)
+            StopCoroutine(corrutinaActiva);
 
-
-
-        if (corrutinaActiva != null) StopCoroutine(corrutinaActiva);
-
-        corrutinaActiva = StartCoroutine(SecuenciaDialogo(mensaje));
-
+        corrutinaActiva =
+            StartCoroutine(
+                SecuenciaDialogo(
+                    mensaje,
+                    ignorarTimeScale
+                )
+            );
     }
 
 
 
-    IEnumerator SecuenciaDialogo(string frase)
-
+    IEnumerator SecuenciaDialogo(
+        string frase,
+        bool ignorarTimeScale = false)
     {
-
         canvasGroupDialogo.gameObject.SetActive(true);
-
         canvasGroupDialogo.alpha = 1f;
-
         textoSubtitulos.text = "";
 
+        float speedType =
+            velocidadEscritura > 0
+            ? velocidadEscritura
+            : 0.03f;
 
 
-        float speedType = velocidadEscritura > 0 ? velocidadEscritura : 0.03f;
-
-
+        // ==========================================
+        // TYPEWRITER
+        // ==========================================
 
         foreach (char letra in frase.ToCharArray())
-
         {
-
             textoSubtitulos.text += letra;
 
-            yield return new WaitForSeconds(speedType);
-
+            if (ignorarTimeScale)
+            {
+                yield return new WaitForSecondsRealtime(
+                    speedType
+                );
+            }
+            else
+            {
+                yield return new WaitForSeconds(
+                    speedType
+                );
+            }
         }
 
 
+        // ==========================================
+        // TIEMPO VISIBLE
+        // ==========================================
 
-        yield return new WaitForSeconds(3.5f);
+        if (ignorarTimeScale)
+            yield return new WaitForSecondsRealtime(3.5f);
+        else
+            yield return new WaitForSeconds(3.5f);
 
 
+        // ==========================================
+        // FADE
+        // ==========================================
 
-        float speedFade = velocidadFade > 0 ? velocidadFade : 2f;
+        float speedFade =
+            velocidadFade > 0
+            ? velocidadFade
+            : 2f;
 
-        while (canvasGroupDialogo != null && canvasGroupDialogo.alpha > 0f)
-
+        while (
+            canvasGroupDialogo != null &&
+            canvasGroupDialogo.alpha > 0f)
         {
+            float delta =
+                ignorarTimeScale
+                ? Time.unscaledDeltaTime
+                : Time.deltaTime;
 
-            canvasGroupDialogo.alpha -= Time.deltaTime * speedFade;
+            canvasGroupDialogo.alpha -=
+                delta * speedFade;
 
             yield return null;
-
         }
-
 
 
         if (canvasGroupDialogo != null)
-
         {
-
             canvasGroupDialogo.alpha = 0f;
-
             canvasGroupDialogo.gameObject.SetActive(false);
-
         }
 
-
-
         corrutinaActiva = null;
-
     }
 
     private IEnumerator ParpadeoLinternaTerror()
@@ -2608,9 +2590,6 @@ private void PrepararDebugNanielaBotella()
     // ==========================================
     // UI
     // ==========================================
-
-    if (textoInstruccionF != null)
-        textoInstruccionF.gameObject.SetActive(false);
 
     ActualizarObjetivo(
         "Busca la botella especial en el depósito"
