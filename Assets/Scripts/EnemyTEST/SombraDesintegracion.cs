@@ -21,6 +21,12 @@ public class SombraDesintegracion : MonoBehaviour
     [Header("Partículas de desintegración")]
     public ParticleSystem particulasDesintegracion;
 
+    [Header("Audio de desintegración")]
+    public AudioSource audioDesintegracion;
+
+    [Tooltip("Tiempo sin recibir daño antes de cortar el sonido.")]
+    public float tiempoParaDetenerAudio = 0.15f;
+
     [Tooltip("Cuánto tiempo sin recibir daño antes de cortar partículas.")]
     public float tiempoParaDetenerParticulas = 0.12f;
 
@@ -71,7 +77,7 @@ public class SombraDesintegracion : MonoBehaviour
                 ParticleSystemStopBehavior.StopEmitting
             );
         }
-        
+
         if (Input.GetKeyDown(KeyCode.T))
         {
             ActualizarDesintegracion(50f, 100f);
@@ -80,6 +86,13 @@ public class SombraDesintegracion : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Y))
         {
             ActualizarDesintegracion(0f, 100f);
+        }
+        
+        if (audioDesintegracion != null &&
+            audioDesintegracion.isPlaying &&
+            Time.time - ultimoGolpe > tiempoParaDetenerAudio)
+        {
+            audioDesintegracion.Stop();
         }
     }
 
@@ -109,6 +122,13 @@ public class SombraDesintegracion : MonoBehaviour
             !particulasDesintegracion.isPlaying)
         {
             particulasDesintegracion.Play();
+        }
+
+        if (audioDesintegracion != null &&
+            !audioDesintegracion.isPlaying)
+        {
+            audioDesintegracion.loop = true;
+            audioDesintegracion.Play();
         }
     }
 
