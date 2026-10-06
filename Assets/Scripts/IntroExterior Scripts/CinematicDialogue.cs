@@ -36,7 +36,7 @@ public class CinematicDialogue : MonoBehaviour
 
     public void Dialogue02()
     {
-        ShowDialogue("Las facturas no dejan de llegar...... y el banco no espera.");
+        ShowDialogue("Las facturas no dejan de llegar... y el banco no espera.");
     }
 
     public void Dialogue03()
@@ -51,7 +51,7 @@ public class CinematicDialogue : MonoBehaviour
 
     public void Dialogue05()
     {
-        ShowDialogue("Perderlo significaría quedarme en la calle... Pero...");
+        ShowDialogue("Perderlo significaría quedarme en la calle, pero...");
     }
 
     public void Dialogue06()
@@ -61,7 +61,7 @@ public class CinematicDialogue : MonoBehaviour
 
     public void Dialogue07()
     {
-        ShowDialogue("...UN ÚLTIMO TURNO.");
+        ShowDialogue("UN ÚLTIMO TURNO.");
     }
 
 
