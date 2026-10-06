@@ -313,7 +313,8 @@ public class Act1Manager : MonoBehaviour
     public GameObject segundaCriatura;
     public SegundaCriaturaPared segundaCriaturaPared;
 
-
+    [Header("DEBUG - Segunda criatura")]
+    [SerializeField] private bool debugSegundaCriatura = false;
 
     public static Act1Manager Instance { get; private set; }
 
@@ -364,6 +365,8 @@ public class Act1Manager : MonoBehaviour
         if (volumenGlobalNarrativo != null) volumenGlobalNarrativo.weight = 0f;
 
         if (segundaCriatura != null) segundaCriatura.SetActive(false);
+
+        if (debugSegundaCriatura) { StartCoroutine(DebugIniciarSegundaCriatura()); }
 
 
 
@@ -2612,6 +2615,33 @@ private void PrepararDebugNanielaBotella()
         "[Act1Manager] DEBUG listo: Ñañiela activa, " +
         "botella especial disponible y Volume Global en 1."
     );
+}
+
+private IEnumerator DebugIniciarSegundaCriatura()
+{
+    yield return new WaitForSeconds(1f);
+
+    if (segundaCriatura == null)
+    {
+        Debug.LogError(
+            "[Act1Manager] DEBUG: Segunda criatura no asignada."
+        );
+
+        yield break;
+    }
+
+    segundaCriatura.SetActive(true);
+
+    if (segundaCriaturaPared != null)
+    {
+        segundaCriaturaPared.IniciarSecuencia();
+    }
+    else
+    {
+        Debug.LogError(
+            "[Act1Manager] DEBUG: SegundaCriaturaPared no asignada."
+        );
+    }
 }
 
 }
