@@ -373,7 +373,7 @@ public class Act2ManagerDemo : MonoBehaviour
     public void NotaLeida()
     {
     
-    MostrarDialogo("Lucas: \"La guardé donde nadie limpia\"... el baño.");
+    MostrarDialogo("Lucas: ¿La llave? Creo que se me callo mientras limpiaba el baño.");
         estadoActual = Act2State.Bano;
         ActualizarObjetivo("Ir a buscar la llave del sotano al baño");
         // Activar la llave en el baño
