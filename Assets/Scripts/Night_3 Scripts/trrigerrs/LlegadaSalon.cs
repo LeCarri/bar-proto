@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class LlegadaSalonAct3 : MonoBehaviour
@@ -9,6 +10,19 @@ public class LlegadaSalonAct3 : MonoBehaviour
     public GameObject clientesActo3;
 
     private bool activado = false;
+
+    private Collider miCollider;
+
+
+    // AWAKE
+
+    private void Awake()
+    {
+        miCollider = GetComponent<Collider>();
+    }
+
+
+    // TRIGGER
 
     private void OnTriggerEnter(Collider other)
     {
@@ -69,6 +83,9 @@ public class LlegadaSalonAct3 : MonoBehaviour
             "[SALON] ¡Llegó al salón después de guardar los elementos!"
         );
 
+
+        // ACTIVAR CLIENTES
+
         if (clientesActo3 != null)
         {
             clientesActo3.SetActive(true);
@@ -84,10 +101,65 @@ public class LlegadaSalonAct3 : MonoBehaviour
             );
         }
 
+
+        // INICIAR SECUENCIA DEL SALÓN
+
         Act3Manager.Instance.IniciarSecuenciaSalon();
 
         Debug.Log(
             "[SALON] Secuencia del salón iniciada."
         );
+
+
+        // ESPERAR ANTES DE CERRAR EL PASO
+
+        StartCoroutine(
+            DesactivarTriggerDespuesDeEsperar()
+        );
+    }
+
+
+    // DESACTIVAR IS TRIGGER DESPUÉS DE ESPERAR
+
+    private IEnumerator DesactivarTriggerDespuesDeEsperar()
+    {
+        Debug.Log(
+            "[SALON] Esperando antes de cerrar el paso..."
+        );
+
+        yield return new WaitForSeconds(2f);
+
+        if (miCollider != null)
+        {
+            miCollider.isTrigger = false;
+
+            Debug.Log(
+                "[SALON] El Collider dejó de ser Trigger."
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[SALON] No se encontró Collider."
+            );
+        }
+    }
+
+    public void ReactivarSalida()
+    {
+        if (miCollider != null)
+        {
+            miCollider.isTrigger = true;
+
+            Debug.Log(
+                "[SALON] El paso volvió a ser Trigger. Se puede salir de la barra."
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[SALON] No se encontró Collider para reactivar."
+            );
+        }
     }
 }
