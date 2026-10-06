@@ -29,6 +29,9 @@ public class SegundaCriaturaPared : MonoBehaviour
     [Header("Transición al suelo")]
     public float radioBusquedaNavMesh = 1.5f;
 
+    [Header("Colisión durante recorrido")]
+    public Collider[] collidersFisicos;
+
     private bool secuenciaIniciada;
 
     private void Awake()
@@ -46,6 +49,14 @@ public class SegundaCriaturaPared : MonoBehaviour
             return;
 
         secuenciaIniciada = true;
+
+        // Mientras atraviesa paredes/puertas,
+        // no tiene colisión física.
+        foreach (Collider col in collidersFisicos)
+        {
+            if (col != null)
+                col.enabled = false;
+        }
 
         StartCoroutine(RecorrerPared());
     }
@@ -193,13 +204,19 @@ public class SegundaCriaturaPared : MonoBehaviour
                 0f
             );
 
-
-        transform.position =
-            hit.position;
-
+        transform.position = hit.position;
 
         yield return null;
 
+        // ==========================================
+        // VOLVER A ACTIVAR COLISIONES
+        // ==========================================
+
+        foreach (Collider col in collidersFisicos)
+        {
+            if (col != null)
+                col.enabled = true;
+        }
 
         // ==========================================
         // ACTIVAR NAVMESH
