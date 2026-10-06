@@ -8190,7 +8190,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VigenteMirror
   modeloVigilante: {fileID: 2124084489}
-  sacudidaCamara: {fileID: 0}
+  sacudidaCamara: {fileID: 636570686}
   sonidoVigilante: {fileID: 0}
   sonidoSusto: {fileID: 2092445931}
   duracionAparicion: 2.2
@@ -115259,6 +115259,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   vidaActual: 100
   canvasDerrota: {fileID: 1023052184}
+  fadeNegro: {fileID: 0}
+  duracionFadeNegro: 0.8
+  esperaEnNegro: 0.6
+  pivotCamaraDerrota: {fileID: 0}
+  duracionCaidaCamara: 0.9
+  inclinacionCamara: 25
+  descensoCamara: 0.25
+  linterna: {fileID: 0}
+  controlesJugador: []
+  volumenBaseEnemy1Derrota: 0.25
+  volumenBaseEnemy2Derrota: 0.2
+  audioContacto: {fileID: 0}
+  enemyVoices: {fileID: 0}
+  baseEnemy1: {fileID: 0}
+  baseEnemy2: {fileID: 0}
+  duracionAntesDelNegro: 0.8
 --- !u!143 &1177223975
 CharacterController:
   m_ObjectHideFlags: 0
