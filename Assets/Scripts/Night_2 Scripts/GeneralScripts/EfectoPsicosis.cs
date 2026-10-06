@@ -4,10 +4,9 @@ using Unity.Cinemachine;
 
 /// <summary>
 /// Controla el estado visual de "psicosis" del Acto 2:
-///  - Cambia el FOV de la cámara (visión distorsionada)
 ///  - Activa/desactiva una overlay de colores sobre la pantalla
 ///  - Mueve el ruido de estática/vignette más rápido
-///  - Aumenta el consumo de batería de la linterna (si usa Flashlight_Act2)
+///  - (FOV de cámara desactivado para evitar distorsiones no deseadas)
 ///
 /// SETUP: Colocar en un GameObject vacío llamado "EfectoPsicosis" en la escena.
 /// Asignar la cámara, el panel de overlay y el AudioSource de estática.
@@ -36,25 +35,21 @@ public class EfectoPsicosis : MonoBehaviour
     public AudioSource sonidoEstatica;
 
     private bool psicosisActiva = false;
-    private float fovOriginal;
     private Coroutine coroutinaPulso;
 
     void Start()
     {
-        if (cinemachineCam != null)
-        {
-            fovOriginal = cinemachineCam.Lens.FieldOfView;
-        }
-
         if (overlayPsicosis != null) overlayPsicosis.alpha = 0f;
     }
 
     void Update()
     {
+        // --- CAMBIO DE FOV DESACTIVADO ---
+        // Se comenta este bloque para evitar tiradones de zoom y cambios bruscos de campo de visión.
+        /*
         if (cinemachineCam == null) return;
 
         float fovObjetivo = psicosisActiva ? fovPsicosis : fovNormal;
-        // Solución: Usar cinemachineCam.Lens.FieldOfView en vez de cinemachineCam.fieldOfView
         var lens = cinemachineCam.Lens;
         lens.FieldOfView = Mathf.Lerp(
             lens.FieldOfView,
@@ -62,6 +57,7 @@ public class EfectoPsicosis : MonoBehaviour
             Time.deltaTime * velocidadFOV
         );
         cinemachineCam.Lens = lens;
+        */
     }
 
     /// <summary>

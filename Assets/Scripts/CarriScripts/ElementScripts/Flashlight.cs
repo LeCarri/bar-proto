@@ -422,5 +422,54 @@ public class Flashlight : MonoBehaviour
         ResetCameraPosition();
 
         Debug.Log("[Flashlight] Apagado forzado.");
+    }
+    public void PrepararParaDerrota()
+    {
+        // La linterna queda ENCENDIDA
+        isOn = true;
+        isAttacking = false;
+
+        currentTargetIntensity = normalIntensity;
+
+        if (spotLight != null)
+        {
+            spotLight.enabled = true;
+            spotLight.spotAngle = normalAngle;
+            spotLight.intensity = normalIntensity;
+        }
+
+        // Sacamos el haz de ataque
+        if (lightBeamMesh != null)
+            lightBeamMesh.gameObject.SetActive(false);
+
+        // Cortamos efectos del ataque
+        StopImpactParticles();
+
+        if (sparksParticles != null)
+        {
+            sparksParticles.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear
+            );
+        }
+
+        if (lensSmokeParticles != null)
+            lensSmokeParticles.Stop();
+
+        // Dejamos el polvo normal de la linterna
+        if (dustParticles != null &&
+            !dustParticles.isPlaying)
+        {
+            dustParticles.Play();
+        }
+
+        // Cortamos audio del rayo fuerte
+        if (audioSourceLoop != null &&
+            audioSourceLoop.isPlaying)
+        {
+            audioSourceLoop.Stop();
+        }
+
+        ResetCameraPosition();
     }           
 }
