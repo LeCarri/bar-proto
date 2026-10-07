@@ -318,6 +318,18 @@ public class Act1Manager : MonoBehaviour
 
     public static Act1Manager Instance { get; private set; }
 
+    [Header("Música - Combate enemigos")]
+    public AudioSource[] musicaCombate;
+
+    [Range(0f, 1f)]
+    public float factorMusicaTrasPrimerEnemigo = 0.55f;
+
+    public float duracionBajadaMusica = 0.5f;
+    public float duracionSubidaMusica = 0.25f;
+
+    private float[] volumenesMusicaOriginales;
+    private Coroutine rutinaMusicaCombate;
+
 
 
     private void Awake()
@@ -1472,13 +1484,16 @@ public class Act1Manager : MonoBehaviour
 
         if (enemigosEliminados == 1)
         {
+            // Momento de alivio después del primer enemigo.
+            BajarMusicaPrimerEnemigo();
+
             IniciarSegundaCriatura();
+
             return;
         }
 
-
         // ==========================================
-        // FINAL DE LA OLEADA
+        // TERMINAR LA NOCHE
         // ==========================================
 
         if (enemigosEliminados >= enemigosTotalesNoche1 &&
@@ -1492,7 +1507,7 @@ public class Act1Manager : MonoBehaviour
     {
         if (segundaCriatura == null)
         {
-            Debug.LogWarning(
+            Debug.LogError(
                 "[Act1Manager] Segunda criatura no asignada."
             );
 
@@ -1504,6 +1519,12 @@ public class Act1Manager : MonoBehaviour
         if (segundaCriaturaPared != null)
         {
             segundaCriaturaPared.IniciarSecuencia();
+        }
+        else
+        {
+            Debug.LogError(
+                "[Act1Manager] SegundaCriaturaPared no asignada."
+            );
         }
     }
 
@@ -2031,7 +2052,19 @@ private IEnumerator RecuperarVision()
 
 }
 
+public IEnumerator EjecutarFalloLinterna()
+{
+    yield return StartCoroutine(
+        ParpadeoLinternaTerror()
+    );
+}
 
+public IEnumerator EjecutarRecuperacionLinterna()
+{
+    yield return StartCoroutine(
+        RecuperarVision()
+    );
+}
 
 public void PrimeraSombraDerrotada()
 
@@ -2642,6 +2675,133 @@ private IEnumerator DebugIniciarSegundaCriatura()
             "[Act1Manager] DEBUG: SegundaCriaturaPared no asignada."
         );
     }
+}
+
+private void GuardarVolumenesMusica()
+{
+    if (musicaCombate == null)
+        return;
+
+    if (volumenesMusicaOriginales != null &&
+        volumenesMusicaOriginales.Length == musicaCombate.Length)
+    {
+        return;
+    }
+
+    volumenesMusicaOriginales =
+        new float[musicaCombate.Length];
+
+    for (int i = 0; i < musicaCombate.Length; i++)
+    {
+        if (musicaCombate[i] != null)
+        {
+            volumenesMusicaOriginales[i] =
+                musicaCombate[i].volume;
+        }
+    }
+}
+
+
+private void CambiarVolumenMusica(
+    float factor,
+    float duracion)
+{
+    GuardarVolumenesMusica();
+
+    if (rutinaMusicaCombate != null)
+        StopCoroutine(rutinaMusicaCombate);
+
+    rutinaMusicaCombate =
+        StartCoroutine(
+            FadeMusicaCombate(
+                factor,
+                duracion
+            )
+        );
+}
+
+
+private IEnumerator FadeMusicaCombate(
+    float factor,
+    float duracion)
+{
+    if (musicaCombate == null ||
+        volumenesMusicaOriginales == null)
+    {
+        yield break;
+    }
+
+    float[] volumenInicio =
+        new float[musicaCombate.Length];
+
+    for (int i = 0; i < musicaCombate.Length; i++)
+    {
+        if (musicaCombate[i] != null)
+            volumenInicio[i] = musicaCombate[i].volume;
+    }
+
+    float tiempo = 0f;
+
+    while (tiempo < duracion)
+    {
+        tiempo += Time.deltaTime;
+
+        float t =
+            duracion <= 0f
+            ? 1f
+            : Mathf.Clamp01(tiempo / duracion);
+
+        t = Mathf.SmoothStep(0f, 1f, t);
+
+        for (int i = 0; i < musicaCombate.Length; i++)
+        {
+            if (musicaCombate[i] == null)
+                continue;
+
+            float destino =
+                volumenesMusicaOriginales[i] *
+                factor;
+
+            musicaCombate[i].volume =
+                Mathf.Lerp(
+                    volumenInicio[i],
+                    destino,
+                    t
+                );
+        }
+
+        yield return null;
+    }
+
+    for (int i = 0; i < musicaCombate.Length; i++)
+    {
+        if (musicaCombate[i] != null)
+        {
+            musicaCombate[i].volume =
+                volumenesMusicaOriginales[i] *
+                factor;
+        }
+    }
+
+    rutinaMusicaCombate = null;
+}
+
+
+public void BajarMusicaPrimerEnemigo()
+{
+    CambiarVolumenMusica(
+        factorMusicaTrasPrimerEnemigo,
+        duracionBajadaMusica
+    );
+}
+
+
+public void RestaurarMusicaSegundoEnemigo()
+{
+    CambiarVolumenMusica(
+        1f,
+        duracionSubidaMusica
+    );
 }
 
 }
