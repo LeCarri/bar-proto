@@ -82,6 +82,29 @@ public class AparicionSombraCocina : MonoBehaviour
 
     public float velocidadEntradaVolumeCombate = 8f;
 
+    [Header("Radio - Señuelo")]
+    public AudioSource audioRadio;
+    public AudioSource audioEstaticaRadio;
+
+    [Tooltip("Cuánto suena la radio si el jugador ya estaba cerca.")]
+    public float tiempoRadioCorta = 1.5f;
+
+    [Tooltip("Si la radio ya venía llamándolo desde lejos, cuánto esperamos al entrar en la zona antes de que falle.")]
+    public float esperaAntesInterferencia = 0.3f;
+
+    [Header("Radio - Interferencia")]
+    public int cantidadCortesRadio = 5;
+
+    public float intervaloCorteMin = 0.04f;
+    public float intervaloCorteMax = 0.11f;
+
+    [Header("Radio - Recordatorio")]
+    [Tooltip("Si no mira después de que la radio se apaga, cada cuánto hacemos un pequeño ruido para volver a llamar su atención.")]
+    public float tiempoRecordatorioMirada = 3.5f;
+
+    [Header("Punto mirada - Obstáculos")]
+    public LayerMask capasBloqueoMirada;
+
     private Coroutine rutinaVolumeCombate;
 
     private bool secuenciaIniciada;
@@ -90,8 +113,46 @@ public class AparicionSombraCocina : MonoBehaviour
 
     private float tiempoMirando;
 
+    private bool eventoRadioHabilitado;
+    private bool radioLlamando;
+    private bool zonaEncuentroActivada;
+
+    private Coroutine rutinaRadio;
+    private Coroutine rutinaRecordatorioRadio;
+
+    private float volumenOriginalRadio = 1f;
+
     private void Start()
     {
+
+            if (audioRadio != null)
+    {
+        audioRadio.playOnAwake = false;
+        audioRadio.loop = true;
+
+        volumenOriginalRadio =
+            audioRadio.volume;
+
+        audioRadio.Stop();
+    }
+
+    if (audioEstaticaRadio != null)
+    {
+        audioEstaticaRadio.playOnAwake = false;
+        audioEstaticaRadio.loop = false;
+        audioEstaticaRadio.Stop();
+    }
+
+
+    // Importante:
+    // cuando la criatura finalmente se active,
+    // todavía no queremos que empiece a caminar sola.
+
+    if (scriptPersecucion != null)
+        scriptPersecucion.enabled = false;
+
+    if (navMeshAgent != null)
+        navMeshAgent.enabled = false;
         // La criatura empieza escondida.
         if (criatura != null)
             criatura.SetActive(false);
@@ -153,118 +214,304 @@ public class AparicionSombraCocina : MonoBehaviour
 
         secuenciaIniciada = true;
 
-        StartCoroutine(SecuenciaAparicion());
-    }
-
-    private IEnumerator SecuenciaAparicion()
-    {
-        if (luzLinterna == null)
-        {
-            Debug.LogError(
-                "[AparicionSombra] Falta referencia a la luz de la linterna."
-            );
-
-            yield break;
-        }
-
-        // -------------------------------------------
-        // TITILEO
-        // -------------------------------------------
-
-        if (audioTitileo != null)
-        {
-            audioTitileo.loop = true;
-            audioTitileo.Play();
-        }
-
-        for (int i = 0; i < cantidadTitileos; i++)
-        {
-            luzLinterna.enabled = false;
-
-            yield return new WaitForSeconds(
-                Mathf.Max(0.01f, intervaloTitileo)
-            );
-
-            luzLinterna.enabled = true;
-
-            yield return new WaitForSeconds(
-                Mathf.Max(0.01f, intervaloTitileo)
-            );
-        }
-
-        // -------------------------------------------
-        // APAGÓN FINAL
-        // -------------------------------------------
-
-        luzLinterna.enabled = false;
-
-        if (audioTitileo != null)
-        {
-            audioTitileo.Stop();
-        }
-
-        // -------------------------------------------
-        // LA CRIATURA APARECE EN LA OSCURIDAD
-        // -------------------------------------------
-
-        if (criatura != null)
-            criatura.SetActive(true);
-
-        // Todavía no dejamos que persiga.
-        if (scriptPersecucion != null)
-            scriptPersecucion.enabled = false;
-
-        if (navMeshAgent != null)
-            navMeshAgent.enabled = false;
-
-        // Tiempo completamente a oscuras.
-        yield return new WaitForSeconds(
-            Mathf.Max(0f, tiempoOscuridad)
-        );
-
-        // -------------------------------------------
-        // VUELVE LA LINTERNA
-        // -------------------------------------------
-
-        luzLinterna.enabled = true;
-
-        // Ahora esperamos que el jugador la mire.
-        esperandoMirada = true;
-        tiempoMirando = 0f;
+        // Desde ahora las zonas pueden reaccionar.
+        eventoRadioHabilitado = true;
 
         Debug.Log(
-            "[AparicionSombra] Criatura visible. Esperando mirada."
+            "[AparicionSombra] Encuentro habilitado. " +
+            "Esperando ZonaHuida o ZonaEncuentro."
         );
     }
+
+
 
     private void DetectarMiradaCriatura()
     {
         if (camaraJugador == null ||
             puntoMiradaCriatura == null)
+        {
             return;
+        }
+
 
         Vector3 viewport =
             camaraJugador.WorldToViewportPoint(
                 puntoMiradaCriatura.position
             );
 
+
         bool mirando =
             viewport.z > 0f &&
             Mathf.Abs(viewport.x - 0.5f) <= toleranciaMirada &&
             Mathf.Abs(viewport.y - 0.5f) <= toleranciaMirada;
 
+
+        // ==========================================
+        // COMPROBAR SI HAY UNA PARED EN EL MEDIO
+        // ==========================================
+
+        if (mirando &&
+            capasBloqueoMirada.value != 0)
+        {
+            Vector3 origen =
+                camaraJugador.transform.position;
+
+            Vector3 haciaPunto =
+                puntoMiradaCriatura.position -
+                origen;
+
+            float distancia =
+                haciaPunto.magnitude;
+
+
+            bool bloqueado =
+                Physics.Raycast(
+                    origen,
+                    haciaPunto.normalized,
+                    distancia,
+                    capasBloqueoMirada
+                );
+
+
+            if (bloqueado)
+            {
+                mirando = false;
+            }
+        }
+
+
+        // ==========================================
+        // DETECCIÓN REAL DE LA MIRADA
+        // ==========================================
+
         if (mirando)
         {
             tiempoMirando += Time.deltaTime;
 
-            if (tiempoMirando >= tiempoMiradaNecesario)
+            if (tiempoMirando >=
+                tiempoMiradaNecesario)
+            {
                 RevelarCriatura();
+            }
         }
         else
         {
             tiempoMirando = 0f;
         }
     }
+
+    public void EntrarZonaHuida()
+    {
+        if (!eventoRadioHabilitado ||
+            zonaEncuentroActivada ||
+            revelada)
+        {
+            return;
+        }
+
+        if (radioLlamando)
+            return;
+
+        radioLlamando = true;
+
+        EncenderRadio();
+
+        Debug.Log(
+            "[AparicionSombra] Jugador intenta alejarse. Radio encendida."
+        );
+    }
+
+
+        public void EntrarZonaEncuentro()
+        {
+            if (!eventoRadioHabilitado ||
+                zonaEncuentroActivada ||
+                revelada)
+            {
+                return;
+            }
+
+            zonaEncuentroActivada = true;
+
+            if (rutinaRadio != null)
+                StopCoroutine(rutinaRadio);
+
+            rutinaRadio =
+                StartCoroutine(
+                    PrepararEncuentroConRadio()
+                );
+
+            Debug.Log(
+                "[AparicionSombra] Jugador llegó a ZonaEncuentro."
+            );
+        }
+
+        private void EncenderRadio()
+        {
+            if (audioRadio == null)
+                return;
+
+            audioRadio.Stop();
+
+            audioRadio.volume =
+                volumenOriginalRadio;
+
+            audioRadio.loop = true;
+
+            audioRadio.Play();
+        }
+
+        private IEnumerator PrepararEncuentroConRadio()
+        {
+            bool radioYaEstabaSonando =
+                audioRadio != null &&
+                audioRadio.isPlaying;
+
+
+            // ==========================================
+            // CASO 1:
+            // YA ESTABA CERCA
+            // ==========================================
+
+            if (!radioYaEstabaSonando)
+            {
+                EncenderRadio();
+
+                yield return new WaitForSeconds(
+                    Mathf.Max(0f, tiempoRadioCorta)
+                );
+            }
+
+
+            // ==========================================
+            // CASO 2:
+            // VENÍA SIGUIENDO LA RADIO DESDE LA PUERTA
+            // ==========================================
+
+            else
+            {
+                yield return new WaitForSeconds(
+                    Mathf.Max(
+                        0f,
+                        esperaAntesInterferencia
+                    )
+                );
+            }
+
+
+            // ==========================================
+            // LA RADIO EMPIEZA A FALLAR
+            // ==========================================
+
+            yield return StartCoroutine(
+                InterferenciaRadio()
+            );
+
+
+            // ==========================================
+            // SILENCIO.
+            // AHORA SÍ PUEDE ACTIVARSE CON LA MIRADA.
+            // ==========================================
+
+            esperandoMirada = true;
+            tiempoMirando = 0f;
+
+
+            Debug.Log(
+                "[AparicionSombra] Radio muerta. Esperando mirada a la criatura."
+            );
+
+
+            // Si tarda mucho en mirar,
+            // hacemos pequeños recordatorios auditivos.
+            if (rutinaRecordatorioRadio != null)
+                StopCoroutine(rutinaRecordatorioRadio);
+
+            rutinaRecordatorioRadio =
+                StartCoroutine(
+                    RecordatorioRadio()
+                );
+        }
+
+        private IEnumerator InterferenciaRadio()
+        {
+            if (audioEstaticaRadio != null)
+            {
+                audioEstaticaRadio.Stop();
+                audioEstaticaRadio.Play();
+            }
+
+
+            if (audioRadio != null)
+            {
+                for (int i = 0;
+                    i < cantidadCortesRadio;
+                    i++)
+                {
+                    // CORTE
+                    audioRadio.volume = 0f;
+
+                    yield return new WaitForSeconds(
+                        Random.Range(
+                            intervaloCorteMin,
+                            intervaloCorteMax
+                        )
+                    );
+
+
+                    // VUELVE
+                    audioRadio.volume =
+                        volumenOriginalRadio;
+
+                    yield return new WaitForSeconds(
+                        Random.Range(
+                            intervaloCorteMin,
+                            intervaloCorteMax
+                        )
+                    );
+                }
+
+
+                // CORTE DEFINITIVO
+                audioRadio.Stop();
+
+                audioRadio.volume =
+                    volumenOriginalRadio;
+            }
+
+
+            if (audioEstaticaRadio != null)
+            {
+                audioEstaticaRadio.Stop();
+            }
+        }
+
+        private IEnumerator RecordatorioRadio()
+        {
+            while (esperandoMirada &&
+                !revelada)
+            {
+                yield return new WaitForSeconds(
+                    tiempoRecordatorioMirada
+                );
+
+                if (!esperandoMirada ||
+                    revelada)
+                {
+                    yield break;
+                }
+
+
+                // Un ruido corto desde la radio:
+                // "mirá para acá".
+                if (audioEstaticaRadio != null)
+                {
+                    audioEstaticaRadio.Stop();
+                    audioEstaticaRadio.Play();
+                }
+            }
+        }
+
 
     private void RevelarCriatura()
     {
@@ -273,6 +520,35 @@ public class AparicionSombraCocina : MonoBehaviour
 
         revelada = true;
         esperandoMirada = false;
+
+        // ==========================================
+        // DETENER TODO RASTRO DE LA RADIO
+        // ==========================================
+
+        if (rutinaRecordatorioRadio != null)
+        {
+            StopCoroutine(
+                rutinaRecordatorioRadio
+            );
+
+            rutinaRecordatorioRadio = null;
+        }
+
+        if (audioRadio != null)
+            audioRadio.Stop();
+
+        if (audioEstaticaRadio != null)
+            audioEstaticaRadio.Stop();
+
+
+        // ==========================================
+        // APARICIÓN REAL DE LA CRIATURA
+        // ==========================================
+
+        if (criatura != null)
+        {
+            criatura.SetActive(true);
+        }
 
         // ==========================================
         // SACUDIDA INMEDIATA
