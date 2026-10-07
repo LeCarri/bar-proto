@@ -7,23 +7,30 @@ public class VigenteMirror : MonoBehaviour
     [Tooltip("El modelo del Vigilante en el espejo.")]
     public GameObject modeloVigilante;
 
-    [Tooltip("Referencia al componente CameraShake")]
+    [Tooltip("Referencia al script de temblor (si se deja vacío, se busca automáticamente)")]
     public CameraShake sacudidaCamara;
 
     [Header("Audio")]
     public AudioSource sonidoVigilante;
     public AudioSource sonidoSusto;
 
-    [Header("Tiempos")]
+    [Header("Tiempos y Ajustes")]
     public float duracionAparicion = 2.2f;
-
-    [Header("Ajustes de Sacudida")]
     public bool usarSacudidaCamara = true;
-    public float duracionShake = 0.3f;
-    public float intensidadShake = 1.0f; // Ajustá este valor si querés más o menos intensidad
+    public float duracionShake = 0.4f;
+    public float intensidadShake = 1.2f;
+
+    private void Awake()
+    {
+        // Fallback por si no se asignó en el Inspector
+        if (sacudidaCamara == null)
+        {
+            sacudidaCamara = Object.FindFirstObjectByType<CameraShake>();
+        }
+    }
 
     /// <summary>
-    /// Método público llamado por el Trigger / Llave
+    /// Método público llamado al tomar la llave o cruzar el trigger del baño.
     /// </summary>
     public void Aparecer()
     {
@@ -38,25 +45,25 @@ public class VigenteMirror : MonoBehaviour
         StartCoroutine(AparicionEnEspejo());
     }
 
-    public IEnumerator AparicionEnEspejo()
+    private IEnumerator AparicionEnEspejo()
     {
-        // 1. Un pequeño delay antes del susto
-        yield return new WaitForSeconds(0.5f);
+        // 1. Pequeño delay de tensión antes del impacto
+        yield return new WaitForSeconds(0.4f);
 
-        // 2. Reproducir efectos de audio del susto
+        // 2. Audio del susto
         if (sonidoVigilante != null) sonidoVigilante.Play();
         if (sonidoSusto != null) sonidoSusto.Play();
 
-        // 3. Disparar el temblor de cámara
+        // 3. Disparar el shake usando Perlin en Cinemachine
         if (usarSacudidaCamara && sacudidaCamara != null)
         {
             StartCoroutine(sacudidaCamara.Shake(duracionShake, intensidadShake));
         }
 
-        // 4. Esperar el tiempo de la visión
+        // 4. Duración de la silueta visible en el espejo
         yield return new WaitForSeconds(duracionAparicion);
 
-        // 5. Desaparecer modelo y audio
+        // 5. Ocultar silueta y detener audio
         if (modeloVigilante != null) modeloVigilante.SetActive(false);
         if (sonidoVigilante != null) sonidoVigilante.Stop();
     }
