@@ -21,7 +21,7 @@ public class IntroScreen : MonoBehaviour
     [SerializeField] [Range(0f, 1f)] private float typingVolume = 0.25f;
 
     [Header("Transition")]
-    [SerializeField] private string nextSceneName = "Night_1 Scene";
+    [SerializeField] private string nextSceneName = "Exterior";
 
     private void Start()
     {
@@ -79,6 +79,6 @@ public class IntroScreen : MonoBehaviour
         if (SaveManager.Instance != null)
             SaveManager.Instance.LoadSave();
         else
-            SceneManager.LoadScene("IntroScene");
+            SceneManager.LoadScene("Exterior");
     }
 }

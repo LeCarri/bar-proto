@@ -412,7 +412,7 @@ public class Act2ManagerDemo : MonoBehaviour
     // =========================================================
     // ESTADO 6: PSICOSIS — Brote de sombras y figura del niño
     // =========================================================
-    IEnumerator SecuenciaPsicosis()
+    public IEnumerator SecuenciaPsicosis()
 {
     yield return new WaitForSeconds(1.5f);
 
@@ -464,7 +464,7 @@ public class Act2ManagerDemo : MonoBehaviour
         StartCoroutine(SecuenciaCierre());
     }
 
-    IEnumerator SecuenciaCierre()
+    public IEnumerator SecuenciaCierre()
     {
         estadoActual = Act2State.Cierre;
 

@@ -41,6 +41,8 @@ public class ParanoiaSystem : MonoBehaviour
     public float intervaloMaxAlucinacion = 12f;
     private float tiempoProximaAlucinacion;
 
+    public static ParanoiaSystem Instancia { get; private set; }
+
     private void Awake()
     {
         if (Instance == null)

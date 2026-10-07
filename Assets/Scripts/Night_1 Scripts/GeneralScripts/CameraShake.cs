@@ -8,6 +8,7 @@ public class CameraShake : MonoBehaviour
     private CinemachineCamera cineCam;
 
     private CinemachineBasicMultiChannelPerlin noise;
+    private Coroutine corrutinaShakeActual;
 
     void Awake()
     {
@@ -16,7 +17,6 @@ public class CameraShake : MonoBehaviour
 
     void OnEnable()
     {
-        // Reintentamos por si la cámara no estaba lista en Awake
         if (noise == null)
             ObtenerReferenciaNoise();
     }
@@ -24,11 +24,11 @@ public class CameraShake : MonoBehaviour
     private void ObtenerReferenciaNoise()
     {
         if (cineCam == null)
-            cineCam = FindFirstObjectByType<CinemachineCamera>();
+            cineCam = FindAnyObjectByType<CinemachineCamera>();
 
         if (cineCam != null)
         {
-            // En Cinemachine 3.x buscamos el componente de Perlin en la cámara o en sus extensiones
+            // Busca la extensión de Perlin en la CinemachineCamera
             noise = cineCam.GetComponent<CinemachineBasicMultiChannelPerlin>();
             
             if (noise == null)
@@ -39,27 +39,45 @@ public class CameraShake : MonoBehaviour
 
         if (noise == null)
         {
-            Debug.LogWarning("[CameraShake] No se encontró CinemachineBasicMultiChannelPerlin en " + (cineCam != null ? cineCam.name : "ninguna cámara") + ". Asegúrate de agregar el Noise en la CinemachineCamera.");
+            Debug.LogWarning("[CameraShake] No se encontró CinemachineBasicMultiChannelPerlin en " + (cineCam != null ? cineCam.name : "ninguna cámara") + ". Verifica tener asignado un Noise Profile en la CinemachineCamera.");
         }
+    }
+
+    /// <summary>
+    /// Inicia la sacudida de cámara. Cancela cualquier sacudida previa para evitar bugs de reseteo.
+    /// </summary>
+    public void DispararShake(float duracion, float magnitud)
+    {
+        if (corrutinaShakeActual != null)
+        {
+            StopCoroutine(corrutinaShakeActual);
+        }
+        corrutinaShakeActual = StartCoroutine(ShakeCoroutine(duracion, magnitud));
     }
 
     public IEnumerator Shake(float duracion, float magnitud)
     {
-        if (noise == null)
-            ObtenerReferenciaNoise();
-
-        if (noise == null)
-        {
-            Debug.LogError("[CameraShake] No se puede ejecutar el shake porque 'noise' es NULL.");
-            yield break;
-        }
-
-        // Aplicamos la magnitud deseada
-        noise.AmplitudeGain = magnitud;
-
-        yield return new WaitForSeconds(duracion);
-
-        // Volvemos a cero al finalizar
-        noise.AmplitudeGain = 0f;
+        yield return ShakeCoroutine(duracion, magnitud);
     }
+
+    private IEnumerator ShakeCoroutine(float duracion, float magnitud)
+{
+    if (noise == null) ObtenerReferenciaNoise();
+    if (noise == null) yield break;
+
+    // Guardamos los valores originales para restaurarlos después
+    float ampOriginal = noise.AmplitudeGain;
+    float freqOriginal = noise.FrequencyGain;
+
+    // Aplicamos alta amplitud Y alta frecuencia para que sea brusco
+    noise.AmplitudeGain = magnitud;
+    noise.FrequencyGain = 4.0f; // <--- Subí esto (3.0 a 6.0) para vibración rápida
+
+    yield return new WaitForSeconds(duracion);
+
+    // Restauramos
+    noise.AmplitudeGain = ampOriginal;
+    noise.FrequencyGain = freqOriginal;
+    corrutinaShakeActual = null;
+}
 }
