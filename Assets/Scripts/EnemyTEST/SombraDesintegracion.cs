@@ -137,7 +137,24 @@ public class SombraDesintegracion : MonoBehaviour
         fragmentacionObjetivo = fragmentacionFinal;
 
         if (particulasDesintegracion != null)
+        {
             particulasDesintegracion.Play();
+        }
+
+        // La criatura está muriendo.
+        // No podemos depender de Update para apagar
+        // un AudioSource que vive fuera de ella.
+        DetenerAudioDesintegracion();
+    }
+
+    private void OnDisable()
+    {
+        DetenerAudioDesintegracion();
+    }
+
+    private void OnDestroy()
+    {
+        DetenerAudioDesintegracion();
     }
 
     private void AplicarFragmentacion(float valor)
@@ -159,5 +176,18 @@ public class SombraDesintegracion : MonoBehaviour
 
             rend.SetPropertyBlock(propertyBlock);
         }
+    }
+
+    public void DetenerAudioDesintegracion()
+    {
+        if (audioDesintegracion == null)
+            return;
+
+        audioDesintegracion.Stop();
+        audioDesintegracion.loop = false;
+
+        Debug.Log(
+            "[SombraDesintegracion] Audio de desintegración detenido."
+        );
     }
 }
