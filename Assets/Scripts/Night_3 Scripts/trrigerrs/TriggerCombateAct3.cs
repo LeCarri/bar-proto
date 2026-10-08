@@ -7,6 +7,8 @@ public class TriggerInicioCombateAct3 : MonoBehaviour
 
     private bool activado = false;
 
+    public GameObject siguienteTrigger;
+
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player"))
@@ -29,5 +31,7 @@ public class TriggerInicioCombateAct3 : MonoBehaviour
                 "[COMBATE ACT3] No se encontró Act3Manager."
             );
         }
+
+        siguienteTrigger.SetActive(true);
     }
 }

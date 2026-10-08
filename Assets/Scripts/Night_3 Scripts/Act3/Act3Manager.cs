@@ -305,10 +305,10 @@ public class Act3Manager : MonoBehaviour
             return;
         }
 
-        // Sacamos el vaso vacío de la mano
+        // Saca el vaso vacío de la mano
         ControladorMano3D.Instance.VaciarMano();
 
-        // Dejamos el líquido vacío antes de mostrar el vaso
+        // Deja el líquido vacío antes de mostrar el vaso
         if (servicioCervezaVisual != null)
         {
             servicioCervezaVisual.PrepararVasoVacio();
@@ -1374,8 +1374,6 @@ public class Act3Manager : MonoBehaviour
             );
         }
 
-        // REACTIVAR SALIDA DE LA BARRA
-
         if (llegadaSalon != null)
         {
             llegadaSalon.ReactivarSalida();
@@ -1384,14 +1382,8 @@ public class Act3Manager : MonoBehaviour
                 "[COMBATE ACT3] Salida de la barra reactivada."
             );
         }
-        else
-        {
-            Debug.LogWarning(
-                "[COMBATE ACT3] No hay LlegadaSalonAct3 asignado."
-            );
-        }
 
-        ActualizarObjetivo("Llega al sotano");
+        ActualizarObjetivo("Escapa del bar");
     }
 
 
@@ -1455,6 +1447,8 @@ public class Act3Manager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(1f);
+
+        CambiarIluminacion("Apagado");
 
         // ACTIVO EL TRIGGER
         ActivarTriggerInicioCombate();
