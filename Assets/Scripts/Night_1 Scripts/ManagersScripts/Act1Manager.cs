@@ -75,7 +75,7 @@ public class Act1Manager : MonoBehaviour
 
     public TextMeshProUGUI textoSubtitulos;
 
-    public CanvasGroup canvasGroupDialogo; 
+    public CanvasGroup canvasGroupDialogo;
 
     public TextMeshProUGUI textoObjetivo;
 
@@ -87,9 +87,9 @@ public class Act1Manager : MonoBehaviour
 
     [Header("Referencias de Escena")]
 
-    public GameObject grupoClientes; 
+    public GameObject grupoClientes;
 
-    public AudioSource sonidoGolpeSuelo; 
+    public AudioSource sonidoGolpeSuelo;
 
 
 
@@ -149,13 +149,13 @@ public class Act1Manager : MonoBehaviour
 
     [Header("Sistemas de Iluminación")]
 
-    public GameObject lucesNormales;   
+    public GameObject lucesNormales;
 
-    public GameObject lucesServicio;   
+    public GameObject lucesServicio;
 
-    public GameObject lucesCreepy;     
+    public GameObject lucesCreepy;
 
-    public GameObject lucesCombate;    
+    public GameObject lucesCombate;
 
 
 
@@ -203,11 +203,11 @@ public class Act1Manager : MonoBehaviour
 
     [Header("Referencias del Quiebre / Caja Musical")]
 
-    public GameObject cajaMusicalInteractuable; 
+    public GameObject cajaMusicalInteractuable;
 
-    public GameObject vasoWhiskyServido;       
+    public GameObject vasoWhiskyServido;
 
-    public GameObject grupoClientesBar;        
+    public GameObject grupoClientesBar;
 
     public GameObject lucesNormalesBar;
 
@@ -221,7 +221,7 @@ public class Act1Manager : MonoBehaviour
 
     public AudioSource sonidoGritoNina;
 
-    public AudioSource sonidoExplosionElectrica; 
+    public AudioSource sonidoExplosionElectrica;
 
     public AudioSource sonidoCorteDeLuz;
 
@@ -245,7 +245,7 @@ public class Act1Manager : MonoBehaviour
 
     [Header("PostQuiebre & Depósito")]
 
-    public GameObject botellaEspecial; 
+    public GameObject botellaEspecial;
 
     public GameObject puertaDeposito;
 
@@ -281,7 +281,7 @@ public class Act1Manager : MonoBehaviour
 
     public bool vasoDejadoEnBarra = false;
 
-    public CanvasGroup fadeCanvasGroup; 
+    public CanvasGroup fadeCanvasGroup;
 
 
 
@@ -299,7 +299,7 @@ public class Act1Manager : MonoBehaviour
 
     public ItemSO itemWhisky;
 
-    public ItemSO itemWhiskySangre; 
+    public ItemSO itemWhiskySangre;
 
     public ItemSO itemVasoVacio;
 
@@ -316,6 +316,49 @@ public class Act1Manager : MonoBehaviour
     [Header("DEBUG - Segunda criatura")]
     [SerializeField] private bool debugSegundaCriatura = false;
 
+    [Header("Tercer enemigo - Puerta del pasillo")]
+    public Camera camaraJugadorTercerEvento;
+
+    [Tooltip("Empty colocado aproximadamente en el centro de las dos puertas.")]
+    public Transform puntoMiradaPuertaPasillo;
+
+    [Range(0.05f, 0.5f)]
+    public float toleranciaMiradaPuerta = 0.22f;
+
+    public HingeJoint puertaPasilloIzquierda;
+    public HingeJoint puertaPasilloDerecha;
+
+    public float anguloPuertaIzquierda = -85f;
+    public float anguloPuertaDerecha = 85f;
+
+    public AudioSource sonidoPuertaPasillo;
+
+
+    [Header("Tercer enemigo - Mariela pasillo")]
+    public GameObject nanielaPasillo;
+    public MarielaPeekPasillo marielaPeekPasillo;
+    public Transform puntoNanielaPasillo;
+
+
+    [Header("Tercer enemigo - Luz guía")]
+    public Light luzPasilloTitileo;
+
+    public float intervaloTitileoMinPasillo = 0.06f;
+    public float intervaloTitileoMaxPasillo = 0.18f;
+
+    public bool dejarLuzPasilloEncendida = true;
+
+
+    [Header("Tercer enemigo - Tensión")]
+    [Range(0f, 1f)]
+    public float factorMusicaTrasSegundoEnemigo = 0.03f;
+
+    public float duracionBajadaMusicaSegundo = 0.8f;
+    public float pausaAntesPuerta = 1f;
+
+    private Coroutine rutinaLuzPasillo;
+    private bool eventoTercerEnemigoIniciado;
+
     public static Act1Manager Instance { get; private set; }
 
     [Header("Música - Combate enemigos")]
@@ -329,6 +372,19 @@ public class Act1Manager : MonoBehaviour
 
     private float[] volumenesMusicaOriginales;
     private Coroutine rutinaMusicaCombate;
+
+    [Header("Audio combate principal")]
+    public AparicionSombraCocina aparicionSombraCocina;
+
+    [Header("Audio - Paranoia alta")]
+    public AudioSource heartbeatParanoia;
+    public AudioSource respiracionParanoia;
+
+    [Range(0f, 1f)]
+    public float volumenHeartbeatPasillo = 0.75f;
+
+    [Range(0f, 1f)]
+    public float volumenRespiracionPasillo = 0.65f;
 
 
 
@@ -373,12 +429,14 @@ public class Act1Manager : MonoBehaviour
         if (luzTaniela != null) luzTaniela.SetActive(false);
 
         if (volumenAlucinacion != null) volumenAlucinacion.weight = 0f;
-        
+
         if (volumenGlobalNarrativo != null) volumenGlobalNarrativo.weight = 0f;
 
         if (segundaCriatura != null) segundaCriatura.SetActive(false);
 
         if (debugSegundaCriatura) { StartCoroutine(DebugIniciarSegundaCriatura()); }
+        if (nanielaPasillo != null) { nanielaPasillo.SetActive(false); }
+        if (luzPasilloTitileo != null) { luzPasilloTitileo.enabled = true; }
 
 
 
@@ -411,7 +469,7 @@ public class Act1Manager : MonoBehaviour
             CambiarIluminacion("Normal");
             IniciarFaseTareas();
         }
-        }
+    }
 
 
 
@@ -479,17 +537,17 @@ public class Act1Manager : MonoBehaviour
 
         estadoActual = ActoState.Limpieza;
 
-        if (lucesNormales != null) lucesNormales.SetActive(true); 
+        if (lucesNormales != null) lucesNormales.SetActive(true);
 
-        if (lucesServicio != null) lucesServicio.SetActive(false); 
+        if (lucesServicio != null) lucesServicio.SetActive(false);
 
-        if (grupoClientes != null) grupoClientes.SetActive(false); 
+        if (grupoClientes != null) grupoClientes.SetActive(false);
 
 
 
         MostrarDialogo("Lucas: Hay que dejar todo listo antes de abrir...");
 
-        ActualizarProgresoObjetivo(); 
+        ActualizarProgresoObjetivo();
 
 
 
@@ -577,7 +635,7 @@ public class Act1Manager : MonoBehaviour
 
 
 
-        if (sillasAcomodadas >= totalSillas && 
+        if (sillasAcomodadas >= totalSillas &&
 
             mesasLimpiadas >= totalMesasParaLimpiar &&
 
@@ -727,7 +785,7 @@ public class Act1Manager : MonoBehaviour
 
 
 
-         if (ParanoiaSystem.Instance != null)
+        if (ParanoiaSystem.Instance != null)
 
         {
 
@@ -1297,16 +1355,16 @@ public class Act1Manager : MonoBehaviour
     {
         Debug.Log("[Act1Manager] Botella recogida.");
 
-            if (controladorLinterna != null)
-    {
-        controladorLinterna.ForzarApagado();
-    }
-    else
-    {
-        Debug.LogWarning(
-            "[Act1Manager] Controlador Linterna no asignado."
-        );
-    }
+        if (controladorLinterna != null)
+        {
+            controladorLinterna.ForzarApagado();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[Act1Manager] Controlador Linterna no asignado."
+            );
+        }
 
         // SONIDO DEL APAGÓN
         if (sonidoApagonBotella != null)
@@ -1478,13 +1536,13 @@ public class Act1Manager : MonoBehaviour
             enemigosEliminados
         );
 
+
         // ==========================================
         // MURIÓ EL PRIMER ESPECTRO
         // ==========================================
 
         if (enemigosEliminados == 1)
         {
-            // Momento de alivio después del primer enemigo.
             BajarMusicaPrimerEnemigo();
 
             IniciarSegundaCriatura();
@@ -1492,8 +1550,42 @@ public class Act1Manager : MonoBehaviour
             return;
         }
 
+
         // ==========================================
-        // TERMINAR LA NOCHE
+        // MURIÓ EL SEGUNDO ESPECTRO
+        // ==========================================
+
+        if (enemigosEliminados == 2)
+        {
+            // ==========================================
+            // CORTAR MÚSICA / AUDIO DE COMBATE
+            // ==========================================
+
+            if (aparicionSombraCocina != null)
+            {
+                aparicionSombraCocina.DetenerAudioCombate();
+            }
+
+
+            // ==========================================
+            // MANTENER TENSIÓN FISIOLÓGICA
+            // ==========================================
+
+            MantenerAudioParanoiaAlta();
+
+
+            // ==========================================
+            // EVENTO DEL PASILLO
+            // ==========================================
+
+            IniciarCaminoTercerEnemigo();
+
+            return;
+        }
+
+
+        // ==========================================
+        // MURIÓ EL TERCER ESPECTRO
         // ==========================================
 
         if (enemigosEliminados >= enemigosTotalesNoche1 &&
@@ -1696,7 +1788,7 @@ public class Act1Manager : MonoBehaviour
 
         MostrarDialogo("Lucas: Después le respondo...");
 
-        yield return new WaitForSeconds(2.5f); 
+        yield return new WaitForSeconds(2.5f);
 
 
 
@@ -1726,7 +1818,7 @@ public class Act1Manager : MonoBehaviour
 
 
 
-        yield return new WaitForSeconds(1.5f); 
+        yield return new WaitForSeconds(1.5f);
 
         SceneManager.LoadScene("Night_2 Demo");
 
@@ -1914,417 +2006,241 @@ public class Act1Manager : MonoBehaviour
 
     private IEnumerator ParpadeoLinternaTerror()
 
-{
-
-    if (luzLinternaJugador == null)
-
-        yield break;
-
-
-
-    Light luz = luzLinternaJugador;
-
-
-
-    float intensidadOriginal = luz.intensity;
-
-    float inicio = Time.time;
-
-
-
-    if (sonidoFalloLinterna != null)
-
     {
 
-        sonidoFalloLinterna.Stop();
+        if (luzLinternaJugador == null)
 
-        sonidoFalloLinterna.Play();
-
-    }
+            yield break;
 
 
 
-    while (Time.time - inicio < duracionFalloLinterna)
-
-    {
-
-        float progreso = Mathf.Clamp01(
-
-            (Time.time - inicio) /
-
-            duracionFalloLinterna
-
-        );
+        Light luz = luzLinternaJugador;
 
 
 
-        luz.intensity = Random.Range(
+        float intensidadOriginal = luz.intensity;
 
-            intensidadMinimaFallo,
+        float inicio = Time.time;
 
-            intensidadOriginal
 
-        );
+
+        if (sonidoFalloLinterna != null)
+
+        {
+
+            sonidoFalloLinterna.Stop();
+
+            sonidoFalloLinterna.Play();
+
+        }
+
+
+
+        while (Time.time - inicio < duracionFalloLinterna)
+
+        {
+
+            float progreso = Mathf.Clamp01(
+
+                (Time.time - inicio) /
+
+                duracionFalloLinterna
+
+            );
+
+
+
+            luz.intensity = Random.Range(
+
+                intensidadMinimaFallo,
+
+                intensidadOriginal
+
+            );
+
+
+
+            if (volumenAlucinacion != null)
+
+                volumenAlucinacion.weight = progreso;
+
+
+
+            yield return new WaitForSeconds(
+
+                Random.Range(0.035f, 0.13f)
+
+            );
+
+        }
+
+
+
+        luz.intensity = intensidadOriginal;
+
+
+
+        if (sonidoFalloLinterna != null)
+
+            sonidoFalloLinterna.Stop();
 
 
 
         if (volumenAlucinacion != null)
 
-            volumenAlucinacion.weight = progreso;
-
-
-
-        yield return new WaitForSeconds(
-
-            Random.Range(0.035f, 0.13f)
-
-        );
+            volumenAlucinacion.weight = 1f;
 
     }
 
 
 
-    luz.intensity = intensidadOriginal;
-
-
-
-    if (sonidoFalloLinterna != null)
-
-        sonidoFalloLinterna.Stop();
-
-
-
-    if (volumenAlucinacion != null)
-
-        volumenAlucinacion.weight = 1f;
-
-}
-
-
-
-private IEnumerator RecuperarVision()
-
-{
-
-    if (volumenAlucinacion == null)
-
-        yield break;
-
-
-
-    float inicio = Time.time;
-
-
-
-    while (
-
-        Time.time - inicio <
-
-        duracionRecuperacionVisual
-
-    )
+    private IEnumerator RecuperarVision()
 
     {
 
-        float progreso = Mathf.Clamp01(
+        if (volumenAlucinacion == null)
 
-            (Time.time - inicio) /
+            yield break;
+
+
+
+        float inicio = Time.time;
+
+
+
+        while (
+
+            Time.time - inicio <
 
             duracionRecuperacionVisual
 
+        )
+
+        {
+
+            float progreso = Mathf.Clamp01(
+
+                (Time.time - inicio) /
+
+                duracionRecuperacionVisual
+
+            );
+
+
+
+            volumenAlucinacion.weight =
+
+                Mathf.Lerp(1f, 0f, progreso);
+
+
+
+            yield return null;
+
+        }
+
+
+
+        volumenAlucinacion.weight = 0f;
+
+    }
+
+    public IEnumerator EjecutarFalloLinterna()
+    {
+        yield return StartCoroutine(
+            ParpadeoLinternaTerror()
         );
-
-
-
-        volumenAlucinacion.weight =
-
-            Mathf.Lerp(1f, 0f, progreso);
-
-
-
-        yield return null;
-
     }
 
+    public IEnumerator EjecutarRecuperacionLinterna()
+    {
+        yield return StartCoroutine(
+            RecuperarVision()
+        );
+    }
 
-
-    volumenAlucinacion.weight = 0f;
-
-}
-
-public IEnumerator EjecutarFalloLinterna()
-{
-    yield return StartCoroutine(
-        ParpadeoLinternaTerror()
-    );
-}
-
-public IEnumerator EjecutarRecuperacionLinterna()
-{
-    yield return StartCoroutine(
-        RecuperarVision()
-    );
-}
-
-public void PrimeraSombraDerrotada()
-
-{
-
-    // Alivio momentáneo al destruir al primer enemigo
-
-    if (ParanoiaSystem.Instance != null)
+    public void PrimeraSombraDerrotada()
 
     {
 
-        ParanoiaSystem.Instance.AddParanoia(-15f);
+        // Alivio momentáneo al destruir al primer enemigo
 
-    }
-
-
-
-    StartCoroutine(SecuenciaTransicionSalonCombate());
-
-}
-
-
-
-IEnumerator SecuenciaTransicionSalonCombate()
-
-{
-
-    MostrarDialogo("Lucas: ¿Qué fue eso? ¡No entiendo nada!");
-
-    yield return new WaitForSeconds(2.5f);
-
-
-
-    MostrarDialogo("Lucas: No.... no.... no... ¿Qué está pasando?");
-
-
-
-    if (puertaDeposito != null)
-
-        puertaDeposito.SetActive(true);
-
-
-
-    if (sonidoCierrePuerta != null)
-
-        sonidoCierrePuerta.Play();
-
-
-
-    // PARANOIA: Portazo y atrapado a oscuras (+15)
-
-    if (ParanoiaSystem.Instance != null)
-
-    {
-
-        ParanoiaSystem.Instance.AddParanoia(15f);
-
-    }
-
-
-
-    estadoActual = ActoState.Combate;
-
-    ActualizarObjetivo("¡SOBREVIVE! Disipa a las Sombras con tu linterna");
-
-
-
-    if (sombrasSalon != null)
-
-    {
-
-        foreach (GameObject sombra in sombrasSalon)
+        if (ParanoiaSystem.Instance != null)
 
         {
 
-            if (sombra != null)
-
-                sombra.SetActive(true);
-
-
-
-            yield return new WaitForSeconds(1.2f);
+            ParanoiaSystem.Instance.AddParanoia(-15f);
 
         }
 
-    }
-
-}
 
 
-
-private void PrepararDebugLinterna()
-
-{
-
-    estadoActual = ActoState.Quiebre;
-
-
-
-    enemigosEliminados = 0;
-
-    vasoRecogidoCierre = false;
-
-    vasoDejadoEnBarra = false;
-
-
-
-    // Clientes
-
-    if (grupoClientes != null)
-
-        grupoClientes.SetActive(false);
-
-
-
-    if (grupoClientesBar != null)
-
-        grupoClientesBar.SetActive(false);
-
-
-
-    // Caja musical
-
-    if (cajaMusicalInteractuable != null)
-
-    {
-
-        CajaMusicalController caja =
-
-            cajaMusicalInteractuable.GetComponent<CajaMusicalController>();
-
-
-
-        if (caja != null)
-
-            caja.DetenerCaja();
-
-
-
-        cajaMusicalInteractuable.SetActive(false);
+        StartCoroutine(SecuenciaTransicionSalonCombate());
 
     }
 
 
 
-    // Iluminación posterior al apagón
-
-    if (lucesNormalesBar != null)
-
-        lucesNormalesBar.SetActive(false);
-
-
-
-    if (lucesNormales != null)
-
-        lucesNormales.SetActive(false);
-
-
-
-    if (lucesServicio != null)
-
-        lucesServicio.SetActive(false);
-
-
-
-    if (lucesCreepy != null)
-
-        lucesCreepy.SetActive(false);
-
-
-
-    if (lucesCombate != null)
-
-        lucesCombate.SetActive(false);
-
-
-
-    if (lucesEmergenciaBar != null)
-
-        lucesEmergenciaBar.SetActive(true);
-
-
-
-    RenderSettings.ambientLight =
-
-        new Color(0.05f, 0.05f, 0.05f);
-
-
-
-    // Audio
-
-    if (ambientBar != null)
-
-        ambientBar.Stop();
-
-
-
-    if (musicBar != null)
-
-        musicBar.Stop();
-
-
-
-    if (zumbidoAmbiente != null)
-
-        zumbidoAmbiente.Stop();
-
-
-
-    if (neonSound != null && !neonSound.isPlaying)
-
-        neonSound.Play();
-
-
-
-    // Objetos narrativos
-
-    if (vasoWhiskyServido != null)
-
-        vasoWhiskyServido.SetActive(true);
-
-
-
-    if (nanielaGameObject != null)
-
-        nanielaGameObject.SetActive(false);
-
-
-
-    if (luzTaniela != null)
-
-        luzTaniela.SetActive(false);
-
-
-
-    if (botellaEspecial != null)
-
-        botellaEspecial.SetActive(false);
-
-
-
-    // Enemigos
-
-    if (primeraSombra != null)
-
-        primeraSombra.SetActive(false);
-
-
-
-    if (sombrasSalon != null)
+    IEnumerator SecuenciaTransicionSalonCombate()
 
     {
 
-        foreach (GameObject sombra in sombrasSalon)
+        MostrarDialogo("Lucas: ¿Qué fue eso? ¡No entiendo nada!");
+
+        yield return new WaitForSeconds(2.5f);
+
+
+
+        MostrarDialogo("Lucas: No.... no.... no... ¿Qué está pasando?");
+
+
+
+        if (puertaDeposito != null)
+
+            puertaDeposito.SetActive(true);
+
+
+
+        if (sonidoCierrePuerta != null)
+
+            sonidoCierrePuerta.Play();
+
+
+
+        // PARANOIA: Portazo y atrapado a oscuras (+15)
+
+        if (ParanoiaSystem.Instance != null)
 
         {
 
-            if (sombra != null)
+            ParanoiaSystem.Instance.AddParanoia(15f);
 
-                sombra.SetActive(false);
+        }
+
+
+
+        estadoActual = ActoState.Combate;
+
+        ActualizarObjetivo("¡SOBREVIVE! Disipa a las Sombras con tu linterna");
+
+
+
+        if (sombrasSalon != null)
+
+        {
+
+            foreach (GameObject sombra in sombrasSalon)
+
+            {
+
+                if (sombra != null)
+
+                    sombra.SetActive(true);
+
+
+
+                yield return new WaitForSeconds(1.2f);
+
+            }
 
         }
 
@@ -2332,476 +2248,1037 @@ private void PrepararDebugLinterna()
 
 
 
-    // Quitar fade inicial
-
-    if (fadeCanvasGroup != null)
+    private void PrepararDebugLinterna()
 
     {
 
-        fadeCanvasGroup.alpha = 0f;
+        estadoActual = ActoState.Quiebre;
 
-        fadeCanvasGroup.blocksRaycasts = false;
 
-        fadeCanvasGroup.gameObject.SetActive(false);
+
+        enemigosEliminados = 0;
+
+        vasoRecogidoCierre = false;
+
+        vasoDejadoEnBarra = false;
+
+
+
+        // Clientes
+
+        if (grupoClientes != null)
+
+            grupoClientes.SetActive(false);
+
+
+
+        if (grupoClientesBar != null)
+
+            grupoClientesBar.SetActive(false);
+
+
+
+        // Caja musical
+
+        if (cajaMusicalInteractuable != null)
+
+        {
+
+            CajaMusicalController caja =
+
+                cajaMusicalInteractuable.GetComponent<CajaMusicalController>();
+
+
+
+            if (caja != null)
+
+                caja.DetenerCaja();
+
+
+
+            cajaMusicalInteractuable.SetActive(false);
+
+        }
+
+
+
+        // Iluminación posterior al apagón
+
+        if (lucesNormalesBar != null)
+
+            lucesNormalesBar.SetActive(false);
+
+
+
+        if (lucesNormales != null)
+
+            lucesNormales.SetActive(false);
+
+
+
+        if (lucesServicio != null)
+
+            lucesServicio.SetActive(false);
+
+
+
+        if (lucesCreepy != null)
+
+            lucesCreepy.SetActive(false);
+
+
+
+        if (lucesCombate != null)
+
+            lucesCombate.SetActive(false);
+
+
+
+        if (lucesEmergenciaBar != null)
+
+            lucesEmergenciaBar.SetActive(true);
+
+
+
+        RenderSettings.ambientLight =
+
+            new Color(0.05f, 0.05f, 0.05f);
+
+
+
+        // Audio
+
+        if (ambientBar != null)
+
+            ambientBar.Stop();
+
+
+
+        if (musicBar != null)
+
+            musicBar.Stop();
+
+
+
+        if (zumbidoAmbiente != null)
+
+            zumbidoAmbiente.Stop();
+
+
+
+        if (neonSound != null && !neonSound.isPlaying)
+
+            neonSound.Play();
+
+
+
+        // Objetos narrativos
+
+        if (vasoWhiskyServido != null)
+
+            vasoWhiskyServido.SetActive(true);
+
+
+
+        if (nanielaGameObject != null)
+
+            nanielaGameObject.SetActive(false);
+
+
+
+        if (luzTaniela != null)
+
+            luzTaniela.SetActive(false);
+
+
+
+        if (botellaEspecial != null)
+
+            botellaEspecial.SetActive(false);
+
+
+
+        // Enemigos
+
+        if (primeraSombra != null)
+
+            primeraSombra.SetActive(false);
+
+
+
+        if (sombrasSalon != null)
+
+        {
+
+            foreach (GameObject sombra in sombrasSalon)
+
+            {
+
+                if (sombra != null)
+
+                    sombra.SetActive(false);
+
+            }
+
+        }
+
+
+
+        // Quitar fade inicial
+
+        if (fadeCanvasGroup != null)
+
+        {
+
+            fadeCanvasGroup.alpha = 0f;
+
+            fadeCanvasGroup.blocksRaycasts = false;
+
+            fadeCanvasGroup.gameObject.SetActive(false);
+
+        }
+
+
+
+        // ¿Lucas empieza con la linterna ya recogida?
+
+        if (debugLinternaYaRecogida)
+
+        {
+
+            if (linternaBarraInteractuable != null)
+
+                linternaBarraInteractuable.SetActive(false);
+
+
+
+            AlRecogerLinternaBarra();
+
+
+
+            Debug.Log(
+
+                "[Act1Manager] DEBUG: linterna ya recogida. Trigger habilitado."
+
+            );
+
+        }
+
+        else
+
+        {
+
+            if (linternaBarraInteractuable != null)
+
+                linternaBarraInteractuable.SetActive(true);
+
+
+
+            if (triggerSalidaBarra != null)
+
+                triggerSalidaBarra.SetActive(false);
+
+
+
+            ActualizarObjetivo(
+
+                "Busca la linterna detrás de la barra"
+
+            );
+
+
+
+            Debug.Log(
+
+                "[Act1Manager] DEBUG: esperando que Lucas recoja la linterna."
+
+            );
+
+        }
 
     }
 
-
-
-    // ¿Lucas empieza con la linterna ya recogida?
-
-    if (debugLinternaYaRecogida)
-
+    private IEnumerator SubirVolumeGlobalNarrativo()
     {
+        if (volumenGlobalNarrativo == null)
+            yield break;
 
-        if (linternaBarraInteractuable != null)
+        float pesoInicial = volumenGlobalNarrativo.weight;
+        float tiempo = 0f;
 
-            linternaBarraInteractuable.SetActive(false);
+        float duracion =
+            Mathf.Max(0.01f, duracionEntradaVolumeGlobal);
 
+        while (tiempo < duracion)
+        {
+            tiempo += Time.deltaTime;
 
+            float t = Mathf.Clamp01(
+                tiempo / duracion
+            );
 
-        AlRecogerLinternaBarra();
+            volumenGlobalNarrativo.weight =
+                Mathf.Lerp(
+                    pesoInicial,
+                    1f,
+                    t
+                );
 
+            yield return null;
+        }
 
+        volumenGlobalNarrativo.weight = 1f;
+        rutinaVolumeGlobal = null;
 
         Debug.Log(
-
-            "[Act1Manager] DEBUG: linterna ya recogida. Trigger habilitado."
-
+            "[Act1Manager] Volume Global narrativo completamente activo."
         );
-
     }
 
-    else
-
+    private void PrepararDebugNanielaBotella()
     {
+        Debug.Log(
+            "[Act1Manager] DEBUG: iniciando desde Ñañiela en la barra, " +
+            "antes de buscar la botella especial."
+        );
+
+        // ==========================================
+        // ESTADO NARRATIVO
+        // ==========================================
+
+        estadoActual = ActoState.AparicionBarra;
+
+        enemigosEliminados = 0;
+        vasoRecogidoCierre = false;
+        vasoDejadoEnBarra = false;
+
+
+        // ==========================================
+        // CLIENTES / SERVICIO
+        // ==========================================
+
+        if (grupoClientes != null)
+            grupoClientes.SetActive(false);
+
+        if (grupoClientesBar != null)
+            grupoClientesBar.SetActive(false);
+
+
+        // ==========================================
+        // CAJA MUSICAL
+        // ==========================================
+
+        if (cajaMusicalInteractuable != null)
+        {
+            CajaMusicalController caja =
+                cajaMusicalInteractuable
+                    .GetComponent<CajaMusicalController>();
+
+            if (caja != null)
+                caja.DetenerCaja();
+
+            AudioSource audioCaja =
+                cajaMusicalInteractuable.GetComponent<AudioSource>();
+
+            if (audioCaja != null)
+                audioCaja.Stop();
+
+            cajaMusicalInteractuable.SetActive(false);
+        }
+
+
+        // ==========================================
+        // ILUMINACIÓN
+        // Estado correspondiente al encuentro
+        // con Ñañiela
+        // ==========================================
+
+        if (lucesNormales != null)
+            lucesNormales.SetActive(false);
+
+        if (lucesServicio != null)
+            lucesServicio.SetActive(false);
+
+        if (lucesCreepy != null)
+            lucesCreepy.SetActive(false);
+
+        if (lucesCombate != null)
+            lucesCombate.SetActive(false);
+
+        if (lucesNormalesBar != null)
+            lucesNormalesBar.SetActive(false);
+
+        if (lucesEmergenciaBar != null)
+            lucesEmergenciaBar.SetActive(false);
+
+        // Luz especial de Ñañiela.
+        if (luzTaniela != null)
+            luzTaniela.SetActive(true);
+
+        RenderSettings.ambientLight =
+            new Color(0.05f, 0.05f, 0.05f);
+
+
+        // ==========================================
+        // ÑAÑIELA
+        // ==========================================
+
+        if (nanielaGameObject != null)
+            nanielaGameObject.SetActive(true);
+
+
+        // ==========================================
+        // AUDIO
+        // ==========================================
+
+        if (ambientBar != null)
+            ambientBar.Stop();
+
+        if (musicBar != null)
+            musicBar.Stop();
+
+        if (neonSound != null)
+            neonSound.Stop();
+
+        // En este punto del flujo normal queda
+        // el zumbido inquietante de Ñañiela.
+        if (zumbidoAmbiente != null &&
+            !zumbidoAmbiente.isPlaying)
+        {
+            zumbidoAmbiente.Play();
+        }
+
+
+        // ==========================================
+        // VOLUMES
+        // ==========================================
+
+        // El Volume narrativo ya llegó a 1
+        // durante la caja musical y debe seguir activo.
+        if (volumenGlobalNarrativo != null)
+            volumenGlobalNarrativo.weight = 1f;
+
+        // El desenfoque de fallo de linterna
+        // todavía NO está activo.
+        if (volumenAlucinacion != null)
+            volumenAlucinacion.weight = 0f;
+
+
+        // ==========================================
+        // LINTERNA
+        // Lucas ya la recogió antes de llegar acá.
+        // ==========================================
 
         if (linternaBarraInteractuable != null)
+            linternaBarraInteractuable.SetActive(false);
 
-            linternaBarraInteractuable.SetActive(true);
-
-
-
+        // Ya no queremos volver a disparar
+        // el trigger de salida de la barra.
         if (triggerSalidaBarra != null)
-
             triggerSalidaBarra.SetActive(false);
 
 
+        // ==========================================
+        // OBJETOS DEL QUIEBRE
+        // ==========================================
+
+        if (vasoWhiskyServido != null)
+            vasoWhiskyServido.SetActive(true);
+
+
+        // ==========================================
+        // BOTELLA ESPECIAL
+        // ==========================================
+
+        if (indicadorDeposito != null)
+            indicadorDeposito.SetActive(true);
+
+        if (botellaEspecial != null)
+            botellaEspecial.SetActive(true);
+
+
+        // ==========================================
+        // ENEMIGOS
+        // Todavía no aparecieron.
+        // ==========================================
+
+        if (primeraSombra != null)
+            primeraSombra.SetActive(false);
+
+        if (sombrasSalon != null)
+        {
+            foreach (GameObject sombra in sombrasSalon)
+            {
+                if (sombra != null)
+                    sombra.SetActive(false);
+            }
+        }
+
+
+        // ==========================================
+        // UI
+        // ==========================================
 
         ActualizarObjetivo(
-
-            "Busca la linterna detrás de la barra"
-
+            "Busca la botella especial en el depósito"
         );
 
+
+        // ==========================================
+        // FADE
+        // ==========================================
+
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.alpha = 0f;
+            fadeCanvasGroup.blocksRaycasts = false;
+            fadeCanvasGroup.gameObject.SetActive(false);
+        }
 
 
         Debug.Log(
-
-            "[Act1Manager] DEBUG: esperando que Lucas recoja la linterna."
-
+            "[Act1Manager] DEBUG listo: Ñañiela activa, " +
+            "botella especial disponible y Volume Global en 1."
         );
-
     }
-    
-}
 
-private IEnumerator SubirVolumeGlobalNarrativo()
-{
-    if (volumenGlobalNarrativo == null)
-        yield break;
-
-    float pesoInicial = volumenGlobalNarrativo.weight;
-    float tiempo = 0f;
-
-    float duracion =
-        Mathf.Max(0.01f, duracionEntradaVolumeGlobal);
-
-    while (tiempo < duracion)
+    private IEnumerator DebugIniciarSegundaCriatura()
     {
-        tiempo += Time.deltaTime;
+        yield return new WaitForSeconds(1f);
 
-        float t = Mathf.Clamp01(
-            tiempo / duracion
-        );
-
-        volumenGlobalNarrativo.weight =
-            Mathf.Lerp(
-                pesoInicial,
-                1f,
-                t
+        if (segundaCriatura == null)
+        {
+            Debug.LogError(
+                "[Act1Manager] DEBUG: Segunda criatura no asignada."
             );
 
-        yield return null;
-    }
+            yield break;
+        }
 
-    volumenGlobalNarrativo.weight = 1f;
-    rutinaVolumeGlobal = null;
+        segundaCriatura.SetActive(true);
 
-    Debug.Log(
-        "[Act1Manager] Volume Global narrativo completamente activo."
-    );
-}
-
-private void PrepararDebugNanielaBotella()
-{
-    Debug.Log(
-        "[Act1Manager] DEBUG: iniciando desde Ñañiela en la barra, " +
-        "antes de buscar la botella especial."
-    );
-
-    // ==========================================
-    // ESTADO NARRATIVO
-    // ==========================================
-
-    estadoActual = ActoState.AparicionBarra;
-
-    enemigosEliminados = 0;
-    vasoRecogidoCierre = false;
-    vasoDejadoEnBarra = false;
-
-
-    // ==========================================
-    // CLIENTES / SERVICIO
-    // ==========================================
-
-    if (grupoClientes != null)
-        grupoClientes.SetActive(false);
-
-    if (grupoClientesBar != null)
-        grupoClientesBar.SetActive(false);
-
-
-    // ==========================================
-    // CAJA MUSICAL
-    // ==========================================
-
-    if (cajaMusicalInteractuable != null)
-    {
-        CajaMusicalController caja =
-            cajaMusicalInteractuable
-                .GetComponent<CajaMusicalController>();
-
-        if (caja != null)
-            caja.DetenerCaja();
-
-        AudioSource audioCaja =
-            cajaMusicalInteractuable.GetComponent<AudioSource>();
-
-        if (audioCaja != null)
-            audioCaja.Stop();
-
-        cajaMusicalInteractuable.SetActive(false);
-    }
-
-
-    // ==========================================
-    // ILUMINACIÓN
-    // Estado correspondiente al encuentro
-    // con Ñañiela
-    // ==========================================
-
-    if (lucesNormales != null)
-        lucesNormales.SetActive(false);
-
-    if (lucesServicio != null)
-        lucesServicio.SetActive(false);
-
-    if (lucesCreepy != null)
-        lucesCreepy.SetActive(false);
-
-    if (lucesCombate != null)
-        lucesCombate.SetActive(false);
-
-    if (lucesNormalesBar != null)
-        lucesNormalesBar.SetActive(false);
-
-    if (lucesEmergenciaBar != null)
-        lucesEmergenciaBar.SetActive(false);
-
-    // Luz especial de Ñañiela.
-    if (luzTaniela != null)
-        luzTaniela.SetActive(true);
-
-    RenderSettings.ambientLight =
-        new Color(0.05f, 0.05f, 0.05f);
-
-
-    // ==========================================
-    // ÑAÑIELA
-    // ==========================================
-
-    if (nanielaGameObject != null)
-        nanielaGameObject.SetActive(true);
-
-
-    // ==========================================
-    // AUDIO
-    // ==========================================
-
-    if (ambientBar != null)
-        ambientBar.Stop();
-
-    if (musicBar != null)
-        musicBar.Stop();
-
-    if (neonSound != null)
-        neonSound.Stop();
-
-    // En este punto del flujo normal queda
-    // el zumbido inquietante de Ñañiela.
-    if (zumbidoAmbiente != null &&
-        !zumbidoAmbiente.isPlaying)
-    {
-        zumbidoAmbiente.Play();
-    }
-
-
-    // ==========================================
-    // VOLUMES
-    // ==========================================
-
-    // El Volume narrativo ya llegó a 1
-    // durante la caja musical y debe seguir activo.
-    if (volumenGlobalNarrativo != null)
-        volumenGlobalNarrativo.weight = 1f;
-
-    // El desenfoque de fallo de linterna
-    // todavía NO está activo.
-    if (volumenAlucinacion != null)
-        volumenAlucinacion.weight = 0f;
-
-
-    // ==========================================
-    // LINTERNA
-    // Lucas ya la recogió antes de llegar acá.
-    // ==========================================
-
-    if (linternaBarraInteractuable != null)
-        linternaBarraInteractuable.SetActive(false);
-
-    // Ya no queremos volver a disparar
-    // el trigger de salida de la barra.
-    if (triggerSalidaBarra != null)
-        triggerSalidaBarra.SetActive(false);
-
-
-    // ==========================================
-    // OBJETOS DEL QUIEBRE
-    // ==========================================
-
-    if (vasoWhiskyServido != null)
-        vasoWhiskyServido.SetActive(true);
-
-
-    // ==========================================
-    // BOTELLA ESPECIAL
-    // ==========================================
-
-    if (indicadorDeposito != null)
-        indicadorDeposito.SetActive(true);
-
-    if (botellaEspecial != null)
-        botellaEspecial.SetActive(true);
-
-
-    // ==========================================
-    // ENEMIGOS
-    // Todavía no aparecieron.
-    // ==========================================
-
-    if (primeraSombra != null)
-        primeraSombra.SetActive(false);
-
-    if (sombrasSalon != null)
-    {
-        foreach (GameObject sombra in sombrasSalon)
+        if (segundaCriaturaPared != null)
         {
-            if (sombra != null)
-                sombra.SetActive(false);
+            segundaCriaturaPared.IniciarSecuencia();
+        }
+        else
+        {
+            Debug.LogError(
+                "[Act1Manager] DEBUG: SegundaCriaturaPared no asignada."
+            );
         }
     }
 
-
-    // ==========================================
-    // UI
-    // ==========================================
-
-    ActualizarObjetivo(
-        "Busca la botella especial en el depósito"
-    );
-
-
-    // ==========================================
-    // FADE
-    // ==========================================
-
-    if (fadeCanvasGroup != null)
+    private void GuardarVolumenesMusica()
     {
-        fadeCanvasGroup.alpha = 0f;
-        fadeCanvasGroup.blocksRaycasts = false;
-        fadeCanvasGroup.gameObject.SetActive(false);
-    }
+        if (musicaCombate == null)
+            return;
 
-
-    Debug.Log(
-        "[Act1Manager] DEBUG listo: Ñañiela activa, " +
-        "botella especial disponible y Volume Global en 1."
-    );
-}
-
-private IEnumerator DebugIniciarSegundaCriatura()
-{
-    yield return new WaitForSeconds(1f);
-
-    if (segundaCriatura == null)
-    {
-        Debug.LogError(
-            "[Act1Manager] DEBUG: Segunda criatura no asignada."
-        );
-
-        yield break;
-    }
-
-    segundaCriatura.SetActive(true);
-
-    if (segundaCriaturaPared != null)
-    {
-        segundaCriaturaPared.IniciarSecuencia();
-    }
-    else
-    {
-        Debug.LogError(
-            "[Act1Manager] DEBUG: SegundaCriaturaPared no asignada."
-        );
-    }
-}
-
-private void GuardarVolumenesMusica()
-{
-    if (musicaCombate == null)
-        return;
-
-    if (volumenesMusicaOriginales != null &&
-        volumenesMusicaOriginales.Length == musicaCombate.Length)
-    {
-        return;
-    }
-
-    volumenesMusicaOriginales =
-        new float[musicaCombate.Length];
-
-    for (int i = 0; i < musicaCombate.Length; i++)
-    {
-        if (musicaCombate[i] != null)
+        if (volumenesMusicaOriginales != null &&
+            volumenesMusicaOriginales.Length == musicaCombate.Length)
         {
-            volumenesMusicaOriginales[i] =
-                musicaCombate[i].volume;
+            return;
         }
-    }
-}
 
-
-private void CambiarVolumenMusica(
-    float factor,
-    float duracion)
-{
-    GuardarVolumenesMusica();
-
-    if (rutinaMusicaCombate != null)
-        StopCoroutine(rutinaMusicaCombate);
-
-    rutinaMusicaCombate =
-        StartCoroutine(
-            FadeMusicaCombate(
-                factor,
-                duracion
-            )
-        );
-}
-
-
-private IEnumerator FadeMusicaCombate(
-    float factor,
-    float duracion)
-{
-    if (musicaCombate == null ||
-        volumenesMusicaOriginales == null)
-    {
-        yield break;
-    }
-
-    float[] volumenInicio =
-        new float[musicaCombate.Length];
-
-    for (int i = 0; i < musicaCombate.Length; i++)
-    {
-        if (musicaCombate[i] != null)
-            volumenInicio[i] = musicaCombate[i].volume;
-    }
-
-    float tiempo = 0f;
-
-    while (tiempo < duracion)
-    {
-        tiempo += Time.deltaTime;
-
-        float t =
-            duracion <= 0f
-            ? 1f
-            : Mathf.Clamp01(tiempo / duracion);
-
-        t = Mathf.SmoothStep(0f, 1f, t);
+        volumenesMusicaOriginales =
+            new float[musicaCombate.Length];
 
         for (int i = 0; i < musicaCombate.Length; i++)
         {
-            if (musicaCombate[i] == null)
+            if (musicaCombate[i] != null)
+            {
+                volumenesMusicaOriginales[i] =
+                    musicaCombate[i].volume;
+            }
+        }
+    }
+
+
+    private void CambiarVolumenMusica(
+        float factor,
+        float duracion)
+    {
+        GuardarVolumenesMusica();
+
+        if (rutinaMusicaCombate != null)
+            StopCoroutine(rutinaMusicaCombate);
+
+        rutinaMusicaCombate =
+            StartCoroutine(
+                FadeMusicaCombate(
+                    factor,
+                    duracion
+                )
+            );
+    }
+
+
+    private IEnumerator FadeMusicaCombate(
+        float factor,
+        float duracion)
+    {
+        if (musicaCombate == null ||
+            volumenesMusicaOriginales == null)
+        {
+            yield break;
+        }
+
+        float[] volumenInicio =
+            new float[musicaCombate.Length];
+
+        for (int i = 0; i < musicaCombate.Length; i++)
+        {
+            if (musicaCombate[i] != null)
+                volumenInicio[i] = musicaCombate[i].volume;
+        }
+
+        float tiempo = 0f;
+
+        while (tiempo < duracion)
+        {
+            tiempo += Time.deltaTime;
+
+            float t =
+                duracion <= 0f
+                ? 1f
+                : Mathf.Clamp01(tiempo / duracion);
+
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            for (int i = 0; i < musicaCombate.Length; i++)
+            {
+                if (musicaCombate[i] == null)
+                    continue;
+
+                float destino =
+                    volumenesMusicaOriginales[i] *
+                    factor;
+
+                musicaCombate[i].volume =
+                    Mathf.Lerp(
+                        volumenInicio[i],
+                        destino,
+                        t
+                    );
+            }
+
+            yield return null;
+        }
+
+        for (int i = 0; i < musicaCombate.Length; i++)
+        {
+            if (musicaCombate[i] != null)
+            {
+                musicaCombate[i].volume =
+                    volumenesMusicaOriginales[i] *
+                    factor;
+            }
+        }
+
+        rutinaMusicaCombate = null;
+    }
+
+
+    public void BajarMusicaPrimerEnemigo()
+    {
+        // Cortar COMPLETAMENTE música del combate.
+        if (aparicionSombraCocina != null)
+        {
+            aparicionSombraCocina.DetenerAudioCombate();
+        }
+
+        // Este zumbido venía desde la aparición anterior
+        // de Mariela y también queremos silencio.
+        if (zumbidoAmbiente != null)
+        {
+            zumbidoAmbiente.Stop();
+        }
+
+        Debug.Log(
+            "[Act1Manager] Enemigo 1 muerto: silencio."
+        );
+    }
+
+
+    public void RestaurarMusicaSegundoEnemigo()
+    {
+        if (aparicionSombraCocina != null)
+        {
+            aparicionSombraCocina.IniciarAudioCombate();
+        }
+
+        Debug.Log(
+            "[Act1Manager] Espectro 2 visto: vuelve audio de combate."
+        );
+    }
+
+    private void DetenerMusicaCombate()
+    {
+        // Frenar cualquier fade viejo.
+        if (rutinaMusicaCombate != null)
+        {
+            StopCoroutine(rutinaMusicaCombate);
+            rutinaMusicaCombate = null;
+        }
+
+        if (musicaCombate == null)
+            return;
+
+
+        // Buscar TODOS los AudioSource activos de la escena.
+        AudioSource[] todasLasFuentes =
+            FindObjectsByType<AudioSource>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+
+
+        foreach (AudioSource fuente in todasLasFuentes)
+        {
+            if (fuente == null || !fuente.isPlaying)
                 continue;
 
-            float destino =
-                volumenesMusicaOriginales[i] *
-                factor;
 
-            musicaCombate[i].volume =
-                Mathf.Lerp(
-                    volumenInicio[i],
-                    destino,
-                    t
-                );
+            // Comparar contra los clips de combate
+            // que tenemos asignados en Act1Manager.
+            for (int i = 0; i < musicaCombate.Length; i++)
+            {
+                AudioSource referencia = musicaCombate[i];
+
+                if (referencia == null ||
+                    referencia.clip == null ||
+                    fuente.clip == null)
+                {
+                    continue;
+                }
+
+
+                if (fuente.clip == referencia.clip)
+                {
+                    Debug.Log(
+                        "[Act1Manager] STOP REAL | GameObject: " +
+                        fuente.gameObject.name +
+                        " | Clip: " +
+                        fuente.clip.name
+                    );
+
+                    fuente.Stop();
+
+                    break;
+                }
+            }
         }
-
-        yield return null;
     }
 
-    for (int i = 0; i < musicaCombate.Length; i++)
+    private void IniciarCaminoTercerEnemigo()
     {
-        if (musicaCombate[i] != null)
+        if (eventoTercerEnemigoIniciado)
+            return;
+
+        eventoTercerEnemigoIniciado = true;
+
+        Debug.Log(
+            "[Act1Manager] Enemigo 2 muerto. " +
+            "Iniciando evento del pasillo en silencio."
+        );
+
+        StartCoroutine(
+            SecuenciaEntradaTercerEnemigo()
+        );
+    }
+
+    private IEnumerator SecuenciaEntradaTercerEnemigo()
+    {
+        // ==========================================
+        // RESPIRO TRAS MATAR AL SEGUNDO
+        // ==========================================
+
+        yield return new WaitForSeconds(
+            Mathf.Max(0f, pausaAntesPuerta)
+        );
+
+
+        // ==========================================
+        // MARIELA SE PREPARA DETRÁS DE LA PUERTA
+        // ==========================================
+
+        if (nanielaPasillo != null)
         {
-            musicaCombate[i].volume =
-                volumenesMusicaOriginales[i] *
-                factor;
+            if (puntoNanielaPasillo != null)
+            {
+                nanielaPasillo.transform.SetPositionAndRotation(
+                    puntoNanielaPasillo.position,
+                    puntoNanielaPasillo.rotation
+                );
+            }
+
+            nanielaPasillo.SetActive(true);
+
+
+            // MUY IMPORTANTE:
+            // sale inmediatamente de Pose_Oculta.
+            if (marielaPeekPasillo != null)
+            {
+                marielaPeekPasillo.MostrarAsomoInicial();
+            }
+            else
+            {
+                Debug.LogError(
+                    "[Act1Manager] MarielaPeekPasillo no asignado."
+                );
+            }
+        }
+
+
+        // ==========================================
+        // LA LUZ LLAMA LA ATENCIÓN
+        // ==========================================
+
+        if (rutinaLuzPasillo != null)
+            StopCoroutine(rutinaLuzPasillo);
+
+        rutinaLuzPasillo =
+            StartCoroutine(
+                TitilarLuzPasillo()
+            );
+
+
+        // ==========================================
+        // ESPERAR A QUE EL JUGADOR VEA LA PUERTA
+        // ==========================================
+
+        Debug.Log(
+            "[Act1Manager] Esperando que Lucas mire la puerta."
+        );
+
+        yield return new WaitUntil(
+            EstaMirandoPuertaPasillo
+        );
+
+
+        // ==========================================
+        // AHORA SÍ:
+        // SONIDO + APERTURA
+        // ==========================================
+
+        AbrirPuertasPasillo();
+
+
+        Debug.Log(
+            "[Act1Manager] Lucas miró la puerta. Abriendo."
+        );
+    }
+
+    private bool EstaMirandoPuertaPasillo()
+    {
+        if (camaraJugadorTercerEvento == null ||
+            puntoMiradaPuertaPasillo == null)
+        {
+            return false;
+        }
+
+
+        Vector3 viewport =
+            camaraJugadorTercerEvento.WorldToViewportPoint(
+                puntoMiradaPuertaPasillo.position
+            );
+
+
+        return
+            viewport.z > 0f &&
+            Mathf.Abs(viewport.x - 0.5f)
+                <= toleranciaMiradaPuerta &&
+            Mathf.Abs(viewport.y - 0.5f)
+                <= toleranciaMiradaPuerta;
+    }
+
+    private void AbrirPuertasPasillo()
+    {
+        // Sonido UNA sola vez.
+        if (sonidoPuertaPasillo != null)
+        {
+            sonidoPuertaPasillo.Stop();
+            sonidoPuertaPasillo.Play();
+        }
+
+
+        AbrirHoja(
+            puertaPasilloIzquierda,
+            anguloPuertaIzquierda
+        );
+
+        AbrirHoja(
+            puertaPasilloDerecha,
+            anguloPuertaDerecha
+        );
+    }
+
+
+    private void AbrirHoja(
+        HingeJoint bisagra,
+        float angulo)
+    {
+        if (bisagra == null)
+            return;
+
+
+        JointSpring spring =
+            bisagra.spring;
+
+        spring.targetPosition =
+            angulo;
+
+        bisagra.spring =
+            spring;
+
+        bisagra.useSpring = true;
+    }
+
+    private IEnumerator TitilarLuzPasillo()
+    {
+        if (luzPasilloTitileo == null)
+            yield break;
+
+
+        while (
+            nanielaPasillo != null &&
+            nanielaPasillo.activeInHierarchy
+        )
+        {
+            luzPasilloTitileo.enabled = false;
+
+            yield return new WaitForSeconds(
+                Random.Range(
+                    intervaloTitileoMinPasillo,
+                    intervaloTitileoMaxPasillo
+                )
+            );
+
+
+            luzPasilloTitileo.enabled = true;
+
+            yield return new WaitForSeconds(
+                Random.Range(
+                    intervaloTitileoMinPasillo,
+                    intervaloTitileoMaxPasillo
+                )
+            );
+        }
+
+
+        luzPasilloTitileo.enabled =
+            dejarLuzPasilloEncendida;
+
+        rutinaLuzPasillo = null;
+    }
+
+    private void MostrarAudiosQueSiguenSonando()
+    {
+        AudioSource[] fuentes =
+            FindObjectsByType<AudioSource>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+
+        foreach (AudioSource fuente in fuentes)
+        {
+            if (fuente != null && fuente.isPlaying)
+            {
+                Debug.Log(
+                    "[AUDIO ACTIVO] GameObject: " +
+                    fuente.gameObject.name +
+                    " | Clip: " +
+                    (fuente.clip != null
+                        ? fuente.clip.name
+                        : "SIN CLIP") +
+                    " | Volumen: " +
+                    fuente.volume +
+                    " | Loop: " +
+                    fuente.loop
+                );
+            }
         }
     }
 
-    rutinaMusicaCombate = null;
-}
+    private IEnumerator ComprobarAudioCombateDespuesDeMuerte()
+    {
+        // Esperamos para detectar si OTRO script
+        // vuelve a arrancar algo después del Stop.
+        yield return new WaitForSecondsRealtime(0.25f);
+
+        if (aparicionSombraCocina == null)
+            yield break;
 
 
-public void BajarMusicaPrimerEnemigo()
-{
-    CambiarVolumenMusica(
-        factorMusicaTrasPrimerEnemigo,
-        duracionBajadaMusica
-    );
-}
+        AudioSource[] fuentes =
+        {
+        aparicionSombraCocina.baseEnemy1,
+        aparicionSombraCocina.baseEnemy2,
+        aparicionSombraCocina.enemyVoices,
+    };
 
 
-public void RestaurarMusicaSegundoEnemigo()
-{
-    CambiarVolumenMusica(
-        1f,
-        duracionSubidaMusica
-    );
-}
+        foreach (AudioSource fuente in fuentes)
+        {
+            if (fuente == null)
+                continue;
+
+            Debug.Log(
+                "[CHECK 0.25s] " +
+                fuente.gameObject.name +
+                " | Playing: " +
+                fuente.isPlaying +
+                " | Loop: " +
+                fuente.loop +
+                " | Clip: " +
+                (fuente.clip != null
+                    ? fuente.clip.name
+                    : "NULL")
+            );
+        }
+    }
+
+    private void MantenerAudioParanoiaAlta()
+    {
+        // ==========================================
+        // CORAZÓN
+        // ==========================================
+
+        if (heartbeatParanoia != null)
+        {
+            heartbeatParanoia.loop = true;
+            heartbeatParanoia.volume =
+                volumenHeartbeatPasillo;
+
+            // Si ya estaba sonando, NO lo reiniciamos.
+            if (!heartbeatParanoia.isPlaying)
+            {
+                heartbeatParanoia.Play();
+            }
+        }
+
+
+        // ==========================================
+        // RESPIRACIÓN
+        // ==========================================
+
+        if (respiracionParanoia != null)
+        {
+            respiracionParanoia.loop = true;
+            respiracionParanoia.volume =
+                volumenRespiracionPasillo;
+
+            // Si ya estaba sonando, continúa desde donde iba.
+            if (!respiracionParanoia.isPlaying)
+            {
+                respiracionParanoia.Play();
+            }
+        }
+
+
+        Debug.Log(
+            "[Act1Manager] Paranoia alta: corazón y respiración activos."
+        );
+    }
 
 }

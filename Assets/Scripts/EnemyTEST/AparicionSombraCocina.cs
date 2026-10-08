@@ -46,8 +46,6 @@ public class AparicionSombraCocina : MonoBehaviour
     public AudioSource baseEnemy1;
     public AudioSource baseEnemy2;
     public AudioSource enemyVoices;
-    public AudioSource deadCreature;
-
     [Header("Persecución")]
     public SombraWalkTest scriptPersecucion;
     public NavMeshAgent navMeshAgent;
@@ -122,6 +120,12 @@ public class AparicionSombraCocina : MonoBehaviour
 
     private float volumenOriginalRadio = 1f;
 
+    private float volumenOriginalBaseEnemy1 = 1f;
+    private float volumenOriginalBaseEnemy2 = 1f;
+    private float volumenOriginalEnemyVoices = 1f;
+
+    private Coroutine rutinaVolumenAudioCombate;
+
     private void Start()
     {
 
@@ -185,17 +189,20 @@ public class AparicionSombraCocina : MonoBehaviour
             enemyVoices.loop = true;
         }
 
-        if (deadCreature != null)
-        {
-            deadCreature.playOnAwake = false;
-            deadCreature.loop = false;
-        }
-
         if (volumenTutorial != null)
             volumenTutorial.weight = 0f;
 
         if (textoTutorial != null)
             textoTutorial.gameObject.SetActive(false);
+
+        if (baseEnemy1 != null)
+    volumenOriginalBaseEnemy1 = baseEnemy1.volume;
+
+        if (baseEnemy2 != null)
+            volumenOriginalBaseEnemy2 = baseEnemy2.volume;
+
+        if (enemyVoices != null)
+            volumenOriginalEnemyVoices = enemyVoices.volume;
     }
 
     private void Update()
@@ -887,5 +894,192 @@ public class AparicionSombraCocina : MonoBehaviour
 
         objetivoSacudida.localPosition =
             posicionOriginal;
+    }
+
+    public void CambiarVolumenAudioCombate(
+    float factor,
+    float duracion)
+{
+    if (rutinaVolumenAudioCombate != null)
+    {
+        StopCoroutine(
+            rutinaVolumenAudioCombate
+        );
+    }
+
+    rutinaVolumenAudioCombate =
+        StartCoroutine(
+            FadeAudioCombate(
+                Mathf.Clamp01(factor),
+                duracion
+            )
+        );
+}
+
+
+    private IEnumerator FadeAudioCombate(
+        float factor,
+        float duracion)
+    {
+        float inicio1 =
+            baseEnemy1 != null
+            ? baseEnemy1.volume
+            : 0f;
+
+        float inicio2 =
+            baseEnemy2 != null
+            ? baseEnemy2.volume
+            : 0f;
+
+        float inicioVoices =
+            enemyVoices != null
+            ? enemyVoices.volume
+            : 0f;
+
+
+        float destino1 =
+            volumenOriginalBaseEnemy1 * factor;
+
+        float destino2 =
+            volumenOriginalBaseEnemy2 * factor;
+
+        float destinoVoices =
+            volumenOriginalEnemyVoices * factor;
+
+
+        float tiempo = 0f;
+        duracion = Mathf.Max(0.01f, duracion);
+
+
+        while (tiempo < duracion)
+        {
+            tiempo += Time.deltaTime;
+
+            float t =
+                Mathf.Clamp01(
+                    tiempo / duracion
+                );
+
+            t = Mathf.SmoothStep(
+                0f,
+                1f,
+                t
+            );
+
+
+            if (baseEnemy1 != null)
+            {
+                baseEnemy1.volume =
+                    Mathf.Lerp(
+                        inicio1,
+                        destino1,
+                        t
+                    );
+            }
+
+
+            if (baseEnemy2 != null)
+            {
+                baseEnemy2.volume =
+                    Mathf.Lerp(
+                        inicio2,
+                        destino2,
+                        t
+                    );
+            }
+
+
+            if (enemyVoices != null)
+            {
+                enemyVoices.volume =
+                    Mathf.Lerp(
+                        inicioVoices,
+                        destinoVoices,
+                        t
+                    );
+            }
+
+
+            yield return null;
+        }
+
+
+        if (baseEnemy1 != null)
+            baseEnemy1.volume = destino1;
+
+        if (baseEnemy2 != null)
+            baseEnemy2.volume = destino2;
+
+        if (enemyVoices != null)
+            enemyVoices.volume = destinoVoices;
+
+
+        rutinaVolumenAudioCombate = null;
+    }
+
+    public void DetenerAudioCombate()
+    {
+        if (rutinaVolumenAudioCombate != null)
+        {
+            StopCoroutine(rutinaVolumenAudioCombate);
+            rutinaVolumenAudioCombate = null;
+        }
+
+        DetenerFuente(baseEnemy1);
+        DetenerFuente(baseEnemy2);
+        DetenerFuente(enemyVoices);
+        Debug.Log(
+            "[AparicionSombra] TODO el audio de combate fue detenido."
+        );
+    }
+
+
+    private void DetenerFuente(AudioSource fuente)
+    {
+        if (fuente == null)
+            return;
+
+        fuente.Stop();
+        fuente.loop = false;
+
+        Debug.Log(
+            "[AparicionSombra] STOP -> " +
+            fuente.gameObject.name +
+            " | isPlaying después: " +
+            fuente.isPlaying
+        );
+    }
+
+
+    public void IniciarAudioCombate()
+    {
+        // Recuperar los volúmenes originales.
+        if (baseEnemy1 != null)
+        {
+            baseEnemy1.volume = volumenOriginalBaseEnemy1;
+
+            if (!baseEnemy1.isPlaying)
+                baseEnemy1.Play();
+        }
+
+        if (baseEnemy2 != null)
+        {
+            baseEnemy2.volume = volumenOriginalBaseEnemy2;
+
+            if (!baseEnemy2.isPlaying)
+                baseEnemy2.Play();
+        }
+
+        if (enemyVoices != null)
+        {
+            enemyVoices.volume = volumenOriginalEnemyVoices;
+
+            if (!enemyVoices.isPlaying)
+                enemyVoices.Play();
+        }
+
+        Debug.Log(
+            "[AparicionSombra] Audio de combate INICIADO."
+        );
     }
 }
