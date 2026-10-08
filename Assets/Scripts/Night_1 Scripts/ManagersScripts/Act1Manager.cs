@@ -386,6 +386,16 @@ public class Act1Manager : MonoBehaviour
     [Range(0f, 1f)]
     public float volumenRespiracionPasillo = 0.65f;
 
+    [Header("FX - Pasillo Mariela")]
+    public Volume volumenPasilloMariela;
+
+    [Range(0f, 1f)]
+    public float pesoVolumePasilloMariela = 1f;
+
+    public float duracionEntradaVolumePasillo = 0.8f;
+
+    private Coroutine rutinaVolumePasilloMariela;
+
 
 
     private void Awake()
@@ -437,6 +447,7 @@ public class Act1Manager : MonoBehaviour
         if (debugSegundaCriatura) { StartCoroutine(DebugIniciarSegundaCriatura()); }
         if (nanielaPasillo != null) { nanielaPasillo.SetActive(false); }
         if (luzPasilloTitileo != null) { luzPasilloTitileo.enabled = true; }
+        if (volumenPasilloMariela != null) { volumenPasilloMariela.weight = 0f; }
 
 
 
@@ -3240,45 +3251,176 @@ public class Act1Manager : MonoBehaviour
 
     private void MantenerAudioParanoiaAlta()
     {
-        // ==========================================
-        // CORAZÓN
-        // ==========================================
+        PrepararAudioParanoia(
+            heartbeatParanoia,
+            volumenHeartbeatPasillo,
+            "Heartbeat"
+        );
 
-        if (heartbeatParanoia != null)
+        PrepararAudioParanoia(
+            respiracionParanoia,
+            volumenRespiracionPasillo,
+            "Respiracion"
+        );
+
+        // La paranoia sigue alta después del combate.
+        if (ParanoiaSystem.Instance != null)
         {
-            heartbeatParanoia.loop = true;
-            heartbeatParanoia.volume =
-                volumenHeartbeatPasillo;
-
-            // Si ya estaba sonando, NO lo reiniciamos.
-            if (!heartbeatParanoia.isPlaying)
-            {
-                heartbeatParanoia.Play();
-            }
+            ParanoiaSystem.Instance.AddParanoia(20f);
         }
 
+        // El Volume narrativo debe seguir completamente activo.
+        if (volumenGlobalNarrativo != null)
+        {
+            volumenGlobalNarrativo.weight = 1f;
+        }
 
-        // ==========================================
-        // RESPIRACIÓN
-        // ==========================================
+        Debug.Log(
+            "[Act1Manager] Paranoia alta: corazón + respiración activos."
+        );
+    }
+
+
+    private void PrepararAudioParanoia(
+        AudioSource fuente,
+        float volumen,
+        string nombre)
+    {
+        if (fuente == null)
+        {
+            Debug.LogError(
+                "[Act1Manager] Audio de paranoia NO asignado: " +
+                nombre
+            );
+
+            return;
+        }
+
+        if (fuente.clip == null)
+        {
+            Debug.LogError(
+                "[Act1Manager] " +
+                nombre +
+                " no tiene AudioClip."
+            );
+
+            return;
+        }
+
+        fuente.enabled = true;
+        fuente.mute = false;
+
+        // Son sonidos internos de Lucas.
+        fuente.spatialBlend = 0f;
+
+        fuente.loop = true;
+        fuente.volume = volumen;
+
+        if (!fuente.isPlaying)
+        {
+            fuente.Play();
+        }
+
+        Debug.Log(
+            "[Act1Manager] " +
+            nombre +
+            " | Playing: " +
+            fuente.isPlaying +
+            " | Clip: " +
+            fuente.clip.name +
+            " | Volume: " +
+            fuente.volume
+        );
+    }
+
+    public void IntensificarPasilloMariela()
+    {
+        // Subimos aún más la sensación fisiológica.
+        if (heartbeatParanoia != null)
+        {
+            heartbeatParanoia.volume = 0.95f;
+            heartbeatParanoia.pitch = 1.08f;
+        }
 
         if (respiracionParanoia != null)
         {
-            respiracionParanoia.loop = true;
-            respiracionParanoia.volume =
-                volumenRespiracionPasillo;
+            respiracionParanoia.volume = 0.85f;
+            respiracionParanoia.pitch = 1.05f;
+        }
 
-            // Si ya estaba sonando, continúa desde donde iba.
-            if (!respiracionParanoia.isPlaying)
+
+        if (ParanoiaSystem.Instance != null)
+        {
+            ParanoiaSystem.Instance.AddParanoia(10f);
+        }
+
+
+        if (volumenPasilloMariela != null)
+        {
+            if (rutinaVolumePasilloMariela != null)
             {
-                respiracionParanoia.Play();
+                StopCoroutine(
+                    rutinaVolumePasilloMariela
+                );
             }
+
+            rutinaVolumePasilloMariela =
+                StartCoroutine(
+                    SubirVolumePasilloMariela()
+                );
         }
 
 
         Debug.Log(
-            "[Act1Manager] Paranoia alta: corazón y respiración activos."
+            "[Act1Manager] Entrando al pasillo de Mariela: tensión intensificada."
         );
+    }
+
+
+    private IEnumerator SubirVolumePasilloMariela()
+    {
+        float inicio =
+            volumenPasilloMariela.weight;
+
+        float tiempo = 0f;
+
+        float duracion =
+            Mathf.Max(
+                0.01f,
+                duracionEntradaVolumePasillo
+            );
+
+
+        while (tiempo < duracion)
+        {
+            tiempo += Time.deltaTime;
+
+            float t =
+                Mathf.Clamp01(
+                    tiempo / duracion
+                );
+
+            t = Mathf.SmoothStep(
+                0f,
+                1f,
+                t
+            );
+
+            volumenPasilloMariela.weight =
+                Mathf.Lerp(
+                    inicio,
+                    pesoVolumePasilloMariela,
+                    t
+                );
+
+            yield return null;
+        }
+
+
+        volumenPasilloMariela.weight =
+            pesoVolumePasilloMariela;
+
+        rutinaVolumePasilloMariela = null;
     }
 
 }

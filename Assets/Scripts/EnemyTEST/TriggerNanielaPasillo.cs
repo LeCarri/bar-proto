@@ -37,7 +37,6 @@ public class TriggerNanielaPasillo : MonoBehaviour
 
 
         // ==========================================
-        // IMPORTANTE:
         // EL EVENTO TODAVÍA NO EMPEZÓ
         // ==========================================
 
@@ -53,9 +52,12 @@ public class TriggerNanielaPasillo : MonoBehaviour
         }
 
 
-        // Recién ahora consumimos el trigger.
         usado = true;
 
+
+        // ==========================================
+        // ASOMAR MÁS
+        // ==========================================
 
         if (mostrarMasCabeza)
         {
@@ -64,8 +66,18 @@ public class TriggerNanielaPasillo : MonoBehaviour
             );
 
             mariela.MostrarMasCabeza();
+
+            if (Act1Manager.Instance != null)
+            {
+                Act1Manager.Instance
+                    .IntensificarPasilloMariela();
+            }
         }
 
+
+        // ==========================================
+        // OCULTAR Y DESAPARECER
+        // ==========================================
 
         if (ocultarYDesaparecer)
         {
