@@ -102,6 +102,7 @@ public class Act2ManagerDemo : MonoBehaviour
     public AudioSource musicBar;
     public AudioSource audioBasement;
     [SerializeField] private AudioSource musicaSuspenso;
+    public AudioSource musicaCombate;
 
     [Header("Objetivos")]
     public TextMeshProUGUI textoObjetivo;
@@ -418,6 +419,8 @@ public class Act2ManagerDemo : MonoBehaviour
 
     estadoActual = Act2State.Psicosis;
 
+    // --- 1. SILENCIO INMEDIATO EN LA APARICIÓN / ESPEJO ---
+
     CambiarIluminacion("Psicosis");
     if (efectoPsicosis != null) efectoPsicosis.ActivarPsicosis();
 
@@ -425,10 +428,6 @@ public class Act2ManagerDemo : MonoBehaviour
     {
         vigilanteMirror.gameObject.SetActive(true);
     }
-    // ---------------------------------
-
-    //if (sacudidaCamara != null)
-        //StartCoroutine(sacudidaCamara.Shake(1.5f, 25f));
 
     Paranoia(40f);
 
@@ -437,6 +436,12 @@ public class Act2ManagerDemo : MonoBehaviour
     ActualizarObjetivo("SOBREVIVE Y LLEGA AL SOTANO");
 
     yield return new WaitForSeconds(2f);
+
+    // --- 2. ARRANCAR MÚSICA DE COMBATE CON LAS SOMBRAS ---
+    if (musicaCombate != null)
+    {
+        StartCoroutine(FadeInAudio(musicaCombate, 0.5f, 0.8f)); // Fade-in rápido de 0.5s al 80% de volumen
+    }
 
     if (sombrasCombate != null)
         sombrasCombate.IniciarCombate();
@@ -485,6 +490,7 @@ public class Act2ManagerDemo : MonoBehaviour
         if (ambientBar != null)     ambientBar.Stop();
         if (musicBar != null)       musicBar.Stop();
         if (audioBasement != null) audioBasement.Stop();
+        if (musicaCombate != null)   musicaCombate.Stop();
 
         if (sombrasCombate != null) sombrasCombate.DesactivarTodo();
         if (efectoPsicosis != null) efectoPsicosis.DesactivarPsicosis();
@@ -712,6 +718,22 @@ public void ServirCerveza()
             default: Debug.LogWarning("Estado de luz desconocido: " + estado); break;
         }
     }
+
+    public void DetenerMusicaSuspenso()
+{
+    if (musicaSuspenso != null && musicaSuspenso.isPlaying)
+    {
+        musicaSuspenso.Stop();
+    }
+}
+
+public void IniciarMusicaCombate()
+{
+    if (musicaCombate != null)
+    {
+        StartCoroutine(FadeInAudio(musicaCombate, 0.5f, 0.8f));
+    }
+}
 
     // =========================================================
     // DEBUG — Clic derecho en el Inspector para saltar estados o verificar la escena
