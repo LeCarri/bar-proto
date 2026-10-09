@@ -31,10 +31,6 @@ public class ServicioCervezaVisual : MonoBehaviour
     [Header("Aparición de espuma")]
     [SerializeField] private float duracionAparicionEspuma = 0.35f;
 
-    private Vector3 escalaOriginalEspuma;
-
-    private Vector3 posicionOriginalEspuma;
-
     public bool EstaSirviendo { get; private set; }
 
     private Transform transformChorro;
@@ -86,13 +82,6 @@ public class ServicioCervezaVisual : MonoBehaviour
                 ejeLargoChorro = 2;
 
             chorroCerveza.SetActive(false);
-        }
-
-        if (espumaCerveza != null)
-        {
-            espumaCerveza.transform.localPosition = posicionOriginalEspuma;
-            escalaOriginalEspuma = espumaCerveza.transform.localScale;
-            posicionOriginalEspuma = espumaCerveza.transform.localPosition;
         }
 
         PrepararVasoVacio();
