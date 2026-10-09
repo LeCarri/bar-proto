@@ -5077,7 +5077,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6689036041284674117, guid: acdef835a498d45d8bf448391e587e06, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: acdef835a498d45d8bf448391e587e06, type: 3}
       propertyPath: m_LocalScale.x
@@ -14203,12 +14203,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 144725026}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
-  m_LocalPosition: {x: 0.060360067, y: -0.36999997, z: 0.29999918}
-  m_LocalScale: {x: 0.3543018, y: 0.35430157, z: 0.35430157}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: 0.7071068, w: 0}
+  m_LocalPosition: {x: -0.22058868, y: -4.0900044, z: 0.025001323}
+  m_LocalScale: {x: 1.9486597, y: 2.657262, z: 1.9486581}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 621796850}
+  m_Father: {fileID: 946514086}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
 --- !u!23 &144725028
 MeshRenderer:
@@ -64202,7 +64202,6 @@ GameObject:
   - component: {fileID: 621796850}
   - component: {fileID: 621796852}
   - component: {fileID: 621796851}
-  - component: {fileID: 621796853}
   - component: {fileID: 621796854}
   m_Layer: 3
   m_Name: BasementFrame
@@ -64219,15 +64218,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 621796849}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071069, y: -0, z: -0, w: -0.70710677}
+  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 14.900536, y: -18.84433, z: 0.7504387}
-  m_LocalScale: {x: 5.5, y: 7.5, z: 5.4999995}
+  m_LocalScale: {x: 5.5, y: 7.5, z: 5.4999986}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 935026496}
-  - {fileID: 144725027}
+  - {fileID: 946514086}
   m_Father: {fileID: 696536761}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!23 &621796851
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -64285,28 +64284,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 621796849}
   m_Mesh: {fileID: 7179320324885340950, guid: 4f6085ca86c21ae48a374495b68857c8, type: 3}
---- !u!114 &621796853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 621796849}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ac5b91eb908368409748864c8a8e80e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PuertaSotanoAct2
-  candadoObjeto: {fileID: 1011049007}
-  candadoRigidbody: {fileID: 1011049009}
-  animadorPuerta: {fileID: 0}
-  anguloApertura: 90
-  velocidadApertura: 30
-  audioSourcePuerta: {fileID: 1834672090}
-  sonidoGolpesRitmicos: {fileID: 673318003}
-  sonidoLlaveGirar: {fileID: 8300000, guid: 7433cb40a7d009441962571e32de779a, type: 3}
-  sonidoCandadoCaer: {fileID: 0}
-  sonidoPuertaRechinado: {fileID: 8300000, guid: 5404b38d01e6233428f3eebe6b454463, type: 3}
 --- !u!65 &621796854
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -101035,6 +101012,83 @@ Transform:
   - {fileID: 998426523}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &946514085
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 946514086}
+  - component: {fileID: 946514088}
+  - component: {fileID: 946514087}
+  m_Layer: 3
+  m_Name: PivotPuerta
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &946514086
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946514085}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0.10046733, y: -0.36666682, z: 1.0436366}
+  m_LocalScale: {x: 0.18181817, y: 0.1818182, z: 0.1333333}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 144725027}
+  m_Father: {fileID: 621796850}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &946514087
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946514085}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.88379484, y: 11.378443, z: 6.5568247}
+  m_Center: {x: -0.41913798, y: -0.34664813, z: -2.778412}
+--- !u!114 &946514088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946514085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ac5b91eb908368409748864c8a8e80e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuertaSotanoAct2
+  candadoObjeto: {fileID: 1011049007}
+  candadoRigidbody: {fileID: 1011049009}
+  animadorPuerta: {fileID: 0}
+  anguloApertura: 90
+  velocidadApertura: 30
+  audioSourcePuerta: {fileID: 1834672090}
+  sonidoGolpesRitmicos: {fileID: 673318003}
+  sonidoLlaveGirar: {fileID: 8300000, guid: 7433cb40a7d009441962571e32de779a, type: 3}
+  sonidoCandadoCaer: {fileID: 0}
+  sonidoPuertaRechinado: {fileID: 8300000, guid: 5404b38d01e6233428f3eebe6b454463, type: 3}
 --- !u!1 &946646613
 GameObject:
   m_ObjectHideFlags: 0
