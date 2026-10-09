@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -13,86 +14,91 @@ public class CuelloCriaturaTecho : MonoBehaviour
     public Transform poseJumpscare;
 
     [Header("Tiempos")]
-    public float duracionPrimerMovimiento = 0.35f;
-    public float pausaIntermedia = 0.25f;
-    public float duracionJumpscare = 0.10f;
-    public float pausaJumpscare = 0.35f;
-    public float duracionRetroceso = 0.4f;
+    public float duracionPrimerMovimiento = 0.18f;
+    public float pausaIntermedia = 0f;
+    public float duracionJumpscare = 0.08f;
+    public float pausaJumpscare = 0.20f;
+    public float duracionRetroceso = 0.35f;
 
     private bool ejecutando;
 
     void Start()
     {
-        if (neck == null || poseInicial == null ||
-            poseIntermedia == null || poseJumpscare == null)
-        {
-            Debug.LogError("Faltan referencias del cuello.");
-            enabled = false;
-            return;
-        }
-
-        AplicarPose(poseInicial);
+        if (ReferenciasValidas())
+            AplicarPose(poseInicial);
     }
 
-    void AplicarPose(Transform pose)
+    bool ReferenciasValidas()
     {
-        neck.localPosition = pose.localPosition;
-        neck.localRotation = pose.localRotation;
+        return neck != null &&
+               poseInicial != null &&
+               poseIntermedia != null &&
+               poseJumpscare != null;
     }
 
     public void IniciarJumpscare()
     {
-        if (ejecutando || !enabled)
-            return;
-
-        StartCoroutine(SecuenciaJumpscare());
+        if (!ejecutando && ReferenciasValidas())
+            StartCoroutine(ReproducirJumpscare(null, null));
     }
 
-    IEnumerator SecuenciaJumpscare()
+    public IEnumerator ReproducirJumpscare(
+        Action alImpacto,
+        Action alRetroceso)
     {
-        ejecutando = true;
+        if (ejecutando || !ReferenciasValidas())
+            yield break;
 
-        // 1. Movimiento inquietante
+        ejecutando = true;
+        AplicarPose(poseInicial);
+
+        // Primera aparición
         yield return MoverHaciaPose(
             poseIntermedia,
             duracionPrimerMovimiento,
             false
         );
 
-        // 2. Pausa antes del susto
-        yield return new WaitForSeconds(pausaIntermedia);
+        yield return new WaitForSeconds(
+            Mathf.Max(0f, pausaIntermedia)
+        );
 
-        // 3. Movimiento explosivo hacia la cámara
+        // Todos los efectos se disparan aquí
+        alImpacto?.Invoke();
+
+        // Extensión explosiva hacia Lucas
         yield return MoverHaciaPose(
             poseJumpscare,
             duracionJumpscare,
             true
         );
 
-        // 4. Mantener la cara cerca
-        yield return new WaitForSeconds(pausaJumpscare);
+        yield return new WaitForSeconds(
+            Mathf.Max(0f, pausaJumpscare)
+        );
 
-        // 5. Retroceso para comenzar el combate
+        // La linterna regresa junto con el cuello
+        alRetroceso?.Invoke();
+
         yield return MoverHaciaPose(
             poseIntermedia,
             duracionRetroceso,
             false
         );
 
-        Debug.Log("Jumpscare terminado. Criatura lista para combate.");
+        ejecutando = false;
     }
 
     IEnumerator MoverHaciaPose(
         Transform destino,
         float duracion,
-        bool movimientoBrusco
-    )
+        bool brusco)
     {
-        Vector3 posicionOrigen = neck.localPosition;
-        Quaternion rotacionOrigen = neck.localRotation;
+        Vector3 origenPos = neck.localPosition;
+        Quaternion origenRot = neck.localRotation;
 
-        Vector3 posicionDestino = destino.localPosition;
-        Quaternion rotacionDestino = destino.localRotation;
+        Vector3 destinoPos = destino.localPosition;
+        Quaternion destinoRot = destino.localRotation;
 
         float tiempo = 0f;
 
@@ -104,31 +110,29 @@ public class CuelloCriaturaTecho : MonoBehaviour
                 tiempo / Mathf.Max(0.001f, duracion)
             );
 
-            if (movimientoBrusco)
-            {
-                t = 1f - Mathf.Pow(1f - t, 4f);
-            }
+            if (brusco)
+                t = 1f - Mathf.Pow(1f - t, 5f);
             else
-            {
                 t = t * t * (3f - 2f * t);
-            }
 
             neck.localPosition = Vector3.Lerp(
-                posicionOrigen,
-                posicionDestino,
-                t
+                origenPos, destinoPos, t
             );
 
             neck.localRotation = Quaternion.Slerp(
-                rotacionOrigen,
-                rotacionDestino,
-                t
+                origenRot, destinoRot, t
             );
 
             yield return null;
         }
 
         AplicarPose(destino);
+    }
+
+    void AplicarPose(Transform pose)
+    {
+        neck.localPosition = pose.localPosition;
+        neck.localRotation = pose.localRotation;
     }
 
     [ContextMenu("Probar Jumpscare")]
@@ -143,7 +147,7 @@ public class CuelloCriaturaTecho : MonoBehaviour
         StopAllCoroutines();
         ejecutando = false;
 
-        if (neck != null && poseInicial != null)
+        if (ReferenciasValidas())
             AplicarPose(poseInicial);
     }
 }

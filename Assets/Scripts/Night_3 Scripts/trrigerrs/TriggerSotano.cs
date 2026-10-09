@@ -1,15 +1,23 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 public class TriggerSotano : MonoBehaviour
 {
+    private bool activado = false;
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            SceneManager.LoadScene("Basement (pasto)");
+        if (activado)
+            return;
 
-            Debug.Log("El jugador entró al trigger");
-        }
+        if (!other.CompareTag("Player"))
+            return;
+
+        activado = true;
+
+        Debug.Log("[SOTANO] Lucas entró al trigger.");
+
+        SceneManager.LoadScene("Basement (pasto)");
     }
 }
+

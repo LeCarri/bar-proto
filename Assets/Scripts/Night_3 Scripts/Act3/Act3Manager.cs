@@ -530,22 +530,6 @@ public class Act3Manager : MonoBehaviour
             }
 
 
-            // PUERTA
-            PuertaSotano puerta =
-                hit.collider.GetComponentInParent<PuertaSotano>();
-
-            if (puerta != null)
-            {
-                mirandoAlgo = true;
-
-                if (panelInteraccion != null)
-                    panelInteraccion.SetActive(true);
-
-                if (textoInteraccion != null)
-                    textoInteraccion.text = textoPuerta;
-            }
-
-
             // ELEMENTOS DE LIMPIEZA
             ElementosLimpieza limpieza =
                 hit.collider.GetComponentInParent<
@@ -657,19 +641,6 @@ public class Act3Manager : MonoBehaviour
                 if (limpieza != null)
                 {
                     limpieza.Interact();
-                    return;
-                }
-
-
-                // PUERTA
-                PuertaSotano puerta =
-                    hit.collider.GetComponentInParent<
-                        PuertaSotano
-                    >();
-
-                if (puerta != null)
-                {
-                    puerta.Interact();
                     return;
                 }
 
