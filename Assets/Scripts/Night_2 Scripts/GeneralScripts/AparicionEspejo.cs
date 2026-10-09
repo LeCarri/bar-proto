@@ -41,6 +41,7 @@ public class AparicionEspejo : MonoBehaviour
                 return;
             }
 
+
             // Solo se dispara si el jugador ya agarró la llave
             if (Act2ManagerDemo.Instance.llaveTenida)
             {
@@ -59,6 +60,8 @@ public class AparicionEspejo : MonoBehaviour
         {
             Act2ManagerDemo.Instance.LlaveRecogida();
         }
+
+        Act2ManagerDemo.Instance.DetenerMusicaSuspenso();
 
         // --- MANEJO DE LINTERNA ---
         // Si no asignaste la luz de la linterna en el inspector, intentamos encontrarla
@@ -165,6 +168,7 @@ public class AparicionEspejo : MonoBehaviour
         if (Act2ManagerDemo.Instance != null)
         {
             Act2ManagerDemo.Instance.StartCoroutine(Act2ManagerDemo.Instance.SecuenciaPsicosis());
+            Act2ManagerDemo.Instance.IniciarMusicaCombate();
         }
 
         gameObject.SetActive(false);
