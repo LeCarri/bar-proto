@@ -61,7 +61,7 @@ public class CinematicDialogue : MonoBehaviour
 
     public void Dialogue07()
     {
-        ShowDialogue("UN ÚLTIMO TURNO.");
+        ShowDialogue("UN ÚLTIMO <color=#B00000>TURNO</color>");
     }
 
 

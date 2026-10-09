@@ -21194,6 +21194,50 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 358115837}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &365068511
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 365068513}
+  - component: {fileID: 365068512}
+  m_Layer: 0
+  m_Name: CinematicManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &365068512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 365068511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4db609382df58194fb920bed48f56395, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CinematicSceneLoader
+--- !u!4 &365068513
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 365068511}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 134.10944, y: 14.28751, z: -360.1025}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &371545369
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41163,6 +41207,8 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 8c8d88e53b316ad40b8f3afb33cd2e11, type: 2}
     - {fileID: 11400000, guid: 3265462de9639fc4299ce78b5351ac79, type: 2}
     - {fileID: 11400000, guid: 5ec313a9e2f3ac74cb597d1f6f74a828, type: 2}
+    - {fileID: 11400000, guid: b233689848965c94882d7b2c5e4a74b5, type: 2}
+    - {fileID: 11400000, guid: 50de0db3a5af84c428c7a2384cf0d86b, type: 2}
     m_Events:
     - m_PersistentCalls:
         m_Calls:
@@ -41267,6 +41313,34 @@ MonoBehaviour:
         - m_Target: {fileID: 833843152}
           m_TargetAssemblyTypeName: CinematicDialogue, Assembly-CSharp
           m_MethodName: Dialogue07
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 365068512}
+          m_TargetAssemblyTypeName: CinematicSceneLoader, Assembly-CSharp
+          m_MethodName: LoadBarScene
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1036244965}
+          m_TargetAssemblyTypeName: AudioFadeIn, Assembly-CSharp
+          m_MethodName: FadeOut
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -54907,6 +54981,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1036244963}
   - component: {fileID: 1036244964}
+  - component: {fileID: 1036244965}
   m_Layer: 0
   m_Name: Audio_Background
   m_TagString: Untagged
@@ -54941,7 +55016,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: dd19b617ce550814390ff31cef31402d, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.25
   m_Pitch: 1
   Loop: 1
@@ -55026,6 +55101,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1036244965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1036244962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fe4cc8005d4cc24a95cd4bb3b3cc64a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioFadeIn
+  audioSource: {fileID: 1036244964}
+  fadeDuration: 10
+  delay: 4
+  fadeOutDuration: 2
 --- !u!1 &1037778879
 GameObject:
   m_ObjectHideFlags: 0
@@ -55990,12 +56081,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -72149,6 +72240,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   vidaActual: 100
   canvasDerrota: {fileID: 0}
+  fadeNegro: {fileID: 0}
+  duracionFadeNegro: 0.8
+  esperaEnNegro: 0.6
+  pivotCamaraDerrota: {fileID: 0}
+  duracionCaidaCamara: 0.9
+  inclinacionCamara: 25
+  descensoCamara: 0.25
+  linterna: {fileID: 0}
+  controlesJugador: []
+  volumenBaseEnemy1Derrota: 0.25
+  volumenBaseEnemy2Derrota: 0.2
+  audioContacto: {fileID: 0}
+  enemyVoices: {fileID: 0}
+  baseEnemy1: {fileID: 0}
+  baseEnemy2: {fileID: 0}
+  duracionAntesDelNegro: 0.8
 --- !u!143 &1417569170
 CharacterController:
   m_ObjectHideFlags: 0
@@ -85735,6 +85842,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1724573671}
   - component: {fileID: 1724573670}
+  - component: {fileID: 1724573672}
   m_Layer: 0
   m_Name: Audio_Rain
   m_TagString: Untagged
@@ -85754,10 +85862,10 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: ce6b9c573f5cd0844ad5a3a2d90c9635, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.2
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -85854,6 +85962,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1865394213}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1724573672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1724573669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fe4cc8005d4cc24a95cd4bb3b3cc64a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioFadeIn
+  audioSource: {fileID: 1724573670}
+  fadeDuration: 10
+  delay: 0
+  fadeOutDuration: 2
 --- !u!1001 &1726314024
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -100488,8 +100612,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2014127772}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.037007134, y: 0.70667607, z: 0.024677664, w: 0.7061378}
-  m_LocalPosition: {x: -5.001477, y: -0.11282004, z: 32.681953}
+  m_LocalRotation: {x: -0.008726558, y: 0, z: 0, w: 0.999962}
+  m_LocalPosition: {x: -14.791966, y: 1.2173587, z: 83.744316}
   m_LocalScale: {x: 0.30469865, y: 0.3046986, z: 0.37277937}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -107287,6 +107411,7 @@ SceneRoots:
   - {fileID: 1862071248}
   - {fileID: 1537034719}
   - {fileID: 1865394213}
+  - {fileID: 365068513}
   - {fileID: 283921796}
   - {fileID: 447951646}
   - {fileID: 2051592426}
