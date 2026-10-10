@@ -24,6 +24,10 @@ public class ServicioWhiskyFPS : MonoBehaviour
     [SerializeField] private AudioSource sonidoTrago1;
     [SerializeField] private AudioSource sonidoTrago2;
 
+    [Header("Bloqueo de Movimiento")]
+    [Tooltip("El script de movimiento del jugador (ej. FirstPersonController) para congelarlo mientras sirve")]
+    [SerializeField] private MonoBehaviour scriptMovimientoJugador;
+
     private bool reproduciendo;
 
     public bool EstaSirviendo => reproduciendo;
@@ -38,6 +42,17 @@ public class ServicioWhiskyFPS : MonoBehaviour
 
         if (botellaMano != null)
             botellaMano.SetActive(false);
+
+        // Si no se asignó a mano, intentamos buscarlo automáticamente en el Player
+        if (scriptMovimientoJugador == null)
+        {
+            GameObject jugador = GameObject.FindWithTag("Player");
+            if (jugador != null)
+            {
+                // Buscá aquí el nombre exacto del script que mueve a tu personaje si difiere (ej: PlayerMovement, FPSController)
+                scriptMovimientoJugador = jugador.GetComponent<MonoBehaviour>(); // O buscá un componente específico ej: jugador.GetComponent<FirstPersonController>()
+            }
+        }
     }
 
     public void IniciarServicio()
@@ -48,6 +63,12 @@ public class ServicioWhiskyFPS : MonoBehaviour
         reproduciendo = true;
 
         Debug.Log("INICIO SERVICIO WHISKY");
+
+        // --- CONGELAR MOVIMIENTO ---
+        if (scriptMovimientoJugador != null)
+        {
+            scriptMovimientoJugador.enabled = false;
+        }
 
         if (mallaBrazos != null)
             mallaBrazos.SetActive(true);
@@ -92,6 +113,12 @@ public class ServicioWhiskyFPS : MonoBehaviour
             mallaBrazos.SetActive(false);
 
         reproduciendo = false;
+
+        // --- DEVOLVER MOVIMIENTO ---
+        if (scriptMovimientoJugador != null)
+        {
+            scriptMovimientoJugador.enabled = true;
+        }
 
         if (animator != null)
             animator.Play("Idle", 0, 0f);
@@ -223,4 +250,3 @@ public class ServicioWhiskyFPS : MonoBehaviour
             Debug.LogError("visualWhisky NO ESTÁ ASIGNADO");
     }
 }
-
