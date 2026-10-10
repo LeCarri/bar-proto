@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 // Este va en todos los enemigos.
 // Maneja vida, daño y muerte.
@@ -8,6 +9,8 @@ public class EnemyCore : MonoBehaviour
 {
     public float health = 100f;
     public float deathSpeed = 20f;
+    [Header("Eventos")]
+    public UnityEvent alMorir;
 
     protected bool isBeingIlluminated = false;
 
@@ -80,8 +83,12 @@ public class EnemyCore : MonoBehaviour
         }
     }
 
+
     protected virtual void Die()
     {
+        // Ejecutar acciones asociadas a la muerte.
+        alMorir?.Invoke();
+
         Act1Manager manager =
             Object.FindAnyObjectByType<Act1Manager>();
 
@@ -98,6 +105,7 @@ public class EnemyCore : MonoBehaviour
 
         Destroy(gameObject);
     }
+
 
     // El jugador debe mantener la luz sobre el enemigo.
     protected void LateUpdate()

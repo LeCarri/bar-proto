@@ -30249,7 +30249,7 @@ Transform:
   - {fileID: 612748010}
   - {fileID: 1583870953}
   - {fileID: 518863282}
-  m_Father: {fileID: 1721608587}
+  m_Father: {fileID: 978655663}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &414939600
 MonoBehaviour:
@@ -80824,8 +80824,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.8
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Radius: 1.3164107
+  m_Center: {x: 0.29621613, y: 0.22019497, z: -8.9849994e-10}
 --- !u!1001 &936963616
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -81845,12 +81845,17 @@ MonoBehaviour:
   tiempoMirada: 0.15
   audioRasgunos: {fileID: 518863283}
   audioJumpscare: {fileID: 2000472162}
+  duracionAudioJumpscare: 1.8
+  duracionFadeOutJumpscare: 0.35
+  baseEnemy1: {fileID: 1088649985}
+  baseEnemy2: {fileID: 1440215393}
+  enemyVoices: {fileID: 1084071162}
   volumeJumpscare: {fileID: 774377534}
-  duracionVolume: 5.28
-  tiempoVolumeIntenso: 8.06
-  pivoteSacudida: {fileID: 1721608587}
-  intensidadSacudida: 50
-  duracionSacudida: 0.12
+  duracionVolume: 3
+  tiempoVolumeIntenso: 3
+  pivoteSacudida: {fileID: 978655663}
+  intensidadSacudida: 0.3
+  duracionSacudida: 1
 --- !u!1 &961316264
 GameObject:
   m_ObjectHideFlags: 0
@@ -82845,7 +82850,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1547105103}
-  - {fileID: 1721608587}
+  - {fileID: 414939599}
   m_Father: {fileID: 960428126}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &979615401
@@ -95700,6 +95705,34 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: d615bb2b7d3814788b9cf8062a4e7100, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.22
+      objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: d615bb2b7d3814788b9cf8062a4e7100, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.706261
+      objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: d615bb2b7d3814788b9cf8062a4e7100, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7060145
+      objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: d615bb2b7d3814788b9cf8062a4e7100, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.03700061
+      objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: d615bb2b7d3814788b9cf8062a4e7100, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.037013527
+      objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: d615bb2b7d3814788b9cf8062a4e7100, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -89.98
+      objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: d615bb2b7d3814788b9cf8062a4e7100, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -6
+      objectReference: {fileID: 0}
     - target: {fileID: 9062142731307574492, guid: d615bb2b7d3814788b9cf8062a4e7100, type: 3}
       propertyPath: m_Layer
       value: 3
@@ -106122,10 +106155,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstNightManager
   estadoActual: 2
-  saltarLimpieza: 1
+  saltarLimpieza: 0
   iniciarDesdeLinterna: 0
   debugLinternaYaRecogida: 0
-  iniciarDesdeNanielaBotella: 0
+  iniciarDesdeNanielaBotella: 1
   luzLinternaJugador: {fileID: 1696137115}
   controladorLinterna: {fileID: 1303755577}
   sonidoFalloLinterna: {fileID: 1468673007}
@@ -129802,6 +129835,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCore
   health: 100
   deathSpeed: 20
+  alMorir:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!43 &1483319033
 Mesh:
   m_ObjectHideFlags: 0
@@ -160991,6 +161027,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCore
   health: 100
   deathSpeed: 20
+  alMorir:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &1694798860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -162167,38 +162206,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1 &1721608586
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1721608587}
-  m_Layer: 0
-  m_Name: JumpscareShakePivot
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1721608587
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1721608586}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 414939599}
-  m_Father: {fileID: 978655663}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1729633054
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -170278,6 +170285,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCore
   health: 100
   deathSpeed: 20
+  alMorir:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 961274475}
+        m_TargetAssemblyTypeName: EventoCriaturaTecho, Assembly-CSharp
+        m_MethodName: FinalizarCombate
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1861035608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170376,8 +170398,8 @@ MonoBehaviour:
   poseIntermedia: {fileID: 1375753649}
   poseJumpscare: {fileID: 1537018939}
   duracionPrimerMovimiento: 0.35
-  pausaIntermedia: 0.5
-  duracionJumpscare: 8
+  pausaIntermedia: 0
+  duracionJumpscare: 2
   pausaJumpscare: 0.35
   duracionRetroceso: 0.4
 --- !u!1001 &1863315377
