@@ -1643,204 +1643,72 @@ public class Act1Manager : MonoBehaviour
 
 
 
-    // ==========================================
-
+   // ==========================================
     // 5. CIERRE Y SALIDA DE LA NOCHE 1
-
     // ==========================================
-
     void IniciarCierreNoche()
-
     {
-
         estadoActual = ActoState.Cierre;
 
-
-
         if (ParanoiaSystem.Instance != null)
-
         {
-
             ParanoiaSystem.Instance.ResetParanoia();
-
         }
 
         // Volvemos a la iluminación Normal del bar (luces cálidas)
-
         CambiarIluminacion("Normal");
-
         if (lucesNormales != null) lucesNormales.SetActive(true);
-
         if (lucesCombate != null) lucesCombate.SetActive(false);
 
         // Mantenemos el bar en SILENCIO (apagamos zumbido y NO reactivamos ambientBar)
-
         if (zumbidoAmbiente != null && zumbidoAmbiente.isPlaying) zumbidoAmbiente.Stop();
-
         if (ambientBar != null && ambientBar.isPlaying) ambientBar.Stop();
 
-
-
-        // Activar el vaso sobre la mesa para interacción
-
-        if (vasoHoneySobreMesa != null) vasoHoneySobreMesa.SetActive(true);
-
-
-
         StartCoroutine(SecuenciaPostCombate());
-
     }
-
-
 
     IEnumerator SecuenciaPostCombate()
-
     {
-
         yield return new WaitForSeconds(1.5f); // Calma tras matar al último enemigo
-
         MostrarDialogo("Lucas: ¿Qué fue todo eso...?... Estoy cansado... nada más.");
-
         yield return new WaitForSeconds(4f);
 
-
-
-        MostrarDialogo("Lucas: Mejor guardo esto y mañana sigo...");
-
-        ActualizarObjetivo("Guarda el vaso en la barra y retírate");
-
-    }
-
-
-
-    public void InteractuarVasoHoneyCierre()
-
-    {
-
-        if (estadoActual != ActoState.Cierre || vasoRecogidoCierre) return;
-
-
-
-        VisitarVasoHoney();
-
-    }
-
-
-
-    private void VisitarVasoHoney()
-
-    {
-
-        vasoRecogidoCierre = true;
-
-        if (vasoHoneySobreMesa != null) vasoHoneySobreMesa.SetActive(false);
-
-        if (ControladorMano3D.Instance != null && itemVasoHoney != null)
-
-        {
-
-            ControladorMano3D.Instance.EquiparItem(itemVasoHoney);
-
-        }
-
-        ActualizarObjetivo("Deja el vaso detrás de la barra");
-
-    }
-
-
-
-    public void DejaVasoEnBarraCierre()
-
-    {
-
-        if (!vasoRecogidoCierre || vasoDejadoEnBarra) return;
-
-
-
-        vasoDejadoEnBarra = true;
-
-        if (ControladorMano3D.Instance != null) ControladorMano3D.Instance.VaciarMano();
-
-
-
-        StartCoroutine(SecuenciaFinalPantalla());
-
-    }
-
-
-
-    IEnumerator SecuenciaFinalPantalla()
-
-    {
-
         MostrarDialogo("Lucas: ¡Qué día!... ¿¡Qué hora es ya!?");
-
         yield return new WaitForSeconds(2.5f);
 
-
-
+        // Disparo del celular y notificación de Mariela
         DispararVibracionCelular();
-
         if (SistemaCelular.Instance != null)
-
         {
-
             SistemaCelular.Instance.RecibirNotificacionSinLeer("Mariela");
-
         }
-
-
 
         ActualizarObjetivo("Presiona [T] para revisar el teléfono");
 
-
-
+        // Espera a que el jugador abra el celular
         yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.T));
-
-
 
         yield return new WaitForSeconds(3.0f);
 
-
-
         MostrarDialogo("Lucas: Después le respondo...");
-
         yield return new WaitForSeconds(2.5f);
 
-
-
-        // Fade a negro y cambio a Noche 2...
-
+        // Fundido a negro y carga de la Noche 2
         if (fadeCanvasGroup != null)
-
         {
-
             fadeCanvasGroup.gameObject.SetActive(true);
-
             float t = 0;
-
             while (t < 2.5f)
-
             {
-
                 t += Time.deltaTime;
-
                 fadeCanvasGroup.alpha = Mathf.Lerp(0, 1, t / 2.5f);
-
                 yield return null;
-
             }
-
         }
 
-
-
         yield return new WaitForSeconds(1.5f);
-
         SceneManager.LoadScene("Night_2 Demo");
-
     }
-
 
 
     // ==========================================
