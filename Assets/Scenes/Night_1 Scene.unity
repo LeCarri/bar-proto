@@ -12987,7 +12987,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 189432578}
   m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 0.57, y: 0.48, z: 0.48}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12995,7 +12995,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.00021362305}
+  m_AnchoredPosition: {x: -31, y: 0}
   m_SizeDelta: {x: 1284, y: 518}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &189432580
@@ -67837,6 +67837,7 @@ MonoBehaviour:
   tiempoAntesDeTomar: 0.5
   sonidoTrago1: {fileID: 740121023}
   sonidoTrago2: {fileID: 740121022}
+  scriptMovimientoJugador: {fileID: 960428130}
 --- !u!95 &740121019
 Animator:
   serializedVersion: 7
@@ -67870,7 +67871,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: dae664d0d1a9743f8aaf1c794182980f, type: 3}
+  m_Resource: {fileID: 8300000, guid: a8754fd1dcdd7ae46b9c0be53d611515, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -67967,7 +67968,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 332187391aa22428a89e91d684001e3d, type: 3}
+  m_Resource: {fileID: 8300000, guid: a8754fd1dcdd7ae46b9c0be53d611515, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1

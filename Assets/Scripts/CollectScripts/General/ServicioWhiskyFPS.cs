@@ -62,6 +62,12 @@ public class ServicioWhiskyFPS : MonoBehaviour
 
         reproduciendo = true;
 
+        if (ControladorMano3D.Instance != null && ControladorMano3D.Instance.TieneManoOcupada())
+        {
+            Debug.Log("[Whisky] No se puede servir: el jugador ya tiene un objeto en la mano.");
+            return;
+        }
+
         Debug.Log("INICIO SERVICIO WHISKY");
 
         // --- CONGELAR MOVIMIENTO ---
