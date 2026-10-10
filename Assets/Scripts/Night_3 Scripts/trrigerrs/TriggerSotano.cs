@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class TriggerSotano : MonoBehaviour
+public class TriggerSotanoAct3 : MonoBehaviour
 {
     private bool activado = false;
 
@@ -15,9 +15,8 @@ public class TriggerSotano : MonoBehaviour
 
         activado = true;
 
-        Debug.Log("[SOTANO] Lucas entró al trigger.");
+        Debug.Log("[SOTANO ACT3] Lucas entró al sótano.");
 
         SceneManager.LoadScene("Basement (pasto)");
     }
 }
-

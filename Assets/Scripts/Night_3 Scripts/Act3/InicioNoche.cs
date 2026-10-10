@@ -128,6 +128,8 @@ public class InicioNoche : MonoBehaviour
         {
             jugador.controlesBloqueados = false;
         }
+
+        Act3Manager.Instance.IniciarMusicaDespuesDeIntroduccion();
     }
 
 

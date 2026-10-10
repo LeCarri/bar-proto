@@ -84,31 +84,18 @@ public class LlegadaSalonAct3 : MonoBehaviour
         );
 
 
-        // ACTIVAR CLIENTES
+        // INICIAR SECUENCIA DE LLEGADA AL SALÓN
 
-        if (clientesActo3 != null)
+        if (Act3Manager.Instance != null)
         {
-            clientesActo3.SetActive(true);
-
-            Debug.Log(
-                "[SALON] clientesActo3 ACTIVADO."
-            );
+            Act3Manager.Instance.IniciarSecuenciaClientes();
         }
         else
         {
-            Debug.Log(
-                "[SALON] ERROR: clientesActo3 está vacío."
+            Debug.LogError(
+                "[SALON] No se encontró Act3Manager."
             );
         }
-
-
-        // INICIAR SECUENCIA DEL SALÓN
-
-        Act3Manager.Instance.IniciarSecuenciaSalon();
-
-        Debug.Log(
-            "[SALON] Secuencia del salón iniciada."
-        );
 
 
         // ESPERAR ANTES DE CERRAR EL PASO
