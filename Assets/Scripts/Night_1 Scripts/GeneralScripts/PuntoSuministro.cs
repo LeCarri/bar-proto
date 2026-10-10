@@ -40,8 +40,7 @@ public class PuntoSuministro : MonoBehaviour, IInteractable
     if (itemEnMano != null && servicioCerveza.ItemVasoVacio != null)
     {
         // Compara por referencia directa O por coincidencia en el nombre del item
-        if (itemEnMano == servicioCerveza.ItemVasoVacio || 
-            itemEnMano.nombreItem.ToLower().Contains("vaso"))
+        if (itemEnMano == servicioCerveza.ItemVasoVacio)
         {
             return true;
         }
