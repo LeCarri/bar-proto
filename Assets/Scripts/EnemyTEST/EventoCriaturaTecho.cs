@@ -64,12 +64,23 @@ public class EventoCriaturaTecho : MonoBehaviour
     [Min(0f)]
     public float duracionSalidaDesintegracion = 1.5f;
 
+    [Header("Volume por golpes recibidos")]
+    [Min(0.01f)]
+    public float vidaReferenciaVolume = 100f;
+
     [Header("Combate - Criatura 3")]
     public float tiempoVentajaJugador = 3f;
     public float tiempoEntreAtaques = 2f;
+    [Header("Radio de ataque")]
+    public Transform centroAtaque;
+
+    [Min(0.1f)]
+    public float radioAtaque = 3f;
 
     [Header("Ataque")]
     public float danioAtaque = 35f;
+    [Header("Audio - Ataque Criatura 3")]
+    [SerializeField] private AudioSource audioAtaque;
 
     // =====================================
     // ESTADOS
@@ -84,17 +95,18 @@ public class EventoCriaturaTecho : MonoBehaviour
 
     private float contadorMirada;
 
-    // Vida del enemigo
+    // Enemigo
     private EnemyCore vidaCriatura;
 
-    // Vida del jugador
-    private float vidaMaximaJugador = 100f;
-    private float vidaReferenciaJugador = 100f;
+    // Solo registra el daño que esta criatura
+    // le provoca realmente a Lucas.
+    private float danioAcumuladoCriatura3 = 0f;
 
     // Corrutinas
     private Coroutine rutinaSalidaDesintegracion;
     private Coroutine rutinaAudioJumpscare;
     private Coroutine rutinaSacudida;
+    private Coroutine rutinaCombate;
 
     // =====================================
     // START
@@ -104,26 +116,16 @@ public class EventoCriaturaTecho : MonoBehaviour
     {
         if (criatura != null)
         {
-            vidaCriatura =
-                criatura.GetComponent<EnemyCore>();
+            vidaCriatura = criatura.GetComponent<EnemyCore>();
 
             if (vidaCriatura == null)
+            {
                 vidaCriatura =
-                    criatura.GetComponentInChildren<EnemyCore>();
+                    criatura.GetComponentInChildren<EnemyCore>(true);
+            }
 
             criatura.SetActive(false);
         }
-
-        // Guardamos la vida del jugador
-        if (PlayerHealth.Instance != null)
-        {
-            vidaMaximaJugador = Mathf.Max(
-                1f,
-                PlayerHealth.Instance.vidaActual
-            );
-        }
-
-        vidaReferenciaJugador = vidaMaximaJugador;
 
         if (volumeJumpscare != null)
             volumeJumpscare.weight = 0f;
@@ -146,6 +148,8 @@ public class EventoCriaturaTecho : MonoBehaviour
             audioRasgunos.playOnAwake = false;
             audioRasgunos.loop = true;
         }
+
+        danioAcumuladoCriatura3 = 0f;
     }
 
     void PrepararAudioCombate(AudioSource audio)
@@ -164,8 +168,11 @@ public class EventoCriaturaTecho : MonoBehaviour
 
     void Update()
     {
+        // Actualizar el Volume segun el daño
+        // causado por esta criatura a Lucas.
         ActualizarVolumeDanioJugador();
 
+        // Deteccion de mirada
         if (!esperandoMirada ||
             camaraJugador == null ||
             puntoMirada == null)
@@ -207,8 +214,7 @@ public class EventoCriaturaTecho : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (activado ||
-            !other.CompareTag(tagJugador))
+        if (activado || !other.CompareTag(tagJugador))
             return;
 
         activado = true;
@@ -229,7 +235,7 @@ public class EventoCriaturaTecho : MonoBehaviour
     }
 
     // =====================================
-    // APARICION
+    // APARICION Y JUMPSCARE
     // =====================================
 
     IEnumerator EjecutarJumpscare()
@@ -253,6 +259,7 @@ public class EventoCriaturaTecho : MonoBehaviour
         if (audioRasgunos != null)
             audioRasgunos.Stop();
 
+        // Aparece en el punto de spawn
         criatura.transform.SetPositionAndRotation(
             puntoSpawnCriatura.position,
             puntoSpawnCriatura.rotation
@@ -260,6 +267,7 @@ public class EventoCriaturaTecho : MonoBehaviour
 
         criatura.SetActive(true);
 
+        // Obtener EnemyCore
         if (vidaCriatura == null)
         {
             vidaCriatura =
@@ -275,18 +283,10 @@ public class EventoCriaturaTecho : MonoBehaviour
             yield break;
         }
 
-        // La referencia de vida se fija al
-        // comenzar el encuentro.
-        if (PlayerHealth.Instance != null)
-        {
-            vidaReferenciaJugador = Mathf.Max(
-                1f,
-                PlayerHealth.Instance.vidaActual
-            );
-        }
-
+        // Iniciar sonidos de combate
         IniciarAudioCombate();
 
+        // Jumpscare inicial SIN daño
         yield return StartCoroutine(
             cuelloCriatura.ReproducirJumpscare(
                 ActivarImpacto,
@@ -294,23 +294,31 @@ public class EventoCriaturaTecho : MonoBehaviour
             )
         );
 
+        cuelloCriatura.ActivarSeguimiento();
+
+        // Comienza el combate
         if (CriaturaSigueViva())
-            StartCoroutine(CicloCombate());
+        {
+            rutinaCombate =
+                StartCoroutine(CicloCombate());
+        }
 
         Debug.Log(
-            "[Criatura3] Jumpscare finalizado."
+            "[Criatura3] Jumpscare finalizado. Combate iniciado."
         );
     }
 
     // =====================================
-    // IMPACTO
+    // IMPACTO JUMPSCARE
     // =====================================
 
     void ActivarImpacto()
     {
+        // Apartar linterna
         if (linternaPose != null)
             linternaPose.ActivarPoseJumpscare();
 
+        // Audio jumpscare
         if (audioJumpscare != null)
         {
             if (rutinaAudioJumpscare != null)
@@ -324,9 +332,11 @@ public class EventoCriaturaTecho : MonoBehaviour
                 StartCoroutine(DetenerAudioJumpscare());
         }
 
+        // Volume del impacto
         if (volumeJumpscare != null)
             StartCoroutine(EfectoVolume());
 
+        // Sacudida de camara
         if (pivoteSacudida != null)
         {
             if (rutinaSacudida != null)
@@ -397,6 +407,9 @@ public class EventoCriaturaTecho : MonoBehaviour
 
     IEnumerator EfectoVolume()
     {
+        if (volumeJumpscare == null)
+            yield break;
+
         volumeJumpscare.weight = 1f;
 
         yield return new WaitForSeconds(
@@ -471,15 +484,25 @@ public class EventoCriaturaTecho : MonoBehaviour
 
         if (baseEnemy1 != null &&
             !baseEnemy1.isPlaying)
+        {
             baseEnemy1.Play();
+        }
 
         if (baseEnemy2 != null &&
             !baseEnemy2.isPlaying)
+        {
             baseEnemy2.Play();
+        }
 
         if (enemyVoices != null &&
             !enemyVoices.isPlaying)
+        {
             enemyVoices.Play();
+        }
+
+        Debug.Log(
+            "[Criatura3] Audios de combate iniciados."
+        );
     }
 
     public void DetenerAudioCombate()
@@ -505,14 +528,17 @@ public class EventoCriaturaTecho : MonoBehaviour
     bool CriaturaSigueViva()
     {
         return !criaturaDerrotada &&
+               !combateFinalizado &&
                vidaCriatura != null &&
                vidaCriatura.health > 0f;
     }
+
 
     IEnumerator CicloCombate()
     {
         while (CriaturaSigueViva())
         {
+            // Ventaja inicial para Lucas
             yield return new WaitForSeconds(
                 Mathf.Max(0f, tiempoVentajaJugador)
             );
@@ -520,55 +546,126 @@ public class EventoCriaturaTecho : MonoBehaviour
             if (!CriaturaSigueViva())
                 yield break;
 
+            // Si Lucas está lejos, la criatura espera.
+            // No mueve el cuello ni hace daño.
+            while (CriaturaSigueViva() &&
+                   !JugadorDentroDelRadio())
+            {
+                yield return null;
+            }
+
+            if (!CriaturaSigueViva())
+                yield break;
+
+            Debug.Log(
+                "[Criatura3] Lucas dentro del radio. Iniciando ataque."
+            );
+
+            // Sonido de ataque al comenzar la embestida
+            if (audioAtaque != null && audioAtaque.clip != null)
+            {
+                audioAtaque.Stop();
+                audioAtaque.loop = false;
+                audioAtaque.Play();
+            }
+
+            // Ejecutar ataque del cuello
             yield return StartCoroutine(
                 cuelloCriatura.EjecutarAtaqueCuello(() =>
                 {
-                    if (CriaturaSigueViva() &&
-                        PlayerHealth.Instance != null)
+
+                    // La cabeza llegó a Lucas: detener sonido de embestida
+                    if (audioAtaque != null)
                     {
-                        PlayerHealth.Instance.RecibirDanio(
-                            danioAtaque
+                        audioAtaque.Stop();
+                    }
+                    // Verificar nuevamente la distancia
+                    // justo cuando la cabeza golpea.
+                    if (!CriaturaSigueViva() ||
+                        !JugadorDentroDelRadio() ||
+                        PlayerHealth.Instance == null)
+                    {
+                        Debug.Log(
+                            "[Criatura3] Ataque fallido: Lucas fuera del radio."
+                        );
+                        return;
+                    }
+
+                    // Sacudir camara al impactar
+                    if (rutinaSacudida != null)
+                        StopCoroutine(rutinaSacudida);
+
+                    if (pivoteSacudida != null)
+                    {
+                        rutinaSacudida = StartCoroutine(
+                            SacudirCamara()
                         );
                     }
+
+                    float vidaAntes =
+                        PlayerHealth.Instance.vidaActual;
+
+                    // Aplicar daño
+                    PlayerHealth.Instance.RecibirDanio(
+                        danioAtaque
+                    );
+
+                    float vidaDespues =
+                        PlayerHealth.Instance.vidaActual;
+
+                    float danioReal = Mathf.Max(
+                        0f,
+                        vidaAntes - vidaDespues
+                    );
+
+                    // Volume de contacto
+                    danioAcumuladoCriatura3 += danioReal;
+
+                    Debug.Log(
+                        "[Criatura3] Golpe confirmado. Daño: " +
+                        danioReal +
+                        " | Daño acumulado: " +
+                        danioAcumuladoCriatura3
+                    );
                 })
             );
 
             if (!CriaturaSigueViva())
                 yield break;
 
+            // Espera hasta el siguiente ciclo
             yield return new WaitForSeconds(
                 Mathf.Max(0f, tiempoEntreAtaques)
             );
         }
+
+        rutinaCombate = null;
     }
 
+
     // =====================================
-    // VOLUME POR DANIO RECIBIDO POR LUCAS
+    // VOLUME POR GOLPES A LUCAS
     // =====================================
 
     void ActualizarVolumeDanioJugador()
     {
         if (volumeDesintegracion == null ||
-            PlayerHealth.Instance == null ||
             !jumpscareIniciado ||
             terminandoDesintegracion)
             return;
 
-        float vidaActual =
-            PlayerHealth.Instance.vidaActual;
-
-        float porcentajeVida = Mathf.Clamp01(
-            vidaActual /
-            Mathf.Max(1f, vidaReferenciaJugador)
+        // Porcentaje del daño causado por
+        // esta criatura al jugador.
+        float porcentajeDanio = Mathf.Clamp01(
+            danioAcumuladoCriatura3 /
+            Mathf.Max(0.01f, vidaReferenciaVolume)
         );
-
-        float porcentajeDanio =
-            1f - porcentajeVida;
 
         float intensidadObjetivo =
             porcentajeDanio *
             intensidadMaximaDesintegracion;
 
+        // Subida progresiva del Volume
         volumeDesintegracion.weight =
             Mathf.MoveTowards(
                 volumeDesintegracion.weight,
@@ -586,6 +683,11 @@ public class EventoCriaturaTecho : MonoBehaviour
 
     public void FinalizarCombate()
     {
+        // Evitar que quede sonando después del ataque
+        if (audioAtaque != null)
+        {
+            audioAtaque.Stop();
+        }
         if (combateFinalizado)
             return;
 
@@ -593,8 +695,17 @@ public class EventoCriaturaTecho : MonoBehaviour
         criaturaDerrotada = true;
         terminandoDesintegracion = true;
 
+        // Detener ataque futuro
+        if (rutinaCombate != null)
+        {
+            StopCoroutine(rutinaCombate);
+            rutinaCombate = null;
+        }
+
+        // Detener sonidos de combate
         DetenerAudioCombate();
 
+        // Restaurar Volume gradualmente
         if (volumeDesintegracion != null)
         {
             if (rutinaSalidaDesintegracion != null)
@@ -604,13 +715,29 @@ public class EventoCriaturaTecho : MonoBehaviour
                 StartCoroutine(SalirVolumeDesintegracion());
         }
 
+        // Registrar exclusivamente la muerte de la Criatura 3
+        if (Act1Manager.Instance != null)
+        {
+            Act1Manager.Instance.RegistrarMuerteCriatura3();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[Criatura3] No se encontró Act1Manager."
+            );
+        }
+
         Debug.Log(
             "[Criatura3] Combate finalizado."
         );
+
+        if (cuelloCriatura != null)
+        cuelloCriatura.DesactivarSeguimiento();
+    
     }
 
     // =====================================
-    // FADE OUT VOLUME
+    // FADE OUT VOLUME AL MATAR CRIATURA
     // =====================================
 
     IEnumerator SalirVolumeDesintegracion()
@@ -651,4 +778,35 @@ public class EventoCriaturaTecho : MonoBehaviour
         volumeDesintegracion.weight = 0f;
         rutinaSalidaDesintegracion = null;
     }
+
+
+
+    private bool JugadorDentroDelRadio()
+    {
+        if (centroAtaque == null || camaraJugador == null)
+            return false;
+
+        float distancia = Vector3.Distance(
+            centroAtaque.position,
+            camaraJugador.transform.position
+        );
+
+        return distancia <= radioAtaque;
+    }
+
+
+
+    private void OnDrawGizmosSelected()
+    {
+        if (centroAtaque == null)
+            return;
+
+        Gizmos.color = Color.red;
+
+        Gizmos.DrawWireSphere(
+            centroAtaque.position,
+            radioAtaque
+        );
+    }
+
 }

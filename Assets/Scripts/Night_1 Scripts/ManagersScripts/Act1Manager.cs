@@ -271,6 +271,11 @@ public class Act1Manager : MonoBehaviour
 
     public int enemigosTotalesNoche1 = 3;
 
+    // Evita contar dos veces la muerte de una misma criatura.
+    private bool primeraCriaturaRegistrada;
+    private bool segundaCriaturaRegistrada;
+    private bool terceraCriaturaRegistrada;
+
 
 
     [Header("Cierre de Noche")]
@@ -315,6 +320,9 @@ public class Act1Manager : MonoBehaviour
 
     [Header("DEBUG - Segunda criatura")]
     [SerializeField] private bool debugSegundaCriatura = false;
+
+    [Header("Activacion Criatura 3")]
+    public GameObject triggerCriaturaTecho;
 
     [Header("Tercer enemigo - Puerta del pasillo")]
     public Camera camaraJugadorTercerEvento;
@@ -443,6 +451,9 @@ public class Act1Manager : MonoBehaviour
         if (volumenGlobalNarrativo != null) volumenGlobalNarrativo.weight = 0f;
 
         if (segundaCriatura != null) segundaCriatura.SetActive(false);
+        // La Criatura 3 no puede activarse
+        // antes de derrotar al segundo enemigo.
+        if (triggerCriaturaTecho != null) triggerCriaturaTecho.SetActive(false);
 
         if (debugSegundaCriatura) { StartCoroutine(DebugIniciarSegundaCriatura()); }
         if (nanielaPasillo != null) { nanielaPasillo.SetActive(false); }
@@ -1538,72 +1549,71 @@ public class Act1Manager : MonoBehaviour
 
 
 
+    // Metodo antiguo conservado para detectar conexiones viejas del Inspector.
+    // No debe usarse: no identifica que criatura murio.
     public void RegistarEnemigoEliminado()
     {
-        enemigosEliminados++;
-
-        Debug.Log(
-            "[Act1Manager] Enemigo eliminado: " +
-            enemigosEliminados
+        Debug.LogWarning(
+            "[Act1Manager] Hay un Al Morir conectado a RegistarEnemigoEliminado. " +
+            "Cambialo por el metodo especifico de esa criatura."
         );
+    }
 
+    public void RegistrarMuerteCriatura1()
+    {
+        PrimeraSombraDerrotada();
+    }
 
-        // ==========================================
-        // MURIÓ EL PRIMER ESPECTRO
-        // ==========================================
+    public void RegistrarMuerteCriatura2()
+    {
+        if (segundaCriaturaRegistrada)
+            return;
 
-        if (enemigosEliminados == 1)
+        if (!primeraCriaturaRegistrada)
         {
-            BajarMusicaPrimerEnemigo();
-
-            IniciarSegundaCriatura();
-
+            Debug.LogWarning("[Noche1] La criatura 2 murio antes de registrar la 1.");
             return;
         }
 
+        segundaCriaturaRegistrada = true;
+        enemigosEliminados = 2;
+        Debug.Log("[Noche1] Criatura 2 derrotada (2/3). Comienza el pasillo.");
 
-        // ==========================================
-        // MURIÓ EL SEGUNDO ESPECTRO
-        // ==========================================
+        if (aparicionSombraCocina != null)
+            aparicionSombraCocina.DetenerAudioCombate();
 
-        if (enemigosEliminados == 2)
+        MantenerAudioParanoiaAlta();
+        IniciarCaminoTercerEnemigo();
+    }
+
+    public void RegistrarMuerteCriatura3()
+    {
+        if (terceraCriaturaRegistrada)
+            return;
+
+        if (!segundaCriaturaRegistrada)
         {
-            // ==========================================
-            // CORTAR MÚSICA / AUDIO DE COMBATE
-            // ==========================================
-
-            if (aparicionSombraCocina != null)
-            {
-                aparicionSombraCocina.DetenerAudioCombate();
-            }
-
-
-            // ==========================================
-            // MANTENER TENSIÓN FISIOLÓGICA
-            // ==========================================
-
-            MantenerAudioParanoiaAlta();
-
-
-            // ==========================================
-            // EVENTO DEL PASILLO
-            // ==========================================
-
-            IniciarCaminoTercerEnemigo();
-
+            Debug.LogWarning("[Noche1] La criatura 3 murio antes de registrar la 2.");
             return;
         }
 
+        terceraCriaturaRegistrada = true;
+        enemigosEliminados = 3;
+        Debug.Log("[Noche1] Criatura 3 derrotada (3/3). Cierre de noche.");
 
-        // ==========================================
-        // MURIÓ EL TERCER ESPECTRO
-        // ==========================================
-
-        if (enemigosEliminados >= enemigosTotalesNoche1 &&
-            estadoActual != ActoState.Cierre)
+        // No desactivar TriggerCriatura3 aqui: contiene EventoCriaturaTecho
+        // y su corrutina de salida del Volume debe poder terminar.
+        if (heartbeatParanoia != null) heartbeatParanoia.Stop();
+        if (respiracionParanoia != null) respiracionParanoia.Stop();
+        if (rutinaLuzPasillo != null)
         {
+            StopCoroutine(rutinaLuzPasillo);
+            rutinaLuzPasillo = null;
+        }
+        if (luzPasilloTitileo != null) luzPasilloTitileo.enabled = false;
+
+        if (estadoActual != ActoState.Cierre)
             IniciarCierreNoche();
-        }
     }
 
     private void IniciarSegundaCriatura()
@@ -1698,10 +1708,6 @@ public class Act1Manager : MonoBehaviour
         MostrarDialogo("Lucas: Mejor guardo esto y mañana sigo...");
 
         ActualizarObjetivo("Guarda el vaso en la barra y retírate");
-
-
-
-        StartCoroutine(SecuenciaFinalPantalla());
 
     }
 
@@ -2170,26 +2176,20 @@ public class Act1Manager : MonoBehaviour
     }
 
     public void PrimeraSombraDerrotada()
-
     {
+        if (primeraCriaturaRegistrada)
+            return;
 
-        // Alivio momentáneo al destruir al primer enemigo
+        primeraCriaturaRegistrada = true;
+        enemigosEliminados = 1;
+        Debug.Log("[Noche1] Criatura 1 derrotada (1/3). Inicia transicion.");
 
         if (ParanoiaSystem.Instance != null)
-
-        {
-
             ParanoiaSystem.Instance.AddParanoia(-15f);
 
-        }
-
-
-
+        BajarMusicaPrimerEnemigo();
         StartCoroutine(SecuenciaTransicionSalonCombate());
-
     }
-
-
 
     IEnumerator SecuenciaTransicionSalonCombate()
 
@@ -2235,26 +2235,11 @@ public class Act1Manager : MonoBehaviour
 
 
 
-        if (sombrasSalon != null)
-
-        {
-
-            foreach (GameObject sombra in sombrasSalon)
-
-            {
-
-                if (sombra != null)
-
-                    sombra.SetActive(true);
-
-
-
-                yield return new WaitForSeconds(1.2f);
-
-            }
-
-        }
-
+        // Segunda criatura: usar una unica via de aparicion.
+        // El arreglo legado sombrasSalon ya no se activa aqui,
+        // para evitar enemigos duplicados o eventos de muerte extra.
+        if (!segundaCriaturaRegistrada)
+            IniciarSegundaCriatura();
     }
 
 
@@ -3122,6 +3107,17 @@ public class Act1Manager : MonoBehaviour
             puertaPasilloDerecha,
             anguloPuertaDerecha
         );
+
+        // Habilitar el encuentro de la Criatura 3
+        // una vez que se abren las puertas.
+        if (triggerCriaturaTecho != null)
+        {
+            triggerCriaturaTecho.SetActive(true);
+
+            Debug.Log(
+                "[Act1Manager] Trigger de Criatura 3 habilitado."
+            );
+        }
     }
 
 
