@@ -6,6 +6,10 @@ public class PuertaSotanoAct3 : MonoBehaviour, IInteractable
     public float anguloApertura = 90f;
     public float velocidadApertura = 30f;
 
+    [Header("Audio")]
+    public AudioSource audioSourcePuerta;
+    public AudioClip sonidoPuertaRechinado;
+
     [Header("Estado")]
     private bool abierta = false;
     private bool abriendo = false;
@@ -29,6 +33,13 @@ public class PuertaSotanoAct3 : MonoBehaviour, IInteractable
             transform.rotation *
             Quaternion.Euler(0f, anguloApertura, 0f);
 
+        
+        if (audioSourcePuerta != null &&
+            sonidoPuertaRechinado != null)
+        {
+            audioSourcePuerta.PlayOneShot(sonidoPuertaRechinado);
+        }
+
         Debug.Log("[PuertaSotanoAct3] Abriendo puerta.");
     }
 
@@ -43,7 +54,9 @@ public class PuertaSotanoAct3 : MonoBehaviour, IInteractable
             velocidadApertura * Time.deltaTime
         );
 
-        if (Quaternion.Angle(transform.rotation, rotacionObjetivo) < 0.5f)
+        if (Quaternion.Angle(
+            transform.rotation,
+            rotacionObjetivo) < 0.5f)
         {
             transform.rotation = rotacionObjetivo;
             abriendo = false;

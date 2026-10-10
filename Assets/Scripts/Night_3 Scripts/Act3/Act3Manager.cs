@@ -11,12 +11,17 @@ public class Act3Manager : MonoBehaviour
 
     // ESCENA
 
-
     [Header("Escena")]
     public GameObject clientesActo3;
     public GameObject enemigos;
     public GameObject vigilante;
 
+    //MUSICA AMBIENTE
+    [Header("Música de ambiente")]
+    public AudioSource audioMusica;
+    public AudioClip musicaAmbiente;
+    public AudioClip musicaCombate;
+    private bool musicaCombateActiva = false;
 
 
     // INTERACCIÓN
@@ -182,9 +187,10 @@ public class Act3Manager : MonoBehaviour
 
     void Start()
     {
+
         if (ParanoiaSystem.Instance != null)
         {
-            ParanoiaSystem.Instance.AddParanoia(50f);
+            ParanoiaSystem.Instance.AddParanoia(20f);
         }
 
         if (objetoEspecial != null)
@@ -220,8 +226,42 @@ public class Act3Manager : MonoBehaviour
         }
 
 
-        ActualizarObjetivo("Busca los elementos de limpieza");
+        ActualizarObjetivo("agarra los elementos de limpieza");
     }
+
+
+    //MUCIA AMBIENTE
+    void IniciarMusicaAmbiente()
+    {
+        if (audioMusica == null || musicaAmbiente == null)
+            return;
+
+        musicaCombateActiva = false;
+        audioMusica.clip = musicaAmbiente;
+        audioMusica.loop = true;
+        audioMusica.Play();
+    }
+
+    public void CambiarMusicaCombate()
+    {
+        if (musicaCombateActiva)
+            return;
+
+        if (audioMusica == null || musicaCombate == null)
+            return;
+
+        musicaCombateActiva = true;
+        audioMusica.Stop();
+        audioMusica.clip = musicaCombate;
+        audioMusica.loop = true;
+        audioMusica.Play();
+    }
+
+    public void IniciarMusicaDespuesDeIntroduccion()
+    {
+        IniciarMusicaAmbiente();
+    }
+
 
 
     //OCULTAR Y MOSTRAR LINTERNA 
@@ -286,7 +326,7 @@ public class Act3Manager : MonoBehaviour
         if (!PuedeUsarServicioBebidas())
         {
             MostrarDialogo(
-                "Lucas: Ahora no es momento de preparar bebidas."
+                "Lucas: Ahora no que preparar bebidas."
             );
             return;
         }
@@ -872,10 +912,6 @@ public class Act3Manager : MonoBehaviour
         ActualizarObjetivo(
             "Limpieza completada"
         );
-
-        StartCoroutine(
-            SecuenciaInicio()
-        );
     }
 
 
@@ -1034,7 +1070,7 @@ public class Act3Manager : MonoBehaviour
         sangreLimpiada = true;
 
         ActualizarObjetivo(
-            "Ve al depósito y deja los elementos de limpieza en el armario"
+            "gurada los elementos de limpieza"
         );
 
         MostrarDialogo(
@@ -1097,7 +1133,7 @@ public class Act3Manager : MonoBehaviour
             ElementosLimpieza.SetActive(true);
         }
 
-        ActualizarObjetivo("Vuelve al salón");
+        ActualizarObjetivo("Vuelve a la barra");
 
         MostrarDialogo(
             "Listo. Ahora sí, puedo arrancar"
@@ -1105,48 +1141,56 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    // INICIAR SECUENCIA LLEGADA AL SALÓN
-    public void IniciarSecuenciaSalon()
+
+    //SECUENCIA CLIENTES
+
+    public void IniciarSecuenciaClientes()
     {
-        StartCoroutine(SecuenciaInicio());
+        StartCoroutine(SecuenciaAparicionClientes());
     }
 
-
-    // SECUENCIA INICIO 
-
-    IEnumerator SecuenciaInicio()
+    private IEnumerator SecuenciaAparicionClientes()
     {
-        if (effectoParpadeo != null)
-        {
-            effectoParpadeo.IniciarParpadeo();
-        }
-
-        yield return
-            new WaitForSeconds(1.5f);
-
+        // DIÁLOGO DE LUCAS
         MostrarDialogo(
-            "Ya casi... una ronda mas y bajo a buscarlas. Tienen que estar por despertar"
+            "Ya casi... una ronda más y bajo a buscarlas. Tienen que estar por despertar"
         );
 
-        yield return
-            new WaitForSeconds(3f);
+        yield return new WaitForSeconds(3f);
 
-        CambiarIluminacion(
-            "Servicio"
-        );
+        // CAMBIAR ILUMINACIÓN
+        CambiarIluminacion("Servicio");
 
+        // PARPADEO DE LUCES
         if (effectoParpadeo != null)
         {
             effectoParpadeo.IniciarParpadeo();
         }
 
+        // ACTIVAR CLIENTES
+        if (clientesActo3 != null)
+        {
+            clientesActo3.SetActive(true);
+
+            Debug.Log(
+                "[SALON] clientesActo3 ACTIVADO."
+            );
+        }
+        else
+        {
+            Debug.LogError(
+                "[SALON] clientesActo3 está vacío."
+            );
+        }
+
+        // HABILITAR SERVICIO DE BEBIDAS
         servicioBebidasActivo = true;
 
+        // ACTUALIZAR OBJETIVO
         ActualizarObjetivo(
             "Atiende a las entidades de la barra (0/2)"
         );
     }
-
 
 
     // PEDIDOS
@@ -1306,58 +1350,6 @@ public class Act3Manager : MonoBehaviour
     }
 
 
-    //INICIO COMBATE FINAL
-    public void ActivarTriggerInicioCombate()
-    {
-        if (triggerInicioCombate != null)
-        {
-            triggerInicioCombate.SetActive(true);
-
-            Debug.Log("[COMBATE ACT3] Trigger de inicio de combate activado.");
-        }
-        else
-        {
-            Debug.LogWarning(
-                "[COMBATE ACT3] No hay trigger de inicio de combate asignado."
-            );
-        }
-    }
-
-    public void IniciarCombateFinal()
-    {
-        Debug.Log("[COMBATE ACT3] INICIANDO COMBATE FINAL");
-
-        if (laberintoCombate != null)
-        {
-            laberintoCombate.SetActive(true);
-
-            Debug.Log(
-                "[COMBATE ACT3] Laberinto activado."
-            );
-        }
-
-        if (InterriorObject != null)
-        {
-            InterriorObject.SetActive(false);
-
-            Debug.Log(
-                "[COMBATE ACT3] Objeto desactivado."
-            );
-        }
-
-        if (llegadaSalon != null)
-        {
-            llegadaSalon.ReactivarSalida();
-
-            Debug.Log(
-                "[COMBATE ACT3] Salida de la barra reactivada."
-            );
-        }
-
-        ActualizarObjetivo("Escapa del bar");
-    }
-
-
     // AVANZAR NOCHE
     IEnumerator AvanzarNoche()
     {
@@ -1367,14 +1359,14 @@ public class Act3Manager : MonoBehaviour
             "Los dos clientes fueron atendidos"
         );
 
-       
+
         yield return new WaitForSeconds(4f);
 
 
         // DIÁLOGO DE PILAR
 
         MostrarDialogo(
-            "Pilar: Gracias Pa!... ¿Te puedo pedir algo más?"
+            "Pilar: Gracias Pa... ¿Te puedo pedir algo más?"
         );
 
         yield return new WaitForSeconds(3f);
@@ -1403,7 +1395,7 @@ public class Act3Manager : MonoBehaviour
         {
             effectoParpadeo.IniciarParpadeo();
         }
-       
+
 
         // DESAPARECEN LOS CLIENTES
 
@@ -1424,6 +1416,64 @@ public class Act3Manager : MonoBehaviour
         // ACTIVO EL TRIGGER
         ActivarTriggerInicioCombate();
     }
+
+
+    //INICIO COMBATE FINAL
+    public void ActivarTriggerInicioCombate()
+    {
+        if (triggerInicioCombate != null)
+        {
+            triggerInicioCombate.SetActive(true);
+
+            Debug.Log("[COMBATE ACT3] Trigger de inicio de combate activado.");
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[COMBATE ACT3] No hay trigger de inicio de combate asignado."
+            );
+        }
+    }
+
+    //COMBATE FINAL
+    public void IniciarCombateFinal()
+    {
+        Debug.Log("[COMBATE ACT3] INICIANDO COMBATE FINAL");
+
+        Act3Manager.Instance.CambiarMusicaCombate();
+
+        if (laberintoCombate != null)
+        {
+            laberintoCombate.SetActive(true);
+
+            Debug.Log(
+                "[COMBATE ACT3] Laberinto activado."
+            );
+        }
+
+        if (InterriorObject != null)
+        {
+            InterriorObject.SetActive(false);
+
+            Debug.Log(
+                "[COMBATE ACT3] Objeto desactivado."
+            );
+        }
+
+        if (llegadaSalon != null)
+        {
+            llegadaSalon.ReactivarSalida();
+
+            Debug.Log(
+                "[COMBATE ACT3] Salida de la barra reactivada."
+            );
+        }
+
+        ActualizarObjetivo("llega al sotano...vivo");
+    }
+
+
+   
 
 
 
