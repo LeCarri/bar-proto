@@ -106888,7 +106888,7 @@ MonoBehaviour:
   saltarLimpieza: 0
   iniciarDesdeLinterna: 0
   debugLinternaYaRecogida: 0
-  iniciarDesdeNanielaBotella: 0
+  iniciarDesdeNanielaBotella: 1
   luzLinternaJugador: {fileID: 1696137115}
   controladorLinterna: {fileID: 1303755577}
   sonidoFalloLinterna: {fileID: 1468673007}
@@ -116686,7 +116686,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1303755576
 Transform:
   m_ObjectHideFlags: 0
@@ -130753,7 +130753,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1173911188}
         m_TargetAssemblyTypeName: Act1Manager, Assembly-CSharp
-        m_MethodName: RegistarEnemigoEliminado
+        m_MethodName: PrimeraSombraDerrotada
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -162344,7 +162344,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1173911188}
         m_TargetAssemblyTypeName: Act1Manager, Assembly-CSharp
-        m_MethodName: RegistarEnemigoEliminado
+        m_MethodName: RegistrarMuerteCriatura2
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
