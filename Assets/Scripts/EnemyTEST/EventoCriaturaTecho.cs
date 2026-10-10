@@ -27,8 +27,21 @@ public class EventoCriaturaTecho : MonoBehaviour
     public float tiempoMirada = 0.15f;
 
     [Header("Audio")]
+    [Header("Audio - Aparición")]
     public AudioSource audioRasgunos;
     public AudioSource audioJumpscare;
+    [Header("Duracion Audio Jumpscare")]
+    [Min(0f)]
+    public float duracionAudioJumpscare = 0.8f; [Header("Fade Out Audio Jumpscare")]
+    [Min(0f)]
+    public float duracionFadeOutJumpscare = 0.35f;
+
+    [Header("Audio - Combate")]
+    public AudioSource baseEnemy1;
+    public AudioSource baseEnemy2;
+    public AudioSource enemyVoices;
+
+    private bool combateFinalizado = false;
 
     [Header("Volume del Jumpscare")]
     public Volume volumeJumpscare;
@@ -52,6 +65,32 @@ public class EventoCriaturaTecho : MonoBehaviour
 
         if (volumeJumpscare != null)
             volumeJumpscare.weight = 0f;
+
+        // Preparar audios de combate
+        PrepararAudioCombate(baseEnemy1);
+        PrepararAudioCombate(baseEnemy2);
+        PrepararAudioCombate(enemyVoices);
+
+        if (audioJumpscare != null)
+        {
+            audioJumpscare.playOnAwake = false;
+            audioJumpscare.loop = false;
+        }
+
+        if (audioRasgunos != null)
+        {
+            audioRasgunos.playOnAwake = false;
+            audioRasgunos.loop = true;
+        }
+    }
+
+    void PrepararAudioCombate(AudioSource audio)
+    {
+        if (audio == null) return;
+
+        audio.playOnAwake = false;
+        audio.loop = true;
+        audio.Stop();
     }
 
     void Update()
@@ -135,6 +174,9 @@ public class EventoCriaturaTecho : MonoBehaviour
 
         criatura.SetActive(true);
 
+        // Iniciar ambiente de combate desde la aparición
+        IniciarAudioCombate();
+
         // El script del cuello marca el impacto y retroceso
         yield return StartCoroutine(
             cuelloCriatura.ReproducirJumpscare(
@@ -146,6 +188,23 @@ public class EventoCriaturaTecho : MonoBehaviour
         Debug.Log("Jumpscare finalizado. Iniciar combate.");
     }
 
+    public void IniciarAudioCombate()
+    {
+        if (combateFinalizado)
+            return;
+
+        if (baseEnemy1 != null && !baseEnemy1.isPlaying)
+            baseEnemy1.Play();
+
+        if (baseEnemy2 != null && !baseEnemy2.isPlaying)
+            baseEnemy2.Play();
+
+        if (enemyVoices != null && !enemyVoices.isPlaying)
+            enemyVoices.Play();
+
+        Debug.Log("[Criatura3] Audios de combate iniciados.");
+    }
+
     void ActivarImpacto()
     {
         // Linterna fuera del encuadre
@@ -154,7 +213,13 @@ public class EventoCriaturaTecho : MonoBehaviour
 
         // Sonido del impacto
         if (audioJumpscare != null)
+        {
+            audioJumpscare.Stop();
+            audioJumpscare.loop = false;
             audioJumpscare.Play();
+
+            StartCoroutine(DetenerAudioJumpscare());
+        }
 
         // Distorsión visual
         if (volumeJumpscare != null)
@@ -164,6 +229,50 @@ public class EventoCriaturaTecho : MonoBehaviour
         if (pivoteSacudida != null)
             StartCoroutine(SacudirCamara());
     }
+
+
+
+    private IEnumerator DetenerAudioJumpscare()
+    {
+        if (audioJumpscare == null)
+            yield break;
+
+        // Guardamos el volumen original
+        float volumenOriginal = audioJumpscare.volume;
+
+        // Esperamos hasta el momento de comenzar el Fade Out
+        yield return new WaitForSeconds(
+            Mathf.Max(0f, duracionAudioJumpscare)
+        );
+
+        float tiempo = 0f;
+        float duracion = Mathf.Max(0.01f, duracionFadeOutJumpscare);
+
+        // Disminuimos progresivamente el volumen
+        while (tiempo < duracion)
+        {
+            tiempo += Time.deltaTime;
+
+            float t = Mathf.Clamp01(tiempo / duracion);
+
+            // Transición suave
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            audioJumpscare.volume = Mathf.Lerp(
+                volumenOriginal,
+                0f,
+                t
+            );
+
+            yield return null;
+        }
+
+        // Detener y restaurar volumen original
+        audioJumpscare.Stop();
+        audioJumpscare.volume = volumenOriginal;
+    }
+
+
 
     void ComenzarRetroceso()
     {
@@ -200,29 +309,25 @@ public class EventoCriaturaTecho : MonoBehaviour
         volumeJumpscare.weight = 0f;
     }
 
-    IEnumerator SacudirCamara()
+
+
+
+    private IEnumerator SacudirCamara()
     {
+        if (pivoteSacudida == null)
+            yield break;
+
         Vector3 posicionOriginal =
             pivoteSacudida.localPosition;
 
         float tiempo = 0f;
-        float duracion = Mathf.Max(
-            0.001f, duracionSacudida
-        );
 
-        while (tiempo < duracion)
+        while (tiempo < duracionSacudida)
         {
             tiempo += Time.deltaTime;
 
-            float progreso = Mathf.Clamp01(
-                tiempo / duracion
-            );
-
-            float fuerza =
-                intensidadSacudida * (1f - progreso);
-
             Vector3 desplazamiento =
-                Random.insideUnitSphere * fuerza;
+                Random.insideUnitSphere * intensidadSacudida;
 
             pivoteSacudida.localPosition =
                 posicionOriginal + desplazamiento;
@@ -233,4 +338,35 @@ public class EventoCriaturaTecho : MonoBehaviour
         pivoteSacudida.localPosition =
             posicionOriginal;
     }
+
+    public void FinalizarCombate()
+    {
+        if (combateFinalizado)
+            return;
+
+        combateFinalizado = true;
+
+        DetenerAudioCombate();
+
+        Debug.Log("[Criatura3] Combate finalizado.");
+    }
+
+    public void DetenerAudioCombate()
+    {
+        DetenerAudio(baseEnemy1);
+        DetenerAudio(baseEnemy2);
+        DetenerAudio(enemyVoices);
+
+        if (audioRasgunos != null)
+            audioRasgunos.Stop();
+    }
+
+    void DetenerAudio(AudioSource audio)
+    {
+        if (audio == null)
+            return;
+
+        audio.Stop();
+    }
+
 }
