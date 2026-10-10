@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using System;
 
 public class CuelloCriaturaTecho : MonoBehaviour
 {
@@ -150,4 +151,37 @@ public class CuelloCriaturaTecho : MonoBehaviour
         if (ReferenciasValidas())
             AplicarPose(poseInicial);
     }
+
+
+
+
+    public IEnumerator EjecutarAtaqueCuello(System.Action alGolpear = null)
+    {
+        if (neck == null ||
+            poseIntermedia == null ||
+            poseJumpscare == null)
+            yield break;
+
+        // La cabeza se lanza hacia Lucas
+        yield return MoverHaciaPose(
+            poseJumpscare,
+            duracionJumpscare,
+            true
+        );
+
+        // Aplicamos daño al alcanzar la pose final
+        alGolpear?.Invoke();
+
+        // La cabeza permanece cerca unos instantes
+        yield return new WaitForSeconds(0.15f);
+
+        // Vuelve a la pose intermedia
+        yield return MoverHaciaPose(
+            poseIntermedia,
+            duracionRetroceso,
+            false
+        );
+    }
+
+
 }
