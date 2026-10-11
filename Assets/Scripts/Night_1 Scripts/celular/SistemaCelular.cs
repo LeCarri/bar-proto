@@ -100,6 +100,12 @@ public class SistemaCelular : MonoBehaviour
         celularAbierto = true;
         tieneNotificacionPendiente = false;
 
+        // --- CORTAR EL AUDIO DE LA NOTIFICACIÓN DEL MANAGER AL ATENDER ---
+        if (Act1Manager.Instance != null && Act1Manager.Instance.sonidoVibracionCelular != null)
+        {
+            Act1Manager.Instance.sonidoVibracionCelular.Stop();
+        }
+
         if (notificacionHUD != null) notificacionHUD.SetActive(false);
         if (objetoCelularEnMano != null) objetoCelularEnMano.SetActive(true);
         if (panelTelefonoUI != null) panelTelefonoUI.SetActive(true);
