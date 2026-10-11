@@ -11219,7 +11219,7 @@ MonoBehaviour:
   cantidadCortesRadio: 5
   intervaloCorteMin: 0.04
   intervaloCorteMax: 0.11
-  tiempoRecordatorioMirada: 3.5
+  tiempoRecordatorioMirada: 0.5
   capasBloqueoMirada:
     serializedVersion: 2
     m_Bits: 0
@@ -15223,7 +15223,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.49999994
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalScale.y
@@ -15235,31 +15235,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -11.627731
+      value: 15.612993
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 8.42205
+      value: 6.28992
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 20.79601
+      value: 0.9715195
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.5309273
+      value: -0.049964584
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.5309273
+      value: 0.0499646
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.4670291
+      value: 0.7053393
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.4670291
+      value: 0.7053393
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1d938ad1ca77c5c45bb6c1041db46209, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -19181,8 +19181,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 24.176678, y: 12.113056, z: 62.59652}
-  m_Center: {x: -1.8884716, y: 3.7596636, z: 19.828426}
+  m_Size: {x: 30.189137, y: 12.113056, z: 62.59652}
+  m_Center: {x: -4.894701, y: 3.7596636, z: 19.828426}
 --- !u!1 &276364523
 GameObject:
   m_ObjectHideFlags: 0
@@ -106285,8 +106285,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 22.212435, y: 7.349914, z: 22.654491}
-  m_Center: {x: -2.8444223, y: 3.174957, z: -0.34223747}
+  m_Size: {x: 23.212095, y: 8.555095, z: 28.463213}
+  m_Center: {x: 5.3151293, y: 3.7775464, z: -3.2465982}
 --- !u!1001 &1141925793
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -113570,6 +113570,7 @@ MonoBehaviour:
   vasoDejadoEnBarra: 0
   fadeCanvasGroup: {fileID: 32680803}
   sombraFugazCocina: {fileID: 162388090}
+  bloqueadoresPuertasCombate: {fileID: 0}
   indicadorCervezas: {fileID: 0}
   indicadorDeposito: {fileID: 0}
   itemCerveza: {fileID: 11400000, guid: d088918bb353a4e839d239be1eb42366, type: 2}

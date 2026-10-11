@@ -1,9 +1,7 @@
-
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering;
-
 
 public class SombraFugazCocina : MonoBehaviour
 {
@@ -23,7 +21,6 @@ public class SombraFugazCocina : MonoBehaviour
     public float intensidadVolumeFugaz = 0.25f;
 
     private Coroutine rutinaVolume;
-
 
     [Header("Detección de mirada")]
     [Range(0.01f, 0.5f)]
@@ -51,6 +48,27 @@ public class SombraFugazCocina : MonoBehaviour
     private bool habilitado;
     private bool ejecutado;
     private float acumuladoMirada;
+
+    // NUEVO: permite saber si el jugador ya activo la aparicion visual.
+    // Si es true, la ruta de huida respeta la secuencia en curso.
+    public bool EventoDisparado => ejecutado;
+
+    // NUEVO: cuando Lucas huye sin mirar la sombra, se omite A-B-C.
+    // No se invoca alLlegarAC: la ruta alternativa activa la radio por su cuenta.
+    public void OmitirPorRutaHuida()
+    {
+        if (ejecutado)
+            return;
+
+        ejecutado = true;
+        habilitado = false;
+        acumuladoMirada = 0f;
+
+        if (presenciaFugaz != null)
+            presenciaFugaz.SetActive(false);
+
+        Debug.Log("[SombraCocina] Evento fugaz omitido por ZonaHuida.");
+    }
 
     private void Start()
     {
@@ -95,7 +113,6 @@ public class SombraFugazCocina : MonoBehaviour
         {
             ejecutado = true;
             habilitado = false;
-
             StartCoroutine(SecuenciaSombra());
         }
     }
@@ -126,44 +143,23 @@ public class SombraFugazCocina : MonoBehaviour
         float tiempoBC = Mathf.Max(0.01f, duracionBC);
         float pausa = Mathf.Max(0f, pausaEnB);
 
-
-        // ==================================================
-        // APARICIÓN EN A
-        // ==================================================
-
+        // APARICION EN A
         presenciaFugaz.transform.position = puntoA.position;
         presenciaFugaz.SetActive(true);
-
         CambiarVolume(intensidadVolumeFugaz, velocidadEntradaVolume);
-
         IniciarHumo(true);
 
-
-        // ==================================================
-        // A → B + AUDIO AB
-        // ==================================================
-
+        // A -> B + AUDIO AB
         if (sonidoAB != null)
         {
             sonidoAB.loop = false;
             sonidoAB.Play();
         }
 
-        yield return Mover(
-            puntoA.position,
-            puntoB.position,
-            tiempoAB
-        );
+        yield return Mover(puntoA.position, puntoB.position, tiempoAB);
 
-        // Llegamos a B.
         DetenerHumo();
-
         Debug.Log("[SombraCocina] Llegó a B.");
-
-
-        // ==================================================
-        // ESPERAR A QUE TERMINE AUDIO AB
-        // ==================================================
 
         if (sonidoAB != null)
         {
@@ -173,21 +169,11 @@ public class SombraFugazCocina : MonoBehaviour
 
         Debug.Log("[SombraCocina] Audio AB finalizado.");
 
-
-        // ==================================================
-        // PAUSA EN B
-        // ==================================================
-
         if (pausa > 0f)
             yield return new WaitForSeconds(pausa);
 
-
-        // ==================================================
-        // B → C + AUDIO BC
-        // ==================================================
-
+        // B -> C + AUDIO BC
         presenciaFugaz.transform.position = puntoB.position;
-
         IniciarHumo(false);
 
         if (sonidoBC != null)
@@ -196,20 +182,10 @@ public class SombraFugazCocina : MonoBehaviour
             sonidoBC.Play();
         }
 
-        yield return Mover(
-            puntoB.position,
-            puntoC.position,
-            tiempoBC
-        );
+        yield return Mover(puntoB.position, puntoC.position, tiempoBC);
 
         DetenerHumo();
-
         Debug.Log("[SombraCocina] Llegó a C.");
-
-
-        // ==================================================
-        // ESPERAR A QUE TERMINE AUDIO BC
-        // ==================================================
 
         if (sonidoBC != null)
         {
@@ -219,28 +195,16 @@ public class SombraFugazCocina : MonoBehaviour
 
         Debug.Log("[SombraCocina] Audio BC finalizado.");
 
-
-        // ==================================================
-        // DISIPACIÓN FINAL
-        // ==================================================
-
-        yield return new WaitForSeconds(
-            Mathf.Max(0f, tiempoDisipacion)
-        );
+        yield return new WaitForSeconds(Mathf.Max(0f, tiempoDisipacion));
 
         CambiarVolume(0f, velocidadSalidaVolume);
-
         presenciaFugaz.SetActive(false);
 
         Debug.Log("[SombraCocina] Secuencia completa finalizada.");
-
         alLlegarAC?.Invoke();
     }
 
-    private IEnumerator Mover(
-        Vector3 origen,
-        Vector3 destino,
-        float duracion)
+    private IEnumerator Mover(Vector3 origen, Vector3 destino, float duracion)
     {
         float tiempo = 0f;
         duracion = Mathf.Max(0.01f, duracion);
@@ -248,12 +212,8 @@ public class SombraFugazCocina : MonoBehaviour
         while (tiempo < duracion)
         {
             tiempo += Time.deltaTime;
-
             float t = Mathf.Clamp01(tiempo / duracion);
-
-            presenciaFugaz.transform.position =
-                Vector3.Lerp(origen, destino, t);
-
+            presenciaFugaz.transform.position = Vector3.Lerp(origen, destino, t);
             yield return null;
         }
 
@@ -267,12 +227,7 @@ public class SombraFugazCocina : MonoBehaviour
 
         if (primeraVez)
         {
-            humoNegro.Stop(
-                true,
-                ParticleSystemStopBehavior.StopEmittingAndClear
-            );
-
-            // Precalentamiento únicamente en A.
+            humoNegro.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             humoNegro.Simulate(0.35f, true, true, true);
         }
 
@@ -284,41 +239,33 @@ public class SombraFugazCocina : MonoBehaviour
         if (humoNegro == null)
             return;
 
-        humoNegro.Stop(
-            true,
-            ParticleSystemStopBehavior.StopEmitting
-        );
+        humoNegro.Stop(true, ParticleSystemStopBehavior.StopEmitting);
     }
 
-private void CambiarVolume(float objetivo, float velocidad)
-{
-    if (volumenSombra == null) return;
-
-    if (rutinaVolume != null)
-        StopCoroutine(rutinaVolume);
-
-    rutinaVolume = StartCoroutine(
-        TransicionarVolume(objetivo, velocidad)
-    );
-}
-
-private IEnumerator TransicionarVolume(
-    float objetivo,
-    float velocidad)
-{
-    while (Mathf.Abs(volumenSombra.weight - objetivo) > 0.01f)
+    private void CambiarVolume(float objetivo, float velocidad)
     {
-        volumenSombra.weight = Mathf.MoveTowards(
-            volumenSombra.weight,
-            objetivo,
-            velocidad * Time.deltaTime
-        );
+        if (volumenSombra == null) return;
 
-        yield return null;
+        if (rutinaVolume != null)
+            StopCoroutine(rutinaVolume);
+
+        rutinaVolume = StartCoroutine(TransicionarVolume(objetivo, velocidad));
     }
 
-    volumenSombra.weight = objetivo;
-    rutinaVolume = null;
-}
+    private IEnumerator TransicionarVolume(float objetivo, float velocidad)
+    {
+        while (Mathf.Abs(volumenSombra.weight - objetivo) > 0.01f)
+        {
+            volumenSombra.weight = Mathf.MoveTowards(
+                volumenSombra.weight,
+                objetivo,
+                velocidad * Time.deltaTime
+            );
 
+            yield return null;
+        }
+
+        volumenSombra.weight = objetivo;
+        rutinaVolume = null;
+    }
 }
