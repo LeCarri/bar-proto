@@ -84,12 +84,21 @@ public class SotanoManager : MonoBehaviour
     public void MostrarDialogo(string mensaje)
     {
         if (textoSubtitulos == null)
+        {
+            Debug.LogError(
+                "[SotanoManager] Falta asignar Texto Subtitulos en el Inspector."
+            );
             return;
+        }
 
         if (dialogoActual != null)
             StopCoroutine(dialogoActual);
 
+        textoSubtitulos.gameObject.SetActive(true);
         textoSubtitulos.text = mensaje;
+
+        Debug.Log("[SotanoManager] Mostrando diálogo: " + mensaje);
+
         dialogoActual = StartCoroutine(LimpiarDialogo());
     }
 
