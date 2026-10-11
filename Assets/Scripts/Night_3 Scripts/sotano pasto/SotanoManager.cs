@@ -9,12 +9,14 @@ public class SotanoManager : MonoBehaviour
     [Header("Objetivos")]
     public TextMeshProUGUI textoObjetivo;
 
-    [Header("UI")]
+    [Header("Subtítulos")]
     public TextMeshProUGUI textoSubtitulos;
 
+    [Header("Final del sótano")]
     public GameObject pantallaNegra;
     public GameObject paranoia;
 
+    [Header("Interacción")]
     public GameObject panelInteraccion;
     public TextMeshProUGUI textoInteraccion;
 
@@ -22,49 +24,31 @@ public class SotanoManager : MonoBehaviour
 
     public int interaccionesCompletadas = 0;
 
-
-    public void ActualizarObjetivo(string nuevoObjetivo)
-    {
-        if (textoObjetivo != null)
-        {
-            textoObjetivo.text = "- " + nuevoObjetivo;
-        }
-    }
-
-
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
         }
-        else
+        else if (Instance != this)
         {
             Destroy(gameObject);
         }
     }
 
-    void Start()
+    private void Update()
     {
-        ParanoiaSystem.Instance.AddParanoia(0f);
+        if (Camera.main == null)
+            return;
 
-        StartCoroutine(MantenerParanoiaMinima());
-
-        StartCoroutine(InicioSotano());
-    }
-
-    void Update()
-    {
         Ray ray = new Ray(
             Camera.main.transform.position,
             Camera.main.transform.forward
         );
 
-        RaycastHit hit;
-
         bool mirandoAlgo = false;
 
-        if (Physics.Raycast(ray, out hit, 10f))
+        if (Physics.Raycast(ray, out RaycastHit hit, 10f))
         {
             SimpleInteract interactuable =
                 hit.collider.GetComponentInParent<SimpleInteract>();
@@ -73,35 +57,29 @@ public class SotanoManager : MonoBehaviour
             {
                 mirandoAlgo = true;
 
-                panelInteraccion.SetActive(true);
-                textoInteraccion.text = "Interactuar";
-            }
-        }
+                if (panelInteraccion != null)
+                    panelInteraccion.SetActive(true);
 
-        if (!mirandoAlgo)
-        {
-            panelInteraccion.SetActive(false);
-        }
+                if (textoInteraccion != null)
+                    textoInteraccion.text = "Interactuar";
 
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            if (Physics.Raycast(ray, out hit, 10f))
-            {
-                SimpleInteract interactuable =
-                    hit.collider.GetComponentInParent<SimpleInteract>();
-
-                if (interactuable != null)
+                if (Input.GetKeyDown(KeyCode.E))
                 {
                     interactuable.Interact();
                     return;
                 }
             }
         }
+
+        if (!mirandoAlgo && panelInteraccion != null)
+            panelInteraccion.SetActive(false);
     }
 
-
-    // DI�LOGOS
-
+    public void ActualizarObjetivo(string nuevoObjetivo)
+    {
+        if (textoObjetivo != null)
+            textoObjetivo.text = "- " + nuevoObjetivo;
+    }
 
     public void MostrarDialogo(string mensaje)
     {
@@ -112,47 +90,17 @@ public class SotanoManager : MonoBehaviour
             StopCoroutine(dialogoActual);
 
         textoSubtitulos.text = mensaje;
-
         dialogoActual = StartCoroutine(LimpiarDialogo());
     }
 
-    IEnumerator LimpiarDialogo()
+    private IEnumerator LimpiarDialogo()
     {
         yield return new WaitForSeconds(4f);
 
-        textoSubtitulos.text = "";
-    }
+        if (textoSubtitulos != null)
+            textoSubtitulos.text = "";
 
-   
-    // INICIO DEL S�TANO
-    
-
-    IEnumerator InicioSotano()
-    {
-        yield return new WaitForSeconds(1f);
-
-        ActualizarObjetivo("Vuelve con ellas.");
-
-        MostrarDialogo(
-            "Solo un poco mas."
-        );
-    }
-
-        
-    // PARANOIA
-    
-
-    IEnumerator MantenerParanoiaMinima()
-    {
-        while (true)
-        {
-            if (ParanoiaSystem.Instance != null)
-            {
-                ParanoiaSystem.Instance.AddParanoia(1f);
-            }
-
-            yield return new WaitForSeconds(5f);
-        }
+        dialogoActual = null;
     }
 
     public void InteraccionCompletada()
@@ -162,19 +110,27 @@ public class SotanoManager : MonoBehaviour
         Debug.Log("Interacciones: " + interaccionesCompletadas);
 
         if (interaccionesCompletadas == 1)
-        {
             StartCoroutine(AvanzarSotano());
-        }
     }
 
-    IEnumerator AvanzarSotano()
+    private IEnumerator AvanzarSotano()
     {
-        MostrarDialogo("Perdon por la tardanza... el turno se hizo eterno. Ya podemos irnos");
+        MostrarDialogo(
+            "Perdon por la tardanza... el turno se hizo eterno. Ya podemos irnos"
+        );
 
         yield return new WaitForSeconds(4f);
 
-        pantallaNegra.SetActive(true);
+        if (pantallaNegra != null)
+            pantallaNegra.SetActive(true);
 
-        paranoia.SetActive(false);
+        if (paranoia != null)
+            paranoia.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 }
