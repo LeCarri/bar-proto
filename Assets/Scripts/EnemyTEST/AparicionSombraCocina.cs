@@ -1071,6 +1071,7 @@ public class AparicionSombraCocina : MonoBehaviour
 
 
         revelada = true;
+        ControlDistorsionMental.Instance?.EstablecerCombate(true);
 
         esperandoMirada = false;
 
@@ -2068,6 +2069,8 @@ public class AparicionSombraCocina : MonoBehaviour
 
         }
 
+        ControlDistorsionMental.Instance?.EstablecerCombate(false);
+
 
 
         DetenerFuente(baseEnemy1);
@@ -2129,7 +2132,6 @@ public class AparicionSombraCocina : MonoBehaviour
         // Recuperar los volúmenes originales.
 
         if (baseEnemy1 != null)
-
         {
 
             baseEnemy1.volume = volumenOriginalBaseEnemy1;
@@ -2142,7 +2144,7 @@ public class AparicionSombraCocina : MonoBehaviour
 
         }
 
-
+        ControlDistorsionMental.Instance?.EstablecerCombate(true);
 
         if (baseEnemy2 != null)
 
