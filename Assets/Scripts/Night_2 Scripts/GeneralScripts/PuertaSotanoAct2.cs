@@ -129,7 +129,7 @@ public class PuertaSotanoAct2 : MonoBehaviour, IInteractable
         if (candadoRigidbody != null)
         {
             candadoRigidbody.isKinematic = false;
-            candadoRigidbody.AddForce(Vector3.down * 2f, ForceMode.Impulse);
+            //candadoRigidbody.AddForce(Vector3.down * 2f, ForceMode.Impulse);
         }
 
         if (audioSourcePuerta != null && sonidoCandadoCaer != null)

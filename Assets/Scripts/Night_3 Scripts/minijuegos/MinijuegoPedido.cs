@@ -1,4 +1,4 @@
-using UnityEditor.Rendering;
+//using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +15,7 @@ public class MinijuegoPedido : MonoBehaviour
     [Header("Movimiento")]
     public float velocidadVaso = 0.00005f;
 
-    [Header("Configuración")]
+    [Header("Configuraciï¿½n")]
     public int aciertosNecesarios = 3;
 
     [Header("Resultado")]
@@ -97,14 +97,14 @@ public class MinijuegoPedido : MonoBehaviour
 
         posicion.x += direccion * velocidadVaso * Time.deltaTime;
 
-        // Límite derecho
+        // Lï¿½mite derecho
         if (posicion.x >= limiteDerecho)
         {
             posicion.x = limiteDerecho;
             direccion = -1f;
         }
 
-        // Límite izquierdo
+        // Lï¿½mite izquierdo
         if (posicion.x <= limiteIzquierdo)
         {
             posicion.x = limiteIzquierdo;
@@ -156,7 +156,7 @@ public class MinijuegoPedido : MonoBehaviour
 
         if (textoResultado != null)
         {
-            textoResultado.text = "¡Bien!";
+            textoResultado.text = "ï¿½Bien!";
         }
 
         if (aciertos >= aciertosNecesarios)
@@ -175,7 +175,7 @@ public class MinijuegoPedido : MonoBehaviour
     {
         if (textoResultado != null)
         {
-            textoResultado.text = "¡Fallaste!";
+            textoResultado.text = "ï¿½Fallaste!";
         }
 
         MoverZonaVerde();
@@ -195,7 +195,7 @@ public class MinijuegoPedido : MonoBehaviour
 
         if (textoResultado != null)
         {
-            textoResultado.text = "¡Pedido conseguido!";
+            textoResultado.text = "ï¿½Pedido conseguido!";
         }
 
         Debug.Log("Minijuego completado. Pedido conseguido.");
