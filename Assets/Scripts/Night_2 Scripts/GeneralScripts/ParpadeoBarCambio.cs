@@ -61,26 +61,57 @@ public class ParpadeoBarCambio : MonoBehaviour
         MostrarPantallaNegra(false);
     }
 
-    void AplicarCambio(int indice)
+    /// <summary>
+    /// NUEVO: aplica todos los cambios de escenario en orden, instantáneamente.
+    /// Solo para preparar el estado final del bar en el DEBUG post-jumpscare.
+    /// No reproduce parpadeos, sonidos de parpadeo ni música de suspenso.
+    /// </summary>
+    public void AplicarTodosLosCambiosSinParpadeo()
     {
-        if (cambiosSecuenciales == null || indice >= cambiosSecuenciales.Length) return;
+        // Si el debug se activa en mitad de una secuencia, evitar que una
+        // corrutina pendiente revierta o mezcle los estados visuales.
+        StopAllCoroutines();
+        MostrarPantallaNegra(false);
+        if (audioParpadeo != null) audioParpadeo.Stop();
+        if (audioMusicaSuspenso != null) audioMusicaSuspenso.Stop();
+
+        if (cambiosSecuenciales == null || cambiosSecuenciales.Length == 0)
+        {
+            Debug.LogWarning("[ParpadeoBarCambio] No hay cambiosSecuenciales configurados: el debug no puede desordenar el bar.");
+            return;
+        }
+
+        for (int i = 0; i < cambiosSecuenciales.Length; i++)
+            AplicarCambio(i, false);
+
+        Debug.Log($"[ParpadeoBarCambio] DEBUG: aplicados {cambiosSecuenciales.Length} cambios. Bar en estado final, sin parpadeos ni música de suspenso.");
+    }
+
+    // Segundo parámetro NUEVO: permite omitir música al aplicar cambios en debug.
+    void AplicarCambio(int indice, bool reproducirMusica = true)
+    {
+        if (cambiosSecuenciales == null || indice < 0 || indice >= cambiosSecuenciales.Length) return;
 
         CambioEstadoBar cambio = cambiosSecuenciales[indice];
         if (cambio == null) return;
 
         // Activa los objetos nuevos (cuadros torcidos, manchas, sillas desplazadas)
-        foreach (GameObject obj in cambio.objetosAActivar)
-            if (obj != null) obj.SetActive(true);
+        if (cambio.objetosAActivar != null)
+        {
+            foreach (GameObject obj in cambio.objetosAActivar)
+                if (obj != null) obj.SetActive(true);
+        }
 
         // Desactiva los objetos del estado normal
-        foreach (GameObject obj in cambio.objetosADesactivar)
-            if (obj != null) obj.SetActive(false);
-
-        // --- DETECCIÓN DEL ÚLTIMO CAMBIO Y REPRODUCCIÓN DE MÚSICA ---
-        if (indice == cambiosSecuenciales.Length - 1)
+        if (cambio.objetosADesactivar != null)
         {
-            ReproducirMusicaSuspenso();
+            foreach (GameObject obj in cambio.objetosADesactivar)
+                if (obj != null) obj.SetActive(false);
         }
+
+        // Solo la secuencia normal reproduce música en el último cambio.
+        if (reproducirMusica && indice == cambiosSecuenciales.Length - 1)
+            ReproducirMusicaSuspenso();
     }
 
     void ReproducirMusicaSuspenso()
@@ -88,16 +119,11 @@ public class ParpadeoBarCambio : MonoBehaviour
         if (audioMusicaSuspenso != null)
         {
             if (clipSuspenso != null)
-            {
                 audioMusicaSuspenso.clip = clipSuspenso;
-            }
 
             audioMusicaSuspenso.loop = true;
-
             if (!audioMusicaSuspenso.isPlaying)
-            {
                 audioMusicaSuspenso.Play();
-            }
         }
         else
         {
