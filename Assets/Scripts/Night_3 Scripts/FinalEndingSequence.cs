@@ -14,6 +14,9 @@ public class FinalEndingSequence : MonoBehaviour
     [SerializeField] private MonoBehaviour playerLookScript;
     [SerializeField] private Camera playerCamera;
 
+    [Header("Modelo del personaje")]
+    [SerializeField] private GameObject modeloPersonaje;
+
     [Header("HUDs del juego a desactivar")]
     [Tooltip("Arrastrá acá ParanoiaCanvas, ContenedorObjetivos y ParpadeoYDialogos.")]
     [SerializeField] private GameObject[] hudsToDisable;
@@ -82,6 +85,9 @@ public class FinalEndingSequence : MonoBehaviour
 
     private void Awake()
     {
+        if (modeloPersonaje != null)
+            modeloPersonaje.SetActive(false);
+
         if (finalCameraObject != null)
             finalCameraObject.SetActive(false);
 
@@ -138,6 +144,9 @@ public class FinalEndingSequence : MonoBehaviour
 
         if (!other.CompareTag(playerTag))
             return;
+
+        if (modeloPersonaje != null)
+            modeloPersonaje.SetActive(true);
 
         StartEnding();
     }
