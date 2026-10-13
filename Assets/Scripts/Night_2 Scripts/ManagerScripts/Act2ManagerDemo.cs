@@ -515,7 +515,7 @@ public class Act2ManagerDemo : MonoBehaviour
         // Recuperación de paranoia
         Paranoia(-50f);
 
-        MostrarDialogo("Lucas: ¿Mi imaginación de nuevo?... No. La llave estaba acá.");
+        MostrarDialogo("Lucas: ¿Mi imaginación de nuevo? juro que escuhe a alguien acá");
 
         yield return new WaitForSeconds(4f);
 
