@@ -41,6 +41,15 @@ public class ParanoiaSystem : MonoBehaviour
     public float intervaloMaxAlucinacion = 12f;
     private float tiempoProximaAlucinacion;
 
+    [Header("Distorsion Mental")]
+    [Range(0f, 100f)]
+    public float paranoiaActivarDistorsion = 70f;
+
+    [Range(0f, 100f)]
+    public float paranoiaDesactivarDistorsion = 60f;
+
+    private bool distorsionParanoiaActiva = false;
+
     public static ParanoiaSystem Instancia { get; private set; }
 
     private void Awake()

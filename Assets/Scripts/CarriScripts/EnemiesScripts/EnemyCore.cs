@@ -1,58 +1,46 @@
+
 using UnityEngine;
 using UnityEngine.Events;
 
-// Este va en todos los enemigos.
-// Maneja vida, daño y muerte.
-// Los efectos especiales son opcionales mediante otros componentes.
-
 public class EnemyCore : MonoBehaviour
 {
+    [Header("Vida")]
     public float health = 100f;
     public float deathSpeed = 20f;
+
     [Header("Eventos")]
     public UnityEvent alMorir;
 
     protected bool isBeingIlluminated = false;
 
-    // Vida inicial para calcular porcentaje de desintegración
     private float maxHealth;
 
-    // Efecto opcional para las sombras nuevas
     private SombraDesintegracion sombraDesintegracion;
 
-    // Candado para evitar procesar muerte varias veces
     private bool isDead = false;
 
     protected virtual void Awake()
     {
-        // Guardamos la vida inicial
-        maxHealth = health;
+        maxHealth = Mathf.Max(1f, health);
 
-        // Si este enemigo tiene el nuevo sistema,
-        // lo encontramos automáticamente.
         sombraDesintegracion =
             GetComponent<SombraDesintegracion>();
     }
 
     public void TakeDamage(float amount)
     {
-        if (isDead)
+        if (isDead || amount <= 0f)
             return;
 
-        health -= amount;
-
         health = Mathf.Clamp(
-            health,
+            health - amount,
             0f,
             maxHealth
         );
 
         isBeingIlluminated = true;
 
-        // ==============================
-        // DESINTEGRACIÓN VISUAL
-        // ==============================
-
+        // Actualizar la desintegración visual.
         if (sombraDesintegracion != null)
         {
             sombraDesintegracion.ActualizarDesintegracion(
@@ -62,17 +50,15 @@ public class EnemyCore : MonoBehaviour
         }
 
         Debug.Log(
-            "Daño recibido. Vida actual: " + health
+            "[EnemyCore] Daño recibido. Vida actual: " +
+            health
         );
-
-        // ==============================
-        // MUERTE
-        // ==============================
 
         if (health <= 0f)
         {
             isDead = true;
 
+            // Desintegración definitiva.
             if (sombraDesintegracion != null)
             {
                 sombraDesintegracion
@@ -83,31 +69,30 @@ public class EnemyCore : MonoBehaviour
         }
     }
 
-
     protected virtual void Die()
     {
-        // Ejecutar acciones asociadas a la muerte.
+        Debug.Log(
+            "[EnemyCore] Enemigo derrotado: " +
+            gameObject.name
+        );
+
+        // Cada enemigo tiene su propio evento
+        // de muerte conectado desde el Inspector.
         alMorir?.Invoke();
 
-        Act1Manager manager =
-            Object.FindAnyObjectByType<Act1Manager>();
+        // Desactivar colisiones.
+        Collider[] colliders =
+            GetComponentsInChildren<Collider>();
 
-        if (manager != null)
+        foreach (Collider col in colliders)
         {
-            manager.RegistarEnemigoEliminado();
+            col.enabled = false;
         }
 
-        // Evita falsas colisiones antes de destruirse.
-        Collider col = GetComponent<Collider>();
-
-        if (col != null)
-            col.enabled = false;
-
+        // Destruir el enemigo.
         Destroy(gameObject);
     }
 
-
-    // El jugador debe mantener la luz sobre el enemigo.
     protected void LateUpdate()
     {
         isBeingIlluminated = false;

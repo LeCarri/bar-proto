@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class SombraDesintegracion : MonoBehaviour
@@ -6,28 +7,43 @@ public class SombraDesintegracion : MonoBehaviour
     public Renderer[] renderersSombra;
 
     [Header("Shader")]
-    [Tooltip("Reference exacto de la propiedad Fragmentacion en Shader Graph.")]
+    [Tooltip("Nombre exacto de la propiedad del Shader Graph.")]
     public string propiedadFragmentacion = "_Fragmentacion";
 
     [Tooltip("Valor normal del shader.")]
     public float fragmentacionInicial = 0.036f;
 
-    [Tooltip("Valor con el que la criatura desaparece completamente.")]
+    [Tooltip("Valor de desintegracion total al morir.")]
     public float fragmentacionFinal = 1f;
 
-    [Header("Suavizado")]
+    [Header("Fragmentacion mientras sigue viva")]
+    [Range(0f, 1f)]
+    [Tooltip("Maximo valor de fragmentacion antes de morir.")]
+    public float fragmentacionMaximaConVida = 0.40f;
+
+    [Header("Velocidades")]
+    [Min(0f)]
     public float velocidadCambio = 8f;
 
-    [Header("Partículas de desintegración")]
+    [Min(0f)]
+    [Tooltip("Velocidad a la que se vuelve visible.")]
+    public float velocidadReaparicion = 1.5f;
+
+    [Header("Reaparicion")]
+    [Min(0f)]
+    [Tooltip("Tiempo sin recibir dano antes de reconstruirse.")]
+    public float tiempoAntesReaparecer = 0.30f;
+
+    [Header("Particulas de desintegracion")]
     public ParticleSystem particulasDesintegracion;
 
-    [Header("Audio de desintegración")]
+    [Header("Audio de desintegracion")]
     public AudioSource audioDesintegracion;
 
-    [Tooltip("Tiempo sin recibir daño antes de cortar el sonido.")]
+    [Tooltip("Tiempo sin recibir dano antes de cortar sonido.")]
     public float tiempoParaDetenerAudio = 0.15f;
 
-    [Tooltip("Cuánto tiempo sin recibir daño antes de cortar partículas.")]
+    [Tooltip("Tiempo sin recibir dano antes de cortar particulas.")]
     public float tiempoParaDetenerParticulas = 0.12f;
 
     private MaterialPropertyBlock propertyBlock;
@@ -36,6 +52,13 @@ public class SombraDesintegracion : MonoBehaviour
     private float fragmentacionObjetivo;
 
     private float ultimoGolpe = -100f;
+
+    // Impide reconstruirse despues de morir.
+    private bool muriendo = false;
+
+    // =====================================
+    // AWAKE
+    // =====================================
 
     private void Awake()
     {
@@ -55,22 +78,50 @@ public class SombraDesintegracion : MonoBehaviour
         }
     }
 
+    // =====================================
+    // UPDATE
+    // =====================================
+
     private void Update()
     {
-        // Transición suave del shader
-        fragmentacionActual = Mathf.Lerp(
+        float tiempoSinDanio =
+            Time.time - ultimoGolpe;
+
+        // Si sigue viva y Lucas dejo de iluminarla,
+        // comienza a reconstruirse visualmente.
+        if (!muriendo &&
+            tiempoSinDanio >= tiempoAntesReaparecer)
+        {
+            fragmentacionObjetivo =
+                fragmentacionInicial;
+        }
+
+        // Mientras recibe dano se fragmenta rapido.
+        // Cuando deja de recibirlo vuelve gradualmente.
+        float velocidad = velocidadCambio;
+
+        if (!muriendo &&
+            tiempoSinDanio >= tiempoAntesReaparecer)
+        {
+            velocidad = velocidadReaparicion;
+        }
+
+        fragmentacionActual = Mathf.MoveTowards(
             fragmentacionActual,
             fragmentacionObjetivo,
-            Time.deltaTime * velocidadCambio
+            Mathf.Max(0f, velocidad) * Time.deltaTime
         );
 
         AplicarFragmentacion(fragmentacionActual);
 
-        // Si el jugador dejó de quemarla,
-        // dejamos de emitir partículas.
-        if (particulasDesintegracion != null &&
+        // =====================================
+        // PARTICULAS
+        // =====================================
+
+        if (!muriendo &&
+            particulasDesintegracion != null &&
             particulasDesintegracion.isPlaying &&
-            Time.time - ultimoGolpe > tiempoParaDetenerParticulas)
+            tiempoSinDanio > tiempoParaDetenerParticulas)
         {
             particulasDesintegracion.Stop(
                 true,
@@ -78,52 +129,60 @@ public class SombraDesintegracion : MonoBehaviour
             );
         }
 
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            ActualizarDesintegracion(50f, 100f);
-        }
+        // =====================================
+        // AUDIO
+        // =====================================
 
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-            ActualizarDesintegracion(0f, 100f);
-        }
-        
         if (audioDesintegracion != null &&
             audioDesintegracion.isPlaying &&
-            Time.time - ultimoGolpe > tiempoParaDetenerAudio)
+            tiempoSinDanio > tiempoParaDetenerAudio)
         {
-            audioDesintegracion.Stop();
+            DetenerAudioDesintegracion();
         }
     }
+
+    // =====================================
+    // RECIBIR DANO
+    // =====================================
 
     public void ActualizarDesintegracion(
         float vidaActual,
         float vidaMaxima)
     {
-        if (vidaMaxima <= 0f)
+        if (muriendo || vidaMaxima <= 0f)
             return;
 
-        float porcentajeVida =
-            Mathf.Clamp01(vidaActual / vidaMaxima);
+        float porcentajeVida = Mathf.Clamp01(
+            vidaActual / vidaMaxima
+        );
 
-        // 100% vida = fragmentación mínima
-        // 0% vida = fragmentación máxima
-        float porcentajeDanio = 1f - porcentajeVida;
+        float porcentajeDanio =
+            1f - porcentajeVida;
+
+        // Nunca permitir la fragmentacion total
+        // mientras el enemigo tenga vida.
+        float limiteConVida = Mathf.Clamp(
+            fragmentacionMaximaConVida,
+            fragmentacionInicial,
+            fragmentacionFinal
+        );
 
         fragmentacionObjetivo = Mathf.Lerp(
             fragmentacionInicial,
-            fragmentacionFinal,
+            limiteConVida,
             porcentajeDanio
         );
 
         ultimoGolpe = Time.time;
 
+        // Particulas existentes
         if (particulasDesintegracion != null &&
             !particulasDesintegracion.isPlaying)
         {
             particulasDesintegracion.Play();
         }
 
+        // Audio existente
         if (audioDesintegracion != null &&
             !audioDesintegracion.isPlaying)
         {
@@ -132,30 +191,38 @@ public class SombraDesintegracion : MonoBehaviour
         }
     }
 
+    // =====================================
+    // MUERTE DEFINITIVA
+    // =====================================
+
     public void ForzarDesintegracionCompleta()
     {
+        if (muriendo)
+            return;
+
+        muriendo = true;
+
+        // La criatura ya no puede reconstruirse.
         fragmentacionObjetivo = fragmentacionFinal;
+        fragmentacionActual = fragmentacionFinal;
+
+        AplicarFragmentacion(fragmentacionActual);
 
         if (particulasDesintegracion != null)
         {
             particulasDesintegracion.Play();
         }
 
-        // La criatura está muriendo.
-        // No podemos depender de Update para apagar
-        // un AudioSource que vive fuera de ella.
         DetenerAudioDesintegracion();
+
+        Debug.Log(
+            "[SombraDesintegracion] Desintegracion definitiva."
+        );
     }
 
-    private void OnDisable()
-    {
-        DetenerAudioDesintegracion();
-    }
-
-    private void OnDestroy()
-    {
-        DetenerAudioDesintegracion();
-    }
+    // =====================================
+    // APLICAR SHADER
+    // =====================================
 
     private void AplicarFragmentacion(float valor)
     {
@@ -178,6 +245,10 @@ public class SombraDesintegracion : MonoBehaviour
         }
     }
 
+    // =====================================
+    // AUDIO
+    // =====================================
+
     public void DetenerAudioDesintegracion()
     {
         if (audioDesintegracion == null)
@@ -185,9 +256,15 @@ public class SombraDesintegracion : MonoBehaviour
 
         audioDesintegracion.Stop();
         audioDesintegracion.loop = false;
+    }
 
-        Debug.Log(
-            "[SombraDesintegracion] Audio de desintegración detenido."
-        );
+    private void OnDisable()
+    {
+        DetenerAudioDesintegracion();
+    }
+
+    private void OnDestroy()
+    {
+        DetenerAudioDesintegracion();
     }
 }

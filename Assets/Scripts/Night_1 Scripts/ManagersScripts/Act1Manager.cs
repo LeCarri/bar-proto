@@ -294,6 +294,10 @@ public class Act1Manager : MonoBehaviour
 
     public SombraFugazCocina sombraFugazCocina;
 
+    [Header("Bloqueo de puertas durante el combate")]
+    [Tooltip("Objeto con Box Colliders solidos para impedir la salida hasta derrotar a la Criatura 2.")]
+    public GameObject bloqueadoresPuertasCombate;
+
     [Header("Indicadores & Scriptables")]
 
     public GameObject indicadorCervezas;
@@ -449,6 +453,10 @@ public class Act1Manager : MonoBehaviour
         if (volumenAlucinacion != null) volumenAlucinacion.weight = 0f;
 
         if (volumenGlobalNarrativo != null) volumenGlobalNarrativo.weight = 0f;
+
+        // Antes de recoger la botella especial, el paso queda libre.
+        if (bloqueadoresPuertasCombate != null)
+            bloqueadoresPuertasCombate.SetActive(false);
 
         if (segundaCriatura != null) segundaCriatura.SetActive(false);
         // La Criatura 3 no puede activarse
@@ -1375,7 +1383,28 @@ public class Act1Manager : MonoBehaviour
 
     public void AlRecogerBotellaEspecial()
     {
+
+        // Bloquear ambas hojas durante los combates
+        BloquearPuertasFisicas(true);
         Debug.Log("[Act1Manager] Botella recogida.");
+
+        // Bloquear las salidas desde la botella hasta el fin del segundo combate.
+        if (bloqueadoresPuertasCombate != null)
+        {
+            bloqueadoresPuertasCombate.SetActive(true);
+            Debug.Log("[Noche1] Puertas bloqueadas hasta derrotar a Criatura 2.");
+        }
+
+        // La ZonaHuida puede iniciar la radio aunque Lucas no mire
+        // la sombra fugaz. No activa la radio hasta cruzar el trigger.
+        if (aparicionSombraCocina != null)
+        {
+            aparicionSombraCocina.PermitirRutaHuidaTrasBotella(sombraFugazCocina);
+        }
+        else
+        {
+            Debug.LogWarning("[Noche1] No se asigno AparicionSombraCocina en el Inspector.");
+        }
 
         if (controladorLinterna != null)
         {
@@ -1577,6 +1606,14 @@ public class Act1Manager : MonoBehaviour
 
         segundaCriaturaRegistrada = true;
         enemigosEliminados = 2;
+
+        // Liberar las salidas al terminar el segundo combate.
+        if (bloqueadoresPuertasCombate != null)
+        {
+            bloqueadoresPuertasCombate.SetActive(false);
+            Debug.Log("[Noche1] Puertas desbloqueadas.");
+        }
+
         Debug.Log("[Noche1] Criatura 2 derrotada (2/3). Comienza el pasillo.");
 
         if (aparicionSombraCocina != null)
@@ -1643,7 +1680,7 @@ public class Act1Manager : MonoBehaviour
 
 
 
-   // ==========================================
+    // ==========================================
     // 5. CIERRE Y SALIDA DE LA NOCHE 1
     // ==========================================
     void IniciarCierreNoche()
@@ -1708,7 +1745,7 @@ public class Act1Manager : MonoBehaviour
 
         yield return new WaitForSeconds(1.5f);
         SceneManager.LoadScene("Night_2 Demo");
-    } 
+    }
 
 
     // ==========================================
@@ -2606,6 +2643,46 @@ public class Act1Manager : MonoBehaviour
         );
     }
 
+
+    private void BloquearPuertasFisicas(bool bloquear)
+    {
+        CambiarBloqueoHoja(puertaPasilloIzquierda, bloquear);
+        CambiarBloqueoHoja(puertaPasilloDerecha, bloquear);
+
+        Debug.Log(
+            "[Noche1] Puertas " +
+            (bloquear ? "BLOQUEADAS" : "DESBLOQUEADAS")
+        );
+    }
+
+    private void CambiarBloqueoHoja(
+        HingeJoint bisagra,
+        bool bloquear)
+    {
+        if (bisagra == null)
+            return;
+
+        Rigidbody rb = bisagra.GetComponent<Rigidbody>();
+
+        if (rb == null)
+        {
+            Debug.LogWarning(
+                "[Noche1] Falta Rigidbody en " +
+                bisagra.name
+            );
+            return;
+        }
+
+        if (bloquear)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        rb.isKinematic = bloquear;
+    }
+
+
     private IEnumerator DebugIniciarSegundaCriatura()
     {
         yield return new WaitForSeconds(1f);
@@ -2958,6 +3035,8 @@ public class Act1Manager : MonoBehaviour
 
     private void AbrirPuertasPasillo()
     {
+        // Permitir nuevamente el movimiento de las bisagras
+        BloquearPuertasFisicas(false);
         // Sonido UNA sola vez.
         if (sonidoPuertaPasillo != null)
         {
