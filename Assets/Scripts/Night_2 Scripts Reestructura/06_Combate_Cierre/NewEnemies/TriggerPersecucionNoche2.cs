@@ -17,9 +17,14 @@ public class TriggerPersecucionNoche2 : MonoBehaviour
         PlayerController jugador = otro.GetComponentInParent<PlayerController>();
         if (jugador == null) return;
 
+        
         if (Act2ManagerDemo.Instance == null ||
+            !Act2ManagerDemo.Instance.TieneLlave() ||
             Act2ManagerDemo.Instance.estadoActual != Act2ManagerDemo.Act2State.Psicosis)
+        {
             return;
+        }
+
 
         usado = true;
         enemigo.ActivarPersecucion(jugador.transform);
