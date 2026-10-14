@@ -11,6 +11,13 @@ public class EnemyCore : MonoBehaviour
     [Header("Eventos")]
     public UnityEvent alMorir;
 
+    [Header("Configuración de muerte")]
+    [Min(0f)]
+    public float retrasoDestruccion = 0f;
+
+    [SerializeField]
+    private MonoBehaviour[] scriptsADesactivarAlMorir;
+
     protected bool isBeingIlluminated = false;
 
     private float maxHealth;
@@ -80,6 +87,24 @@ public class EnemyCore : MonoBehaviour
         // de muerte conectado desde el Inspector.
         alMorir?.Invoke();
 
+
+        // Desactivar los scripts de comportamiento configurados.
+        foreach (MonoBehaviour script in scriptsADesactivarAlMorir)
+        {
+            if (script != null)
+                script.enabled = false;
+        }
+
+        // Detener el NavMeshAgent.
+        var agente = GetComponent<UnityEngine.AI.NavMeshAgent>();
+
+        if (agente != null && agente.enabled && agente.isOnNavMesh)
+        {
+            agente.isStopped = true;
+            agente.ResetPath();
+        }
+
+
         // Desactivar colisiones.
         Collider[] colliders =
             GetComponentsInChildren<Collider>();
@@ -90,7 +115,7 @@ public class EnemyCore : MonoBehaviour
         }
 
         // Destruir el enemigo.
-        Destroy(gameObject);
+        Destroy(gameObject, retrasoDestruccion);
     }
 
     protected void LateUpdate()
