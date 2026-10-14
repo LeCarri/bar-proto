@@ -26,10 +26,10 @@ public class EventoCriaturaTecho : MonoBehaviour
     public float tiempoRasgunosAntesGiro = 0.2f;
 
     [Min(0.01f)]
-    public float duracionGiroCamara = 0.55f;
+    public float duracionGiroCamara = 0.3f;
 
     [Min(0.01f)]
-    public float duracionRetornoCamara = 0.4f;
+    public float duracionRetornoCamara = 0f;
 
     [Range(0f, 180f)]
     [Tooltip("Giro horizontal maximo para centrar a la criatura. Aumentalo si el punto de mirada queda fuera del encuadre.")]
@@ -301,17 +301,18 @@ public class EventoCriaturaTecho : MonoBehaviour
         // El bloqueo ocurre INMEDIATAMENTE al cruzar el trigger.
         PrepararCinematica();
 
+        // Espera inicial súper corta o en 0 si querés que sea inmediato
         yield return new WaitForSeconds(Mathf.Max(0f, esperaInicial));
 
         if (audioRasgunos != null)
             audioRasgunos.Play();
 
+        // Reducido para que no tarde casi nada antes del giro
         yield return new WaitForSeconds(
             Mathf.Max(0f, tiempoRasgunosAntesGiro)
         );
 
-        // Reubicar el enemigo ANTES de calcular hacia donde mirar.
-        // Sigue invisible hasta que EjecutarJumpscare lo active.
+        // Reubicar el enemigo ANTES de calcular hacia dónde mirar.
         if (criatura != null && puntoSpawnCriatura != null)
         {
             criatura.transform.SetPositionAndRotation(
@@ -323,22 +324,24 @@ public class EventoCriaturaTecho : MonoBehaviour
         if (jugadorCinematica != null && puntoMirada != null && camaraJugador != null)
             yield return StartCoroutine(GirarCamaraHaciaCriatura());
         else
-            Debug.LogWarning("[Criatura3] No se pudo orientar la camara: revisar PlayerController, Camera y Punto Mirada.");
+            Debug.LogWarning("[Criatura3] No se pudo orientar la cámara: revisar PlayerController, Camera y Punto Mirada.");
 
-        // Conservamos el jumpscare, el cuello, la linterna, la sacudida,
-        // los sonidos y los Volumes existentes.
+        // Ejecutamos el jumpscare de inmediato
         yield return StartCoroutine(EjecutarJumpscare());
 
-        if (jugadorCinematica != null)
-            yield return StartCoroutine(RegresarCamara());
+        // ELIMINADO: Ya no llamamos a RegresarCamara() para que la cámara 
+        // se quede exactamente mirando hacia arriba donde terminó el giro.
+        // if (jugadorCinematica != null)
+        //     yield return StartCoroutine(RegresarCamara());
 
-        // Recien aca Lucas vuelve a moverse, mirar y usar la linterna.
-        RestaurarCinematica();
+        // Restauramos los controles de movimiento, PERO mantenemos 
+        // la rotación actual de la cámara hacia arriba.
+        RestaurarCinematicaSinMoverCamara();
 
         if (CriaturaSigueViva())
             rutinaCombate = StartCoroutine(CicloCombate());
 
-        Debug.Log("[Criatura3] Jumpscare automatico terminado. Controles y combate habilitados.");
+        Debug.Log("[Criatura3] Jumpscare automático terminado. Cámara fija arriba y combate habilitado.");
     }
 
     private void PrepararCinematica()
@@ -414,6 +417,24 @@ public class EventoCriaturaTecho : MonoBehaviour
             pitchInicio, pitchDestino,
             duracionGiroCamara
         ));
+    }
+
+    private void RestaurarCinematicaSinMoverCamara()
+    {
+        if (!cinematicaActiva)
+            return;
+
+        if (jugadorCinematica != null)
+        {
+            // Omitimos la línea que restauraba la rotación anterior (rotacionJugadorAnterior e inclinacionAnterior)
+            // para que el jugador conserve exactamente hacia dónde giró la cámara para ver al monstruo.
+            jugadorCinematica.controlesBloqueados = controlesAnteriores;
+        }
+
+        if (linternaCombate != null)
+            linternaCombate.enabled = linternaHabilitadaAntes;
+
+        cinematicaActiva = false;
     }
 
     private IEnumerator RegresarCamara()

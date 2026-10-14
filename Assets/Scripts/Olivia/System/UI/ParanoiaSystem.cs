@@ -248,7 +248,7 @@ public class ParanoiaSystem : MonoBehaviour
     {
         if (clipsSusurros == null || clipsSusurros.Length == 0) return;
 
-        bool enRangoInicial = (paranoiaActual >= 10f && paranoiaActual <= 30f);
+        bool enRangoInicial = (paranoiaActual >= 10f && paranoiaActual <= 29f);
         bool enRangoCritico = (paranoiaActual >= 80f && paranoiaActual <= 100f);
 
         if (!enRangoInicial && !enRangoCritico) return;
