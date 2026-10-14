@@ -21,8 +21,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: sombraWalk Variant
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  m_Parent: {fileID: 3171878016973976666, guid: 5c82a23d13ab24f4e819d05b67c785a0, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: eaf9b6f4d733c489fa523505e237d52d, type: 3}
+  m_Parent: {fileID: 2100000, guid: 9102ac036f06d471bad89ad07e113f23, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -30,8 +30,7 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
@@ -45,6 +44,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Metallic: 0.612
+    - _QueueControl: 0
     - _Smoothness: 0.302
     m_Colors: []
   m_BuildTextureStacks: []

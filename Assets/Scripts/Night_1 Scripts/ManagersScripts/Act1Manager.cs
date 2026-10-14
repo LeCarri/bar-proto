@@ -709,7 +709,7 @@ public class Act1Manager : MonoBehaviour
 
         MostrarDialogo("Lucas: Listo. Guardo la escoba...");
 
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(4f);
 
 
 
