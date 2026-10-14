@@ -13,6 +13,7 @@ public class EventoPilarPasillo : MonoBehaviour
     [SerializeField] private Animator animatorPilar;
     [Tooltip("Nombre del estado del Animator que contiene la animación de correr. Vacío = dejar el estado por defecto.")]
     [SerializeField] private string animacionCorrer = "Run";
+    [SerializeField] private GameObject pilarSentada;
 
     [Header("Recorrido")]
     [Tooltip("El primer punto es donde aparece. Los siguientes marcan por dónde corre.")]
@@ -49,6 +50,7 @@ public class EventoPilarPasillo : MonoBehaviour
     private bool habilitado;
     private bool ejecutado;
     private Coroutine rutina;
+    public bool RecorridoFinalizado { get; private set; }
 
     private void Awake()
     {
@@ -57,11 +59,14 @@ public class EventoPilarPasillo : MonoBehaviour
 
     public void PrepararEvento()
     {
+        if (pilarSentada != null)
+        pilarSentada.SetActive(false);
         habilitado = false;
         ejecutado = false;
         jugadorDentroTrigger = false;
         colliderJugadorQueEntro = null;
         llantoIniciado = false;
+        RecorridoFinalizado = false;
 
         if (audioLlanto != null)
         {
@@ -135,6 +140,7 @@ public class EventoPilarPasillo : MonoBehaviour
     private void IniciarLlanto3D()
     {
         if (!ejecutado || llantoIniciado) return;
+        if (pilarSentada != null) pilarSentada.SetActive(true);
 
         if (audioLlanto == null)
         {
@@ -195,6 +201,7 @@ public class EventoPilarPasillo : MonoBehaviour
         }
 
         // Pilar terminó de correr: avisamos AL INSTANTE para iniciar BaseEnemy2.
+        RecorridoFinalizado = true;
         // No esperamos a que termine la pausa final o se oculte el modelo.
         if (Act2ManagerDemo.Instance != null)
             Act2ManagerDemo.Instance.NotificarFinRecorridoPilar();

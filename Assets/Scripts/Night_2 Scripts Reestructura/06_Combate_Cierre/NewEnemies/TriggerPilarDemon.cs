@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Rendering;
@@ -15,7 +14,7 @@ public class TriggerPilarDemon : MonoBehaviour
     [SerializeField] private AudioSource sonido1;
     [SerializeField] private AudioSource sonido2;
 
-    [Header("Sacudida de cámara")]
+    [Header("Sacudida de camara")]
     [SerializeField] private CameraShake sacudidaCamara;
     [SerializeField] private float duracionSacudida = 0.35f;
     [SerializeField] private float intensidadSacudida = 5f;
@@ -35,71 +34,79 @@ public class TriggerPilarDemon : MonoBehaviour
 
     private void Awake()
     {
-        // Pilar Demon empieza oculta.
+        activado = false;
+
+        // Pilar Demon debe estar OCULTA al empezar la noche.
         if (pilarDemon != null)
             pilarDemon.SetActive(false);
 
+        // El efecto visual empieza sin intensidad.
         if (volumePilar != null)
         {
             volumePilar.enabled = true;
             volumePilar.weight = 0f;
         }
+
+        // No hay Camera Shake ni sonidos al inicio.
     }
 
     private void OnTriggerEnter(Collider otro)
     {
-        if (activado) return;
+        if (activado)
+            return;
 
-        // Detectar al jugador.
+        // Solo Lucas puede iniciar el evento.
         if (otro.GetComponentInParent<PlayerController>() == null)
+            return;
+
+        // Debe haber recogido la llave y terminado el evento del bano.
+        if (Act2ManagerDemo.Instance == null ||
+            !Act2ManagerDemo.Instance.PuedeActivarEventosPostBano)
+            return;
+
+        // Pilar debe haber terminado de correr por el pasillo.
+        if (eventoPilarPasillo == null ||
+            !eventoPilarPasillo.RecorridoFinalizado)
             return;
 
         activado = true;
 
-        // Detener el llanto 3D anterior.
-        if (eventoPilarPasillo != null)
-            eventoPilarPasillo.DetenerLlanto3D();
+        // Detener llanto de Pilar sentada.
+        eventoPilarPasillo.DetenerLlanto3D();
 
-        // Desaparece Pilar normal.
         if (pilarNormal != null)
             pilarNormal.SetActive(false);
 
-        // Aparece Pilar Demon instantaneamente.
         if (pilarDemon != null)
             pilarDemon.SetActive(true);
-            // Sacudida de cámara al aparecer Pilar Demon.
-            if (sacudidaCamara != null)
-            {
-                StartCoroutine(
-                    sacudidaCamara.Shake(duracionSacudida, intensidadSacudida)
-                );
-            }   
-        // Reproducir ambos sonidos simultaneamente.
+
+        // Sacudir la camara SOLO durante el jumpscare.
+        if (sacudidaCamara != null)
+            StartCoroutine(sacudidaCamara.Shake(duracionSacudida, intensidadSacudida));
+
         if (sonido1 != null)
             sonido1.Play();
 
         if (sonido2 != null)
             sonido2.Play();
 
-        Debug.Log("[Pilar Demon] Jumpscare activado.");
-
         if (volumePilar != null)
-        StartCoroutine(ActivarVolume());
+            StartCoroutine(ActivarVolume());
 
         if (camaraJugador != null)
         {
-            var cameraData =
-                camaraJugador.GetUniversalAdditionalCameraData();
-
-            cameraData.SetRenderer(indicePCRenderer);
+            var cameraData = camaraJugador.GetUniversalAdditionalCameraData();
+            if (cameraData != null)
+                cameraData.SetRenderer(indicePCRenderer);
         }
+
+        Debug.Log("[Pilar Demon] Jumpscare activado.", this);
     }
 
     private void Reset()
     {
         GetComponent<BoxCollider>().isTrigger = true;
     }
-
 
     private IEnumerator ActivarVolume()
     {
@@ -116,5 +123,4 @@ public class TriggerPilarDemon : MonoBehaviour
             yield return null;
         }
     }
-
 }
