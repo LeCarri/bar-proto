@@ -119,15 +119,6 @@ public class NotaPuerta : MonoBehaviour, IInteractable
             canvasNotaUI.SetActive(false);
             Debug.Log("-> canvasNotaUI.SetActive(false) ejecutado.");
         }
-
-        if (objetoNotaPuerta != null)
-        {
-            Renderer rend = objetoNotaPuerta.GetComponent<Renderer>();
-            if (rend != null) rend.enabled = true;
-            
-            Collider col = objetoNotaPuerta.GetComponent<Collider>();
-            if (col != null) col.enabled = true;
-        }
     }
 
     void ReaccionLucas()
