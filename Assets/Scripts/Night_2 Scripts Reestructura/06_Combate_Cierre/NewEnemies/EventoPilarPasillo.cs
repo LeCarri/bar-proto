@@ -18,9 +18,9 @@ public class EventoPilarPasillo : MonoBehaviour
     [Header("Recorrido")]
     [Tooltip("El primer punto es donde aparece. Los siguientes marcan por dónde corre.")]
     [SerializeField] private Transform[] puntosRecorrido;
-    [Min(0.1f)] [SerializeField] private float velocidad = 4.5f;
-    [Min(0f)] [SerializeField] private float suavidadGiro = 12f;
-    [Min(0f)] [SerializeField] private float esperaFinal = 0.1f;
+    [Min(0.1f)][SerializeField] private float velocidad = 4.5f;
+    [Min(0f)][SerializeField] private float suavidadGiro = 12f;
+    [Min(0f)][SerializeField] private float esperaFinal = 0.1f;
 
     [Header("Risa")]
     [Tooltip("Preferentemente, un AudioSource 3D en Pilar para que la risa se desplace con ella.")]
@@ -32,7 +32,7 @@ public class EventoPilarPasillo : MonoBehaviour
     [Header("Llanto 3D - Pilar sentada")]
     [Tooltip("AudioSource en Pilar sentada (o en un Empty en su posicion). NO ponerlo en Pilar que corre: se desactiva al terminar.")]
     [SerializeField] private AudioSource audioLlanto;
-    
+
 
     public enum MomentoInicioLlanto
     {
@@ -60,7 +60,7 @@ public class EventoPilarPasillo : MonoBehaviour
     public void PrepararEvento()
     {
         if (pilarSentada != null)
-        pilarSentada.SetActive(false);
+            pilarSentada.SetActive(false);
         habilitado = false;
         ejecutado = false;
         jugadorDentroTrigger = false;
@@ -72,7 +72,7 @@ public class EventoPilarPasillo : MonoBehaviour
         {
             audioLlanto.Stop();
             audioLlanto.playOnAwake = false;
-            audioLlanto.spatialBlend = 1f; // 3D: depende de la distancia y ubicacion en la escena
+            audioLlanto.spatialBlend = 0f; // Audio 2D
 
             if (pilar != null && audioLlanto.transform.IsChildOf(pilar.transform))
                 Debug.LogWarning("[Pilar] El AudioSource del llanto esta dentro de Pilar que corre. Colocalo en Pilar sentada o en un Empty independiente, o se cortara cuando desaparezca la que corre.");
@@ -154,10 +154,17 @@ public class EventoPilarPasillo : MonoBehaviour
             return;
         }
 
+
         llantoIniciado = true;
-        audioLlanto.spatialBlend = 1f;
+
+        // El llanto se escucha en 2D, sin depender de la distancia.
+        audioLlanto.spatialBlend = 0f;
         audioLlanto.loop = repetirLlanto;
+        audioLlanto.volume = 1f;
         audioLlanto.Play();
+
+        Debug.Log("[Pilar] Comenzo el llanto 2D.");
+
         Debug.Log("[Pilar] Comenzo el llanto 3D en: " + audioLlanto.transform.position);
     }
 
@@ -210,7 +217,7 @@ public class EventoPilarPasillo : MonoBehaviour
             IniciarLlanto3D();
 
         if (esperaFinal > 0f)
-    yield return new WaitForSeconds(esperaFinal);
+            yield return new WaitForSeconds(esperaFinal);
 
         if (audioRisa != null)
             yield return StartCoroutine(FadeOutRisa());
