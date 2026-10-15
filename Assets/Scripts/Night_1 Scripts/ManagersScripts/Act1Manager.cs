@@ -1366,25 +1366,25 @@ public class Act1Manager : MonoBehaviour
 
         MostrarDialogo("Mujer: ¿Seguís sirviendo lo mismo de siempre...?... Cerveza. Tragos... Excusas.");
 
-        yield return new WaitForSeconds(4.5f);
+        yield return new WaitForSeconds(6f);
 
 
 
         MostrarDialogo("Lucas: Esa voz... ¿Te conozco?");
 
-        yield return new WaitForSeconds(3.0f);
+        yield return new WaitForSeconds(5f);
 
 
 
         MostrarDialogo("Mujer: Quizás el tiempo borró más que los nombres. ¿No tenés algo mejor para ofrecer?");
 
-        yield return new WaitForSeconds(4.5f);
+        yield return new WaitForSeconds(6f);
 
 
 
         MostrarDialogo("Lucas: Tengo algo especial en el depósito. Es... de la casa. Ya vuelvo.");
 
-        yield return new WaitForSeconds(4.0f);
+        yield return new WaitForSeconds(6f);
 
 
 
