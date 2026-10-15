@@ -117,6 +117,11 @@ public class Act2ManagerDemo : MonoBehaviour
     public Transform puntoDebugPostJumpscare;
     [Tooltip("Arrastra aca el GameObject principal de Lucas, que tiene PlayerController y CharacterController. Si no lo asignas, se buscara automaticamente.")]
     public PlayerController jugadorDebug;
+
+    [Header("EfectoObjetivos")]
+    [Tooltip("Velocidad con la que se desvanece el texto al cambiar de objetivo")]
+    public float velocidadFadeObjetivo = 3f;
+    private Coroutine corrutinaObjetivoTransicion;
     void Awake()
 {
     if (Instance != null && Instance != this)
@@ -189,11 +194,64 @@ public class Act2ManagerDemo : MonoBehaviour
 }
     public void ActualizarObjetivo(string nuevoObjetivo)
     {
+        if (textoObjetivo == null) return;
+
+        // Si ya hay una transición en curso, la detenemos para que no se pisen
+        if (corrutinaObjetivoTransicion != null)
+        {
+            StopCoroutine(corrutinaObjetivoTransicion);
+        }
+
+        corrutinaObjetivoTransicion = StartCoroutine(TransicionObjetivoRoutine(nuevoObjetivo));
+    }
+
+    private IEnumerator TransicionObjetivoRoutine(string nuevoObjetivo)
+    {
+        // 1. Tachar el texto actual si no está vacío
+        if (!string.IsNullOrEmpty(textoObjetivo.text))
+        {
+            string textoActual = textoObjetivo.text;
+            // Evitamos duplicar etiquetas de tachado
+            if (!textoActual.Contains("<s>"))
+            {
+                textoObjetivo.text = "<s>" + textoActual + "</s>";
+            }
+            yield return new WaitForSeconds(0.5f); // Breve pausa para notar el tachado
+        }
+
+        // 2. FADE OUT (Desvanecer el texto viejo)
+        float alpha = textoObjetivo.color.a;
+        while (alpha > 0f)
+        {
+            alpha -= Time.deltaTime * velocidadFadeObjetivo;
+            SetObjetivoAlpha(alpha);
+            yield return null;
+        }
+        SetObjetivoAlpha(0f);
+
+        // 3. CAMBIAR EL TEXTO
+        textoObjetivo.text = "- " + nuevoObjetivo;
+
+        // 4. FADE IN (Aparecer el nuevo objetivo)
+        alpha = 0f;
+        while (alpha < 1f)
+        {
+            alpha += Time.deltaTime * velocidadFadeObjetivo;
+            SetObjetivoAlpha(alpha);
+            yield return null;
+        }
+        SetObjetivoAlpha(1f);
+
+        corrutinaObjetivoTransicion = null;
+    }
+
+    private void SetObjetivoAlpha(float alpha)
+    {
         if (textoObjetivo != null)
         {
-            textoObjetivo.text = "- " + nuevoObjetivo;
-            // Opcional: Podés disparar una pequeña animación de escala o color 
-            // para que el jugador note que el objetivo cambió.
+            Color color = textoObjetivo.color;
+            color.a = Mathf.Clamp01(alpha);
+            textoObjetivo.color = color;
         }
     }
         // Crea un TMP de emergencia en pantalla si no hay uno asignado
