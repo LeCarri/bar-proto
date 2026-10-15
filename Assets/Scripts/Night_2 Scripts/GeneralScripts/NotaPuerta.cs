@@ -1,59 +1,151 @@
 using UnityEngine;
+using System.Collections;
 
-/// <summary>
-/// Nota pegada en la puerta del sótano, escrita con la letra del propio protagonista.
-/// Al leerla, le da al jugador la pista de ir al baño.
-/// Notifica al Act2Manager para habilitar la llave en el baño.
-/// Implementa IInteractable.
-///
-/// SETUP: Colocar en un GameObject plano (papel) pegado sobre la puerta del sótano.
-/// Act2Manager lo activa cuando corresponde (después de ZapatosEncontrados).
-/// </summary>
 public class NotaPuerta : MonoBehaviour, IInteractable
 {
     [Header("Estado")]
     private bool yaLeida = false;
-
-    [Header("Visual")]
-    [Tooltip("Renderer del papel de la nota, para el efecto de parpadeo al activarse")]
-    public Renderer rendererNota;
+    private bool estaAbierta = false;
+    private bool puedeCerrar = false; 
+    private Coroutine timerCierreCoroutine;
 
     [Header("Audio")]
-    [Tooltip("Sonido de papel al interactuar (crinkle sound)")]
     public AudioSource sonidoPapel;
-    public GameObject NotaImagen;
+
+    [Header("UI / Canvas de la Nota")]
+    public GameObject canvasNotaUI;
+
+    [Header("Objeto Físico en la Puerta")]
+    public GameObject objetoNotaPuerta;
+
+    void Start()
+    {
+        if (canvasNotaUI != null)
+        {
+            canvasNotaUI.SetActive(false);
+        }
+    }
+
+    void Update()
+    {
+        if (estaAbierta && puedeCerrar)
+        {
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape))
+            {
+                Debug.Log("Cerrando nota por tecla del usuario.");
+                CerrarNota();
+            }
+        }
+    }
 
     public void Interact()
     {
-        if (yaLeida) return;
-        yaLeida = true;
+        if (estaAbierta) return;
 
-        if (sonidoPapel != null) sonidoPapel.Play();
-        if (NotaImagen != null) NotaImagen.gameObject.SetActive(true);
-        StartCoroutine(DesactivarNotaImagen());
+        Debug.Log("¡Interact() llamado con éxito en NotaPuerta!");
 
-        // Pequeña pausa antes de la reacción de Lucas
-        Invoke(nameof(ReaccionLucas), 2.5f);
+        if (!yaLeida)
+        {
+            yaLeida = true;
+            ReaccionLucas();
+        }
+
+        AbrirNota();
     }
 
-    private System.Collections.IEnumerator DesactivarNotaImagen()
+    private void AbrirNota()
     {
-        yield return new WaitForSeconds(3.5f);
-        if (NotaImagen != null) NotaImagen.gameObject.SetActive(false);
+        estaAbierta = true;
+        puedeCerrar = false; 
+
+        if (sonidoPapel != null) sonidoPapel.Play();
+
+        if (canvasNotaUI != null)
+        {
+            canvasNotaUI.SetActive(true);
+            
+            Canvas canvasComp = canvasNotaUI.GetComponent<Canvas>();
+            if (canvasComp == null) canvasComp = canvasNotaUI.GetComponentInChildren<Canvas>();
+            if (canvasComp != null) canvasComp.sortingOrder = 999;
+
+            Debug.Log("-> canvasNotaUI.SetActive(true) ejecutado.");
+        }
+
+        if (objetoNotaPuerta != null)
+        {
+            Renderer rend = objetoNotaPuerta.GetComponent<Renderer>();
+            if (rend != null) rend.enabled = false;
+            
+            Collider col = objetoNotaPuerta.GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+        }
+
+        StartCoroutine(HabilitarCierre());
+
+        if (timerCierreCoroutine != null) StopCoroutine(timerCierreCoroutine);
+        timerCierreCoroutine = StartCoroutine(EsperarYCerrar());
+    }
+
+    private IEnumerator HabilitarCierre()
+    {
+        yield return null; 
+        puedeCerrar = true;
+    }
+
+    private IEnumerator EsperarYCerrar()
+    {
+        yield return new WaitForSeconds(3f);
+        Debug.Log("Temporizador de 3 segundos finalizado. Cerrando nota.");
+        CerrarNota();
+    }
+
+    private void CerrarNota()
+    {
+        if (!estaAbierta) return;
+
+        if (timerCierreCoroutine != null)
+        {
+            StopCoroutine(timerCierreCoroutine);
+            timerCierreCoroutine = null;
+        }
+
+        estaAbierta = false;
+        puedeCerrar = false;
+
+        if (sonidoPapel != null) sonidoPapel.Play();
+
+        if (canvasNotaUI != null)
+        {
+            canvasNotaUI.SetActive(false);
+            Debug.Log("-> canvasNotaUI.SetActive(false) ejecutado.");
+        }
+
+        if (objetoNotaPuerta != null)
+        {
+            Renderer rend = objetoNotaPuerta.GetComponent<Renderer>();
+            if (rend != null) rend.enabled = true;
+            
+            Collider col = objetoNotaPuerta.GetComponent<Collider>();
+            if (col != null) col.enabled = true;
+        }
     }
 
     void ReaccionLucas()
     {
-        Act2ManagerDemo.Instance?.NotaLeida();
+        if (Act2ManagerDemo.Instance != null)
+        {
+            Act2ManagerDemo.Instance.NotaLeida();
+        }
     }
+
     public bool CanInteract()
     {
-        return true;
+        return !estaAbierta;
     }
 
     public string GetDescription()
     {
-        if (yaLeida) return "Una nota pegada en la puerta";
+        if (estaAbierta) return "Leyendo nota...";
         return "Presiona [E] para leer la nota";
     }
 }
