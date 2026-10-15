@@ -79,6 +79,10 @@ public class Act1Manager : MonoBehaviour
 
     public TextMeshProUGUI textoObjetivo;
 
+    public float fadeSpeed = 3f;
+
+    private Coroutine currentTransition;
+
     public float velocidadEscritura = 0.04f;
 
     public float velocidadFade = 3f;
@@ -687,19 +691,44 @@ public class Act1Manager : MonoBehaviour
 
 
 
-    public void ActualizarProgresoObjetivo()
-
+   public void ActualizarProgresoObjetivo()
+{
+    if (estadoActual == ActoState.Limpieza)
     {
+        // 1. Verificamos individualmente si cada tarea está completa
+        bool sillasCompletas = sillasAcomodadas >= totalSillas;
+        bool mesasCompletas = mesasLimpiadas >= totalMesasParaLimpiar;
+        bool barrerCompleto = zonasBarridas >= totalZonasParaBarrer;
 
-        if (estadoActual == ActoState.Limpieza)
+        // 2. Armamos el texto de cada ítem con su tachado correspondiente
+        string textoSillas = $"Sillas ({sillasAcomodadas}/{totalSillas})";
+        if (sillasCompletas) textoSillas = $"<s>{textoSillas}</s>";
 
+        string textoMesas = $"Mesas ({mesasLimpiadas}/{totalMesasParaLimpiar})";
+        if (mesasCompletas) textoMesas = $"<s>{textoMesas}</s>";
+
+        string textoBarrer = $"Barrer ({zonasBarridas}/{totalZonasParaBarrer})";
+        if (barrerCompleto) textoBarrer = $"<s>{textoBarrer}</s>";
+
+        // 3. Estructura limpia con el título destacado
+        string textoProgreso = $"<b>Prepara el bar:</b>\n" +
+                                "\n"+
+                               $"  • {textoSillas}\n" +
+                               $"  • {textoMesas}\n" +
+                               $"  • {textoBarrer}";
+
+        // 4. Actualizamos el componente de texto
+        if (textoObjetivo != null)
         {
-
-            ActualizarObjetivo($"Prepara el bar: Sillas ({sillasAcomodadas}/{totalSillas}), Mesas ({mesasLimpiadas}/{totalMesasParaLimpiar}), Barrer ({zonasBarridas}/{totalZonasParaBarrer})");
-
+            textoObjetivo.text = textoProgreso;
+            
+            // Mantenemos la opacidad al 100%
+            Color color = textoObjetivo.color;
+            color.a = 1f;
+            textoObjetivo.color = color;
         }
-
     }
+}
 
 
 
@@ -1810,13 +1839,62 @@ public class Act1Manager : MonoBehaviour
 
 
 
-    public void ActualizarObjetivo(string nuevoObjetivo)
+   public void ActualizarObjetivo(string nuevoObjetivo)
+{
+    if (textoObjetivo == null) return;
 
+    if (currentTransition != null)
     {
-
-        if (textoObjetivo != null) textoObjetivo.text = "- " + nuevoObjetivo;
-
+        StopCoroutine(currentTransition);
     }
+    currentTransition = StartCoroutine(TransitionRoutine(nuevoObjetivo));
+}
+
+private System.Collections.IEnumerator TransitionRoutine(string nuevoObjetivo)
+{
+    // 1. Tachar el texto anterior
+    if (!string.IsNullOrEmpty(textoObjetivo.text))
+    {
+        string textoOriginal = textoObjetivo.text;
+        textoObjetivo.text = "<s>" + textoOriginal + "</s>";
+        yield return new WaitForSeconds(0.6f); 
+    }
+
+    // 2. FADE OUT
+    float alpha = 1f;
+    while (alpha > 0f)
+    {
+        alpha -= Time.deltaTime * fadeSpeed;
+        SetTextAlpha(alpha);
+        yield return null;
+    }
+    SetTextAlpha(0f);
+
+    // 3. CAMBIAR EL TEXTO
+    textoObjetivo.text = "- " + nuevoObjetivo;
+
+    // 4. FADE IN
+    alpha = 0f;
+    while (alpha < 1f)
+    {
+        alpha += Time.deltaTime * fadeSpeed;
+        SetTextAlpha(alpha);
+        yield return null;
+    }
+    SetTextAlpha(1f);
+
+    currentTransition = null;
+}
+
+private void SetTextAlpha(float alpha)
+{
+    if (textoObjetivo != null)
+    {
+        Color color = textoObjetivo.color;
+        color.a = alpha;
+        textoObjetivo.color = color;
+    }
+}
 
 
 
