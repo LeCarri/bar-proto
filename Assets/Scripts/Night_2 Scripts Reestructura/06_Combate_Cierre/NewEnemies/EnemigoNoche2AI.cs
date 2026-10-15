@@ -3,9 +3,11 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// IA independiente para el enemigo nuevo de Noche 2.
-/// EnemyCore (en este mismo objeto) se encarga de la vida y de recibir la linterna.
-/// NO agregar PersecutionEnemy, SombraWalkTest u otra IA al mismo enemigo.
+/// Enemigo de Noche 2: aparece en Idle despues de Naniela,
+/// persigue a Lucas al cruzar el trigger, y causa dano por contacto
+/// mediante ContactoDanioNoche2 (componente separado, en un hijo trigger).
+/// No utiliza la animacion Attack.
+/// EnemyCore + SombraDesintegracion siguen gestionando dano y muerte.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemigoNoche2AI : MonoBehaviour
@@ -13,10 +15,9 @@ public class EnemigoNoche2AI : MonoBehaviour
     [Header("Referencias")]
     [SerializeField] private Animator animatorEnemigo;
 
-    [Header("Animator - nombres exactos de estados")]
+    [Header("Animator - nombres exactos")]
     [SerializeField] private string estadoIdle = "Idle";
     [SerializeField] private string estadoRun = "Run";
-    [SerializeField] private string estadoAttack = "Attack";
     [Min(0f)] [SerializeField] private float transicionAnimaciones = 0.08f;
 
     [Header("Persecucion")]
@@ -24,24 +25,29 @@ public class EnemigoNoche2AI : MonoBehaviour
     [Min(0.05f)] [SerializeField] private float intervaloActualizarDestino = 0.15f;
     [Min(0f)] [SerializeField] private float esperaAntesDePerseguir = 1f;
 
-    [Header("Ataque")]
-    [Min(0.1f)] [SerializeField] private float distanciaAtaque = 1.6f;
-    [Min(0f)] [SerializeField] private float tiempoHastaGolpe = 0.45f;
-    [Min(0.05f)] [SerializeField] private float duracionAnimacionAtaque = 1.0f;
-    [Min(0f)] [SerializeField] private float pausaEntreAtaques = 1.0f;
-    [Min(1)] [SerializeField] private int danioAlJugador = 1;
+    [Header("Levantarse antes de perseguir (solo enemigo del suelo)")]
+    [Tooltip("Activar solamente en el enemigo que comienza comiendo en el suelo.")]
+    [SerializeField] private bool reproducirGetUp = false;
+    [SerializeField] private string estadoGetUp = "GetUp";
+    [Tooltip("Duracion REAL del clip GetUp en segundos. El enemigo permanece inmovil hasta que termina.")]
+    [Min(0f)] [SerializeField] private float duracionGetUp = 1.5f;
+    [Tooltip("Evita que el enemigo vuelva a su animacion de comer cuando alcanza a Lucas.")]
+    [SerializeField] private bool mantenerRunAlLlegar = false;
+
+    [Tooltip("Acercarse a Lucas, sin detenerse a varios metros para atacar.")]
+    [Min(0f)] [SerializeField] private float distanciaFrenado = 0.1f;
 
     private NavMeshAgent agente;
     private Transform jugador;
     private Coroutine rutinaInicio;
-    private Coroutine rutinaAtaque;
     private bool preparadoEnIdle;
     private bool persiguiendo;
-    private bool atacando;
     private bool persecucionSolicitada;
     private float proximaActualizacionDestino;
-    private float siguienteAtaqueDisponible;
     private string animacionActual;
+
+    // El sensor de contacto solo hace dano durante la persecucion.
+    public bool EstaPersiguiendo => persiguiendo && isActiveAndEnabled;
 
     private void Awake()
     {
@@ -50,26 +56,13 @@ public class EnemigoNoche2AI : MonoBehaviour
             animatorEnemigo = GetComponentInChildren<Animator>(true);
     }
 
-    /// <summary>Al entrar a la noche, el enemigo aun no debe aparecer.</summary>
     public void PrepararAntesDelBano()
     {
-        DetenerRutinas();
-        preparadoEnIdle = false;
-        persiguiendo = false;
-        atacando = false;
-        persecucionSolicitada = false;
-        jugador = null;
-
-        if (agente != null && agente.enabled && agente.isOnNavMesh)
-        {
-            agente.isStopped = true;
-            agente.ResetPath();
-        }
-
+        DetenerIA();
         gameObject.SetActive(false);
     }
 
-    /// <summary>Se llama al terminar Naniela (tambien desde el debug).</summary>
+    // Llamado por Act2ManagerDemo al terminar el evento de Naniela o desde el debug.
     public void AparecerEnIdle()
     {
         if (!gameObject.activeSelf)
@@ -80,24 +73,19 @@ public class EnemigoNoche2AI : MonoBehaviour
         if (animatorEnemigo == null)
             animatorEnemigo = GetComponentInChildren<Animator>(true);
 
-        DetenerRutinas();
+        DetenerIA();
         preparadoEnIdle = true;
-        persiguiendo = false;
-        atacando = false;
-        persecucionSolicitada = false;
-        jugador = null;
-        siguienteAtaqueDisponible = 0f;
-
         agente.speed = velocidadCarrera;
-        agente.stoppingDistance = distanciaAtaque * 0.85f;
-        if (agente.isOnNavMesh)
+        agente.stoppingDistance = distanciaFrenado;
+
+        if (agente.enabled && agente.isOnNavMesh)
         {
             agente.isStopped = true;
             agente.ResetPath();
         }
         else
         {
-            Debug.LogWarning("[EnemigoNoche2] El NavMeshAgent NO esta sobre el NavMesh. Verifica el Bake y la posicion del enemigo.", this);
+            Debug.LogWarning("[EnemigoNoche2] Agente fuera del NavMesh al aparecer.", this);
         }
 
         if (animatorEnemigo != null)
@@ -106,10 +94,10 @@ public class EnemigoNoche2AI : MonoBehaviour
             animatorEnemigo.Play(estadoIdle, 0, 0f);
             animacionActual = estadoIdle;
         }
-        Debug.Log("[EnemigoNoche2] Aparecio en Idle esperando al jugador.", this);
+        Debug.Log("[EnemigoNoche2] Aparecio en Idle esperando el trigger.", this);
     }
 
-    /// <summary>Se llama desde el trigger; arranca la persecucion despues del retraso.</summary>
+    // Llamado por TriggerPersecucionNoche2, sin modificar ese script.
     public void ActivarPersecucion(Transform objetivo)
     {
         if (!preparadoEnIdle || persecucionSolicitada || objetivo == null)
@@ -122,26 +110,73 @@ public class EnemigoNoche2AI : MonoBehaviour
 
     private IEnumerator EsperarYPerseguir()
     {
-        yield return new WaitForSeconds(esperaAntesDePerseguir);
+        if (esperaAntesDePerseguir > 0f)
+            yield return new WaitForSeconds(esperaAntesDePerseguir);
+
+        // El segundo enemigo se incorpora del suelo ANTES de correr.
+        // El agente sigue detenido: solo se anima la malla, sin desplazar la raiz.
+        if (reproducirGetUp && animatorEnemigo != null)
+        {
+            int hashGetUp = Animator.StringToHash(estadoGetUp);
+            int hashGetUpCompleto = Animator.StringToHash("Base Layer." + estadoGetUp);
+            if (!animatorEnemigo.HasState(0, hashGetUp) &&
+                !animatorEnemigo.HasState(0, hashGetUpCompleto))
+            {
+                Debug.LogError("[EnemigoNoche2] No existe el estado GetUp: " + estadoGetUp, this);
+                rutinaInicio = null;
+                persecucionSolicitada = false;
+                yield break;
+            }
+
+            
+                animatorEnemigo.Play(estadoGetUp, 0, 0f);
+                animacionActual = estadoGetUp;
+
+                Debug.Log("[EnemigoNoche2] Comenzo a levantarse.", this);
+
+                // Esperar a que Unity actualice el Animator.
+                yield return null;
+
+                // Esperar hasta completar la animación GetUp.
+                while (
+                    animatorEnemigo.GetCurrentAnimatorStateInfo(0).IsName(estadoGetUp) &&
+                    animatorEnemigo.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f
+                )
+                {
+                    yield return null;
+                }
+
+                Debug.Log("[EnemigoNoche2] Termino de levantarse.", this);
+
+        }
+
         rutinaInicio = null;
 
-        if (!preparadoEnIdle || jugador == null || agente == null || !agente.isOnNavMesh)
+        if (!preparadoEnIdle || jugador == null || agente == null ||
+            !agente.enabled || !agente.isOnNavMesh)
         {
-            Debug.LogWarning("[EnemigoNoche2] No pudo comenzar la persecucion: revisa jugador o NavMeshAgent.", this);
+            Debug.LogWarning("[EnemigoNoche2] No pudo iniciar la persecucion: revisa objetivo y NavMeshAgent.", this);
             yield break;
         }
 
         persiguiendo = true;
-        agente.isStopped = false;
         agente.speed = velocidadCarrera;
+        agente.stoppingDistance = distanciaFrenado;
+        agente.isStopped = false;
         proximaActualizacionDestino = 0f;
         ReproducirEstado(estadoRun);
-        Debug.Log("[EnemigoNoche2] Comenzo a perseguir a Lucas.", this);
+        Debug.Log("[EnemigoNoche2] Comenzo a perseguir a Lucas (dano por contacto).", this);
+        // Reproducir voces cuando comienza la persecución
+        if (Act2ManagerDemo.Instance != null)
+        {
+            Act2ManagerDemo.Instance.IniciarEnemyVoices();
+        }
     }
 
     private void Update()
     {
-        if (!persiguiendo || atacando || jugador == null || agente == null || !agente.isOnNavMesh)
+        if (!persiguiendo || jugador == null || agente == null ||
+            !agente.enabled || !agente.isOnNavMesh)
             return;
 
         if (Time.time >= proximaActualizacionDestino)
@@ -150,80 +185,28 @@ public class EnemigoNoche2AI : MonoBehaviour
             agente.SetDestination(jugador.position);
         }
 
-        // Usar la distancia por el camino NavMesh, no solamente la distancia recta:
-        // evita atacar a Lucas a traves de una pared o de un mueble.
-        bool cercaPorCamino = !agente.pathPending &&
-            agente.pathStatus == NavMeshPathStatus.PathComplete &&
-            agente.remainingDistance <= distanciaAtaque;
-
-        if (cercaPorCamino)
-        {
-            if (!agente.isStopped)
-                agente.isStopped = true;
-
-            if (Time.time >= siguienteAtaqueDisponible)
-            {
-                rutinaAtaque = StartCoroutine(Atacar());
-            }
-            else
-            {
-                ReproducirEstado(estadoIdle);
-            }
-        }
-        else
-        {
-            if (agente.isStopped)
-                agente.isStopped = false;
-            ReproducirEstado(estadoRun);
-        }
+        // Si el agente llego hasta el jugador, puede quedarse quieto.
+        // El sensor hijo sigue detectando contacto y aplicando dano.
+        bool llego = !agente.pathPending &&
+                     agente.hasPath &&
+                     agente.remainingDistance <= distanciaFrenado + 0.15f;
+        // El enemigo del suelo no debe volver a echarse a comer al alcanzar a Lucas.
+        ReproducirEstado(llego && !mantenerRunAlLlegar ? estadoIdle : estadoRun);
     }
 
-    private IEnumerator Atacar()
-    {
-        atacando = true;
-        agente.isStopped = true;
-        agente.velocity = Vector3.zero;
-
-        if (animatorEnemigo != null)
-        {
-            animatorEnemigo.Play(estadoAttack, 0, 0f);
-            animacionActual = estadoAttack;
-        }
-
-        yield return new WaitForSeconds(tiempoHastaGolpe);
-
-        // Volver a verificar distancia: Lucas pudo escapar durante la animacion.
-        if (jugador != null && agente != null && agente.isOnNavMesh)
-        {
-            // La proximidad directa y la ruta completa son necesarias para golpear.
-            float distanciaReal = Vector3.Distance(transform.position, jugador.position);
-            bool rutaValida = agente.pathStatus == NavMeshPathStatus.PathComplete &&
-                               agente.remainingDistance <= distanciaAtaque + 0.4f;
-            if (distanciaReal <= distanciaAtaque + 0.4f && rutaValida)
-            {
-                if (PlayerHealth.Instance != null)
-                    PlayerHealth.Instance.RecibirDanio(danioAlJugador);
-                else
-                    Debug.LogWarning("[EnemigoNoche2] No se encontro PlayerHealth.Instance.", this);
-            }
-        }
-
-        yield return new WaitForSeconds(Mathf.Max(0f, duracionAnimacionAtaque - tiempoHastaGolpe));
-        siguienteAtaqueDisponible = Time.time + pausaEntreAtaques;
-        atacando = false;
-        rutinaAtaque = null;
-        if (persiguiendo)
-            ReproducirEstado(estadoRun);
-    }
-
-    /// <summary>Opcional: conectar a EnemyCore.alMorir para frenar la IA antes de destruirlo.</summary>
     public void DetenerIA()
     {
-        DetenerRutinas();
+        if (rutinaInicio != null)
+        {
+            StopCoroutine(rutinaInicio);
+            rutinaInicio = null;
+        }
+
         preparadoEnIdle = false;
         persiguiendo = false;
-        atacando = false;
         persecucionSolicitada = false;
+        jugador = null;
+
         if (agente != null && agente.enabled && agente.isOnNavMesh)
         {
             agente.isStopped = true;
@@ -239,22 +222,10 @@ public class EnemigoNoche2AI : MonoBehaviour
 
     private void ReproducirEstado(string nombreEstado)
     {
-        if (animatorEnemigo == null || animacionActual == nombreEstado) return;
+        if (animatorEnemigo == null || animacionActual == nombreEstado)
+            return;
+
         animatorEnemigo.CrossFadeInFixedTime(nombreEstado, transicionAnimaciones);
         animacionActual = nombreEstado;
-    }
-
-    private void DetenerRutinas()
-    {
-        if (rutinaInicio != null)
-        {
-            StopCoroutine(rutinaInicio);
-            rutinaInicio = null;
-        }
-        if (rutinaAtaque != null)
-        {
-            StopCoroutine(rutinaAtaque);
-            rutinaAtaque = null;
-        }
     }
 }

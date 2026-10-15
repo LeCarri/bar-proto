@@ -93,11 +93,18 @@ public class Act2ManagerDemo : MonoBehaviour
     public AudioSource baseEnemy1;
     [Tooltip("Empieza cuando Pilar llega al último punto de su recorrido.")]
     public AudioSource baseEnemy2;
+
+    [Header("Voces de los enemigos")]
+    public AudioSource enemyVoices;
     [Range(0f, 1f)] public float volumenBaseEnemy1 = 0.8f;
     [Range(0f, 1f)] public float volumenBaseEnemy2 = 0.8f;
     [Min(0f)] public float duracionTransicionBases = 0.5f;
 
     private bool faseCombateIniciada;
+    public bool PuedeActivarEventosPostBano =>
+    llaveTenida &&
+    faseCombateIniciada &&
+    estadoActual == Act2State.Psicosis;
     private bool segundaBaseIniciada;
     private Coroutine transicionBasesActiva;
     [Header("Objetivos")]
@@ -109,6 +116,13 @@ public class Act2ManagerDemo : MonoBehaviour
     [Header("Nuevo enemigo - Noche 2")]
     [Tooltip("Enemigo nuevo con NavMeshAgent. Se muestra en Idle al terminar Naniela y persigue solo al cruzar su trigger.")]
     public EnemigoNoche2AI enemigoNoche2;
+
+    [Header("Enemigos adicionales - Noche 2")]
+    [SerializeField] private EnemigoNoche2AI[] enemigosAdicionales;
+
+    [Header("Segundo enemigo - Suelo")]
+    public EnemigoNoche2AI enemigoSueloNoche2;
+
 
     [Header("DEBUG - Empezar después del jumpscare del baño")]
     [Tooltip("Al pulsar Play salta el inicio, baño y jumpscare, y arranca el combate.")]
@@ -123,21 +137,44 @@ public class Act2ManagerDemo : MonoBehaviour
     public float velocidadFadeObjetivo = 3f;
     private Coroutine corrutinaObjetivoTransicion;
     void Awake()
-{
-    if (Instance != null && Instance != this)
     {
-        Destroy(gameObject);
-        return;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        if (Object.FindAnyObjectByType<Act1Manager>() != null)
+            Debug.LogError("[Act2Manager] ¡ACT1MANAGER DETECTADO EN LA ESCENA! Eliminalo del hierarchy.");
     }
-    Instance = this;
-    if (Object.FindAnyObjectByType<Act1Manager>() != null)
-        Debug.LogError("[Act2Manager] ¡ACT1MANAGER DETECTADO EN LA ESCENA! Eliminalo del hierarchy.");
-}
     void Start()
     {
         // Si el texto de subtítulos no está asignado, lo crea automáticamente
         if (textoSubtitulos == null) textoSubtitulos = CrearTextoEmergencia();
         if (textoSubtitulos != null) textoSubtitulos.text = "";
+
+        DetenerBasesCombate();
+
+        if (eventoPilarPasillo != null)
+            eventoPilarPasillo.DetenerLlanto3D();
+
+        if (enemigoNoche2 != null)
+            enemigoNoche2.DesactivarEnemigo();
+
+        if (enemigoSueloNoche2 != null)
+            enemigoSueloNoche2.DesactivarEnemigo();
+
+        // NUEVO: Desactivar enemigos 3 y 4
+        if (enemigosAdicionales != null)
+        {
+            foreach (EnemigoNoche2AI enemigo in enemigosAdicionales)
+            {
+                if (enemigo != null)
+                    enemigo.DesactivarEnemigo();
+            }
+        }
+
+        DesactivarEnemigosAnteriores();
 
         // Anular los enemigos viejos tanto en una partida normal como en el DEBUG.
         DesactivarEnemigosAnteriores();
@@ -148,6 +185,13 @@ public class Act2ManagerDemo : MonoBehaviour
         // Mantener a Pilar oculta hasta que termine Naniela y se cruce el trigger.
         if (eventoPilarPasillo != null) eventoPilarPasillo.PrepararEvento();
         if (enemigoNoche2 != null) enemigoNoche2.PrepararAntesDelBano();
+        if (enemigoSueloNoche2 != null) enemigoSueloNoche2.PrepararAntesDelBano();
+        if (enemigosAdicionales != null)
+        {
+            foreach (EnemigoNoche2AI enemigo in enemigosAdicionales)
+            { if (enemigo != null) enemigo.PrepararAntesDelBano(); }
+        }
+
 
         if (debugIniciarPostJumpscare)
         {
@@ -166,32 +210,32 @@ public class Act2ManagerDemo : MonoBehaviour
         }
         CambiarIluminacion("Normal");
         if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(false);
-        if (llaveObjeto != null)            llaveObjeto.gameObject.SetActive(false);
+        if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(false);
         // FiguraNino antigua: no se usa nunca más (se apagó arriba).
-        if (notaPuerta != null)             notaPuerta.gameObject.SetActive(false);
+        if (notaPuerta != null) notaPuerta.gameObject.SetActive(false);
         StartCoroutine(SecuenciaInicio());
         ActualizarObjetivo("Preparate para el servicio...");
     }
     public void IniciarSecuenciaClienteCorrupto(ClienteCorrupto cliente)
-{
-    if (cliente == null) return;
-    // 1. Activar el efecto de shake en el componente de UI si existe
-    TMP_TextWobble wobble = textoSubtitulos.GetComponent<TMP_TextWobble>();
-    if (wobble != null)
     {
-        wobble.enabled = true;
-        wobble.applyToAllText = true; // Activa el temblor en todo el diálogo del cliente
+        if (cliente == null) return;
+        // 1. Activar el efecto de shake en el componente de UI si existe
+        TMP_TextWobble wobble = textoSubtitulos.GetComponent<TMP_TextWobble>();
+        if (wobble != null)
+        {
+            wobble.enabled = true;
+            wobble.applyToAllText = true; // Activa el temblor en todo el diálogo del cliente
+        }
+        // 2. Reproducir voz y mostrar diálogo
+        cliente.ReproducirVozDistorsionada();
+        MostrarDialogo(cliente.nombreCliente + ": " + cliente.dialogoPedido);
+        // 3. Girar la cabeza
+        Transform jugador = GameObject.FindWithTag("Player")?.transform;
+        if (jugador != null)
+        {
+            StartCoroutine(cliente.GirarHaciaJugador(jugador, 1.0f));
+        }
     }
-    // 2. Reproducir voz y mostrar diálogo
-    cliente.ReproducirVozDistorsionada();
-    MostrarDialogo(cliente.nombreCliente + ": " + cliente.dialogoPedido);
-    // 3. Girar la cabeza
-    Transform jugador = GameObject.FindWithTag("Player")?.transform;
-    if (jugador != null)
-    {
-        StartCoroutine(cliente.GirarHaciaJugador(jugador, 1.0f));
-    }
-}
     public void ActualizarObjetivo(string nuevoObjetivo)
     {
         if (textoObjetivo == null) return;
@@ -254,8 +298,8 @@ public class Act2ManagerDemo : MonoBehaviour
             textoObjetivo.color = color;
         }
     }
-        // Crea un TMP de emergencia en pantalla si no hay uno asignado
-        TextMeshProUGUI CrearTextoEmergencia()
+    // Crea un TMP de emergencia en pantalla si no hay uno asignado
+    TextMeshProUGUI CrearTextoEmergencia()
     {
         var canvas = Object.FindAnyObjectByType<Canvas>();
         if (canvas == null)
@@ -363,7 +407,7 @@ public class Act2ManagerDemo : MonoBehaviour
         if (pasilloEfecto != null) pasilloEfecto.DesactivarEfecto();
         // Cortar ambiente del bar
         if (ambientBar != null) ambientBar.Stop();
-        if (musicBar != null)   musicBar.Stop();
+        if (musicBar != null) musicBar.Stop();
         // Luces de servicio parpadean cada 3 segundos
         parpadeandoLuces = true;
         StartCoroutine(ParpadeoLucesServicio());
@@ -384,34 +428,34 @@ public class Act2ManagerDemo : MonoBehaviour
         }
     }
     IEnumerator SecuenciaDespuesZapatos()
-{
-    yield return new WaitForSeconds(3f);
-    estadoActual = Act2State.Sotano;
-    // Activar golpes rítmicos en la puerta
-    if (sonidoGolpesSotano != null) sonidoGolpesSotano.Play();
-    if (puertaSotanoL != null)       puertaSotanoL.ActivarGolpes();
-    if (notaPuerta != null)         notaPuerta.gameObject.SetActive(true);
-    // --- VOZ DE PILAR TRAS LA PUERTA ---
-    yield return new WaitForSeconds(0.6f); // Breve pausa tras el primer golpe
-    if (sonidoVozPilar != null)
     {
-        sonidoVozPilar.Play();
+        yield return new WaitForSeconds(3f);
+        estadoActual = Act2State.Sotano;
+        // Activar golpes rítmicos en la puerta
+        if (sonidoGolpesSotano != null) sonidoGolpesSotano.Play();
+        if (puertaSotanoL != null) puertaSotanoL.ActivarGolpes();
+        if (notaPuerta != null) notaPuerta.gameObject.SetActive(true);
+        // --- VOZ DE PILAR TRAS LA PUERTA ---
+        yield return new WaitForSeconds(0.6f); // Breve pausa tras el primer golpe
+        if (sonidoVozPilar != null)
+        {
+            sonidoVozPilar.Play();
+        }
+        yield return new WaitForSeconds(3f);
+        ActualizarObjetivo("Investiga los ruidos del sotano");
     }
-    yield return new WaitForSeconds(3f);
-    ActualizarObjetivo("Investiga los ruidos del sotano");
-}
     // =========================================================
     // ESTADO 4: SÓTANO — La nota da la pista del baño
     // =========================================================
     public void NotaLeida()
-{
-    if (sonidoGolpesSotano != null && sonidoGolpesSotano.isPlaying) sonidoGolpesSotano.Stop();
-    if (sonidoVozPilar != null && sonidoVozPilar.isPlaying)         sonidoVozPilar.Stop();
-    MostrarDialogo("Lucas: ¿La llave? Creo que se me cayó mientras limpiaba el baño.");
-    estadoActual = Act2State.Bano;
-    ActualizarObjetivo("Ir a buscar la llave del sotano al baño");
-    if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(true);
-}
+    {
+        if (sonidoGolpesSotano != null && sonidoGolpesSotano.isPlaying) sonidoGolpesSotano.Stop();
+        if (sonidoVozPilar != null && sonidoVozPilar.isPlaying) sonidoVozPilar.Stop();
+        MostrarDialogo("Lucas: ¿La llave? Creo que se me cayó mientras limpiaba el baño.");
+        estadoActual = Act2State.Bano;
+        ActualizarObjetivo("Ir a buscar la llave del sotano al baño");
+        if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(true);
+    }
     // =========================================================
     // ESTADO 5: BAÑO — La llave y El Vigilante en el espejo
     // =========================================================
@@ -502,6 +546,18 @@ public class Act2ManagerDemo : MonoBehaviour
             Debug.LogWarning("[Act2Manager] Falta asignar Enemigo Noche 2.");
 
         Debug.Log("[Act2Manager] Terminó Naniela: BaseEnemy1, Pilar habilitada y nuevo enemigo en Idle.");
+
+        if (enemigosAdicionales != null)
+        {
+            foreach (EnemigoNoche2AI enemigo in enemigosAdicionales)
+            {
+                if (enemigo != null)
+                    enemigo.AparecerEnIdle();
+            }
+        }
+
+        if (enemigoSueloNoche2 != null)
+            enemigoSueloNoche2.AparecerEnIdle();
     }
 
     /// <summary>
@@ -569,7 +625,6 @@ public class Act2ManagerDemo : MonoBehaviour
         if (baseAnterior != null) baseAnterior.Stop();
         transicionBasesActiva = null;
     }
-
     private void DetenerBasesCombate()
     {
         if (transicionBasesActiva != null)
@@ -577,10 +632,27 @@ public class Act2ManagerDemo : MonoBehaviour
             StopCoroutine(transicionBasesActiva);
             transicionBasesActiva = null;
         }
+
         if (baseEnemy1 != null) baseEnemy1.Stop();
         if (baseEnemy2 != null) baseEnemy2.Stop();
         if (musicaCombate != null) musicaCombate.Stop();
+
+        // Detener voces al finalizar el combate.
+        if (enemyVoices != null)
+            enemyVoices.Stop();
     }
+
+    public void IniciarEnemyVoices()
+    {
+        if (enemyVoices != null && !enemyVoices.isPlaying)
+        {
+            enemyVoices.loop = true;
+            enemyVoices.Play();
+
+            Debug.Log("[Act2Manager] Enemy Voices activado: comenzó la persecución.");
+        }
+    }
+
 
     private void DesactivarEnemigosAnteriores()
     {
@@ -594,132 +666,132 @@ public class Act2ManagerDemo : MonoBehaviour
         if (grupoEnemigosAnteriores != null) grupoEnemigosAnteriores.SetActive(false);
     }
 
-   [ContextMenu("▶ TEST: POST JUMPSCARE BAÑO (combate + Pilar)")]
-   private void IniciarDebugPostJumpscare()
-   {
-       if (!Application.isPlaying)
-       {
-           Debug.LogWarning("[Act2Manager] El debug se ejecuta durante Play, no en modo Edicion.");
-           return;
-       }
+    [ContextMenu("▶ TEST: POST JUMPSCARE BAÑO (combate + Pilar)")]
+    private void IniciarDebugPostJumpscare()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[Act2Manager] El debug se ejecuta durante Play, no en modo Edicion.");
+            return;
+        }
 
-       // Prepara el estado posterior al susto sin iniciar la secuencia de la noche.
-       StopAllCoroutines();
-       estadoActual = Act2State.Psicosis;
-       llaveTenida = true;
-       sombrasDerrotadas = 0;
-       faseCombateIniciada = false;
-       segundaBaseIniciada = false;
-       parpadeandoLuces = false;
-       parpadeandoLuces2 = false;
+        // Prepara el estado posterior al susto sin iniciar la secuencia de la noche.
+        StopAllCoroutines();
+        estadoActual = Act2State.Psicosis;
+        llaveTenida = true;
+        sombrasDerrotadas = 0;
+        faseCombateIniciada = false;
+        segundaBaseIniciada = false;
+        parpadeandoLuces = false;
+        parpadeandoLuces2 = false;
 
-       if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(false);
-       if (notaPuerta != null) notaPuerta.gameObject.SetActive(false);
-       if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(false);
-       if (figuraNino != null) figuraNino.gameObject.SetActive(false);
-       if (vigilanteMirror != null) vigilanteMirror.gameObject.SetActive(false);
-       if (pasilloEfecto != null) pasilloEfecto.DesactivarEfecto();
+        if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(false);
+        if (notaPuerta != null) notaPuerta.gameObject.SetActive(false);
+        if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(false);
+        if (figuraNino != null) figuraNino.gameObject.SetActive(false);
+        if (vigilanteMirror != null) vigilanteMirror.gameObject.SetActive(false);
+        if (pasilloEfecto != null) pasilloEfecto.DesactivarEfecto();
 
-       if (ambientBar != null) ambientBar.Stop();
-       if (musicBar != null) musicBar.Stop();
-       if (audioBasement != null) audioBasement.Stop();
-       if (musicaSuspenso != null) musicaSuspenso.Stop();
-       DetenerBasesCombate();
-       DesactivarEnemigosAnteriores();
+        if (ambientBar != null) ambientBar.Stop();
+        if (musicBar != null) musicBar.Stop();
+        if (audioBasement != null) audioBasement.Stop();
+        if (musicaSuspenso != null) musicaSuspenso.Stop();
+        DetenerBasesCombate();
+        DesactivarEnemigosAnteriores();
 
-       // NUEVO: prepara los muebles, cuadros y manchas del estado final
-       // de la noche sin reproducir la secuencia de parpadeos ni su música.
-       if (parpadeoBarCambio != null)
-           parpadeoBarCambio.AplicarTodosLosCambiosSinParpadeo();
-       else
-           Debug.LogWarning("[Act2Manager] DEBUG: falta asignar ParpadeoBarCambio; el bar no se desordenará.");
+        // NUEVO: prepara los muebles, cuadros y manchas del estado final
+        // de la noche sin reproducir la secuencia de parpadeos ni su música.
+        if (parpadeoBarCambio != null)
+            parpadeoBarCambio.AplicarTodosLosCambiosSinParpadeo();
+        else
+            Debug.LogWarning("[Act2Manager] DEBUG: falta asignar ParpadeoBarCambio; el bar no se desordenará.");
 
-       // Si un cambio del escenario activó accidentalmente un enemigo antiguo,
-       // garantizamos que siga apagado durante esta nueva fase.
-       DesactivarEnemigosAnteriores();
+        // Si un cambio del escenario activó accidentalmente un enemigo antiguo,
+        // garantizamos que siga apagado durante esta nueva fase.
+        DesactivarEnemigosAnteriores();
 
-       if (sonidoGolpesSotano != null) sonidoGolpesSotano.Stop();
-       if (sonidoVozPilar != null) sonidoVozPilar.Stop();
+        if (sonidoGolpesSotano != null) sonidoGolpesSotano.Stop();
+        if (sonidoVozPilar != null) sonidoVozPilar.Stop();
 
-       if (fadeCanvasGroup != null)
-       {
-           fadeCanvasGroup.gameObject.SetActive(true);
-           fadeCanvasGroup.alpha = 0f;
-           fadeCanvasGroup.blocksRaycasts = false;
-           fadeCanvasGroup.interactable = false;
-       }
-       if (textoSubtitulos != null) textoSubtitulos.text = "";
-       if (canvasGroupDialogo != null)
-       {
-           canvasGroupDialogo.alpha = 0f;
-           canvasGroupDialogo.blocksRaycasts = false;
-       }
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.gameObject.SetActive(true);
+            fadeCanvasGroup.alpha = 0f;
+            fadeCanvasGroup.blocksRaycasts = false;
+            fadeCanvasGroup.interactable = false;
+        }
+        if (textoSubtitulos != null) textoSubtitulos.text = "";
+        if (canvasGroupDialogo != null)
+        {
+            canvasGroupDialogo.alpha = 0f;
+            canvasGroupDialogo.blocksRaycasts = false;
+        }
 
-       if (eventoPilarPasillo != null) eventoPilarPasillo.PrepararEvento();
+        if (eventoPilarPasillo != null) eventoPilarPasillo.PrepararEvento();
 
-       CambiarIluminacion("Psicosis");
-       if (efectoPsicosis != null) efectoPsicosis.ActivarPsicosis();
-       Paranoia(40f);
-       ActualizarObjetivo("SOBREVIVE Y LLEGA AL SOTANO");
+        CambiarIluminacion("Psicosis");
+        if (efectoPsicosis != null) efectoPsicosis.ActivarPsicosis();
+        Paranoia(40f);
+        ActualizarObjetivo("SOBREVIVE Y LLEGA AL SOTANO");
 
-       // Se hace DESPUES del Start de los otros componentes para evitar
-       // que una inicializacion posterior vuelva a mover a Lucas.
-       StartCoroutine(TeletransportarJugadorDebugYEmpezarCombate());
+        // Se hace DESPUES del Start de los otros componentes para evitar
+        // que una inicializacion posterior vuelva a mover a Lucas.
+        StartCoroutine(TeletransportarJugadorDebugYEmpezarCombate());
 
-       parpadeandoLuces2 = true;
-       StartCoroutine(ParpadeoLucesPsicosis());
-       Debug.Log("[Act2Manager] DEBUG post-jumpscare activado. Preparando teleport de Lucas...");
-   }
+        parpadeandoLuces2 = true;
+        StartCoroutine(ParpadeoLucesPsicosis());
+        Debug.Log("[Act2Manager] DEBUG post-jumpscare activado. Preparando teleport de Lucas...");
+    }
 
-   private IEnumerator TeletransportarJugadorDebugYEmpezarCombate()
-   {
-       // Dejar que PlayerController y otros Start de la escena se ejecuten.
-       yield return null;
+    private IEnumerator TeletransportarJugadorDebugYEmpezarCombate()
+    {
+        // Dejar que PlayerController y otros Start de la escena se ejecuten.
+        yield return null;
 
-       PlayerController jugador = jugadorDebug != null
-           ? jugadorDebug
-           : FindFirstObjectByType<PlayerController>();
+        PlayerController jugador = jugadorDebug != null
+            ? jugadorDebug
+            : FindFirstObjectByType<PlayerController>();
 
-       if (jugador == null)
-       {
-           Debug.LogError("[Act2Manager] DEBUG: no encontre PlayerController. Asigna Jugador Debug con el objeto principal Lucas.");
-       }
-       else if (puntoDebugPostJumpscare == null)
-       {
-           Debug.LogError("[Act2Manager] DEBUG: falta Punto Debug Post Jumpscare en el Inspector.");
-       }
-       else
-       {
-           // El CharacterController debe estar desactivado al modificar el Transform.
-           // Referenciar PlayerController evita mover por error una camara hija
-           // que tambien tenga el tag Player.
-           bool estabaBloqueado = jugador.controlesBloqueados;
-           jugador.controlesBloqueados = true;
-           CharacterController cc = jugador.GetComponent<CharacterController>();
-           bool ccEstabaActivo = cc != null && cc.enabled;
-           if (ccEstabaActivo) cc.enabled = false;
+        if (jugador == null)
+        {
+            Debug.LogError("[Act2Manager] DEBUG: no encontre PlayerController. Asigna Jugador Debug con el objeto principal Lucas.");
+        }
+        else if (puntoDebugPostJumpscare == null)
+        {
+            Debug.LogError("[Act2Manager] DEBUG: falta Punto Debug Post Jumpscare en el Inspector.");
+        }
+        else
+        {
+            // El CharacterController debe estar desactivado al modificar el Transform.
+            // Referenciar PlayerController evita mover por error una camara hija
+            // que tambien tenga el tag Player.
+            bool estabaBloqueado = jugador.controlesBloqueados;
+            jugador.controlesBloqueados = true;
+            CharacterController cc = jugador.GetComponent<CharacterController>();
+            bool ccEstabaActivo = cc != null && cc.enabled;
+            if (ccEstabaActivo) cc.enabled = false;
 
-           Vector3 destino = puntoDebugPostJumpscare.position;
-           Quaternion rotacionDestino = puntoDebugPostJumpscare.rotation;
-           jugador.transform.SetPositionAndRotation(destino, rotacionDestino);
+            Vector3 destino = puntoDebugPostJumpscare.position;
+            Quaternion rotacionDestino = puntoDebugPostJumpscare.rotation;
+            jugador.transform.SetPositionAndRotation(destino, rotacionDestino);
 
-           if (ccEstabaActivo) cc.enabled = true;
-           Physics.SyncTransforms();
-           Debug.Log($"[Act2Manager] TELEPORT Lucas a {destino} | posicion actual: {jugador.transform.position}");
+            if (ccEstabaActivo) cc.enabled = true;
+            Physics.SyncTransforms();
+            Debug.Log($"[Act2Manager] TELEPORT Lucas a {destino} | posicion actual: {jugador.transform.position}");
 
-           // Comprobamos despues de un frame si algun otro sistema lo mueve.
-           yield return null;
-           float distancia = Vector3.Distance(jugador.transform.position, destino);
-           if (distancia > 0.75f)
-           {
-               Debug.LogWarning($"[Act2Manager] Lucas cambio de lugar tras el teleport ({distancia:F2} m). Revisar scripts adicionales de spawn, guardado o respawn.");
-           }
-           jugador.controlesBloqueados = estabaBloqueado;
-       }
+            // Comprobamos despues de un frame si algun otro sistema lo mueve.
+            yield return null;
+            float distancia = Vector3.Distance(jugador.transform.position, destino);
+            if (distancia > 0.75f)
+            {
+                Debug.LogWarning($"[Act2Manager] Lucas cambio de lugar tras el teleport ({distancia:F2} m). Revisar scripts adicionales de spawn, guardado o respawn.");
+            }
+            jugador.controlesBloqueados = estabaBloqueado;
+        }
 
-       // DEBUG: simulamos que el jumpscare de Naniela ya terminó.
-       NotificarFinJumpscareBano();
-   }
+        // DEBUG: simulamos que el jumpscare de Naniela ya terminó.
+        NotificarFinJumpscareBano();
+    }
 
     public void SombraDerrotada()
     {
@@ -747,12 +819,13 @@ public class Act2ManagerDemo : MonoBehaviour
         yield return new WaitForSeconds(3f);
         // Claridad repentina — todo para
         if (sonidoEstatica != null) sonidoEstatica.Stop();
-        if (ambientBar != null)     ambientBar.Stop();
-        if (musicBar != null)       musicBar.Stop();
+        if (ambientBar != null) ambientBar.Stop();
+        if (musicBar != null) musicBar.Stop();
         if (audioBasement != null) audioBasement.Stop();
         DetenerBasesCombate();
         if (eventoPilarPasillo != null) eventoPilarPasillo.DetenerLlanto3D();
         if (enemigoNoche2 != null) enemigoNoche2.DesactivarEnemigo();
+        if (enemigoSueloNoche2 != null) enemigoSueloNoche2.DesactivarEnemigo();
         DesactivarEnemigosAnteriores();
         if (efectoPsicosis != null) efectoPsicosis.DesactivarPsicosis();
         CambiarIluminacion("Normal");
@@ -792,97 +865,97 @@ public class Act2ManagerDemo : MonoBehaviour
         SceneManager.LoadScene("Night_3 Scene");
     }
     // =========================================================
-// SERVICIO DE CERVEZA OPCIONAL
-// =========================================================
-public void ColocarVasoEnCanilla()
-{
-    // Solo funciona durante Servicio
-    if (estadoActual != Act2State.Servicio)
+    // SERVICIO DE CERVEZA OPCIONAL
+    // =========================================================
+    public void ColocarVasoEnCanilla()
     {
-        MostrarDialogo("Lucas: Ahora no es momento de preparar bebidas.");
-        return;
-    }
-    if (ControladorMano3D.Instance == null)
-        return;
-    // Tiene que llevar específicamente el vaso vacío
-    if (ControladorMano3D.Instance.ObtenerItemActual() != itemVasoVacio)
-    {
-        MostrarDialogo("Lucas: Necesito un vaso primero.");
-        return;
-    }
-    // Sacamos el vaso vacío de la mano
-    ControladorMano3D.Instance.VaciarMano();
-    // Preparamos el líquido vacío antes de mostrar el vaso
-    if (servicioCervezaVisual != null)
-    {
-        servicioCervezaVisual.PrepararVasoVacio();
-    }
-    // Aparece el vaso debajo de la canilla
-    if (vasoServicio != null)
-    {
-        vasoServicio.SetActive(true);
-    }
-    vasoEnCanilla = true;
-    // Empieza a servir automáticamente
-    ServirCerveza();
-}
-public void ServirCerveza()
-{
-    if (!vasoEnCanilla)
-        return;
-    if (sirviendoCerveza)
-        return;
-    if (servicioCervezaVisual == null)
-    {
-        Debug.LogError(
-            "[Act2Manager] Falta asignar ServicioCervezaVisual."
-        );
-        return;
-    }
-    sirviendoCerveza = true;
-    servicioCervezaVisual.Servir(() =>
-    {
-        sirviendoCerveza = false;
-        vasoEnCanilla = false;
-        // Sacamos el vaso visual de debajo de la canilla
+        // Solo funciona durante Servicio
+        if (estadoActual != Act2State.Servicio)
+        {
+            MostrarDialogo("Lucas: Ahora no es momento de preparar bebidas.");
+            return;
+        }
+        if (ControladorMano3D.Instance == null)
+            return;
+        // Tiene que llevar específicamente el vaso vacío
+        if (ControladorMano3D.Instance.ObtenerItemActual() != itemVasoVacio)
+        {
+            MostrarDialogo("Lucas: Necesito un vaso primero.");
+            return;
+        }
+        // Sacamos el vaso vacío de la mano
+        ControladorMano3D.Instance.VaciarMano();
+        // Preparamos el líquido vacío antes de mostrar el vaso
+        if (servicioCervezaVisual != null)
+        {
+            servicioCervezaVisual.PrepararVasoVacio();
+        }
+        // Aparece el vaso debajo de la canilla
         if (vasoServicio != null)
         {
-            vasoServicio.SetActive(false);
+            vasoServicio.SetActive(true);
         }
-        // Aparece la cerveza llena en la mano
-        if (ControladorMano3D.Instance != null)
+        vasoEnCanilla = true;
+        // Empieza a servir automáticamente
+        ServirCerveza();
+    }
+    public void ServirCerveza()
+    {
+        if (!vasoEnCanilla)
+            return;
+        if (sirviendoCerveza)
+            return;
+        if (servicioCervezaVisual == null)
         {
-            ControladorMano3D.Instance.EquiparItem(itemCerveza);
+            Debug.LogError(
+                "[Act2Manager] Falta asignar ServicioCervezaVisual."
+            );
+            return;
         }
-        Debug.Log("[Act2Manager] Cerveza servida correctamente.");
-    });
-}
+        sirviendoCerveza = true;
+        servicioCervezaVisual.Servir(() =>
+        {
+            sirviendoCerveza = false;
+            vasoEnCanilla = false;
+            // Sacamos el vaso visual de debajo de la canilla
+            if (vasoServicio != null)
+            {
+                vasoServicio.SetActive(false);
+            }
+            // Aparece la cerveza llena en la mano
+            if (ControladorMano3D.Instance != null)
+            {
+                ControladorMano3D.Instance.EquiparItem(itemCerveza);
+            }
+            Debug.Log("[Act2Manager] Cerveza servida correctamente.");
+        });
+    }
     // =========================================================
     // UTILIDADES
     // =========================================================
- public void MostrarDialogo(string mensaje)
-{
-    if (textoSubtitulos != null) // Quitamos la condición obligatoria de canvasGroupDialogo
+    public void MostrarDialogo(string mensaje)
     {
-        if (corrutinaActiva != null)
+        if (textoSubtitulos != null) // Quitamos la condición obligatoria de canvasGroupDialogo
         {
-            StopCoroutine(corrutinaActiva);
-        }
-        // Si canvasGroupDialogo no está asignado, mostramos el texto directo
-        if (canvasGroupDialogo != null)
-        {
-            corrutinaActiva = StartCoroutine(SecuenciaDialogo(mensaje));
+            if (corrutinaActiva != null)
+            {
+                StopCoroutine(corrutinaActiva);
+            }
+            // Si canvasGroupDialogo no está asignado, mostramos el texto directo
+            if (canvasGroupDialogo != null)
+            {
+                corrutinaActiva = StartCoroutine(SecuenciaDialogo(mensaje));
+            }
+            else
+            {
+                textoSubtitulos.text = mensaje;
+            }
         }
         else
         {
-            textoSubtitulos.text = mensaje;
+            Debug.LogError("[Act2Manager] ¡textoSubtitulos NO está asignado en el Inspector!");
         }
     }
-    else
-    {
-        Debug.LogError("[Act2Manager] ¡textoSubtitulos NO está asignado en el Inspector!");
-    }
-}
     IEnumerator SecuenciaDialogo(string frase)
     {
         // 1. Limpieza total antes de empezar la nueva frase
@@ -921,36 +994,36 @@ public void ServirCerveza()
     }
     public void CambiarIluminacion(string estado)
     {
-        if (lucesNormales  != null) lucesNormales.SetActive(false);
-        if (lucesServicio  != null) lucesServicio.SetActive(false);
-        if (lucesPsicosis  != null) lucesPsicosis.SetActive(false);
+        if (lucesNormales != null) lucesNormales.SetActive(false);
+        if (lucesServicio != null) lucesServicio.SetActive(false);
+        if (lucesPsicosis != null) lucesPsicosis.SetActive(false);
         switch (estado)
         {
-            case "Normal":   if (lucesNormales  != null) lucesNormales.SetActive(true);  break;
-            case "Servicio": if (lucesServicio  != null) lucesServicio.SetActive(true);  break;
-            case "Psicosis": if (lucesPsicosis  != null) lucesPsicosis.SetActive(true);  break;
+            case "Normal": if (lucesNormales != null) lucesNormales.SetActive(true); break;
+            case "Servicio": if (lucesServicio != null) lucesServicio.SetActive(true); break;
+            case "Psicosis": if (lucesPsicosis != null) lucesPsicosis.SetActive(true); break;
             default: Debug.LogWarning("Estado de luz desconocido: " + estado); break;
         }
     }
     public void DetenerMusicaSuspenso()
-{
-    if (musicaSuspenso != null && musicaSuspenso.isPlaying)
     {
-        musicaSuspenso.Stop();
+        if (musicaSuspenso != null && musicaSuspenso.isPlaying)
+        {
+            musicaSuspenso.Stop();
+        }
     }
-}
-// Compatibilidad con otros scripts que todavía llamen este método antiguo.
-// Ya NO reproduce musicaCombate: se usa BaseEnemy1.
-public void IniciarMusicaCombate()
-{
-    NotificarFinJumpscareBano();
-}
+    // Compatibilidad con otros scripts que todavía llamen este método antiguo.
+    // Ya NO reproduce musicaCombate: se usa BaseEnemy1.
+    public void IniciarMusicaCombate()
+    {
+        NotificarFinJumpscareBano();
+    }
 
-[ContextMenu("▶ TEST: Simular fin de jumpscare Naniela (BaseEnemy1)")]
-private void TestFinNaniela()
-{
-    if (Application.isPlaying) NotificarFinJumpscareBano();
-}
+    [ContextMenu("▶ TEST: Simular fin de jumpscare Naniela (BaseEnemy1)")]
+    private void TestFinNaniela()
+    {
+        if (Application.isPlaying) NotificarFinJumpscareBano();
+    }
     // =========================================================
     // DEBUG — Clic derecho en el Inspector para saltar estados o verificar la escena
     // =========================================================
@@ -962,24 +1035,24 @@ private void TestFinNaniela()
         {
             if (campo == null) { Debug.LogError($"[Act2Manager] FALTA: {nombre}"); ok = false; }
         }
-        Chk(textoSubtitulos,       "textoSubtitulos (TextMeshProUGUI)");
-        Chk(fadeCanvasGroup,       "fadeCanvasGroup (panel negro de fade)");
-        Chk(lucesNormales,         "lucesNormales");
-        Chk(lucesServicio,         "lucesServicio");
-        Chk(lucesPsicosis,         "lucesPsicosis");
-        Chk(efectoParpadeo,        "efectoParpadeo");
-        Chk(parpadeoBarCambio,     "parpadeoBarCambio");
-        Chk(efectoPsicosis,        "efectoPsicosis");
-        Chk(sacudidaCamara,        "sacudidaCamara");
-        Chk(grupoClientesCorruptos,"grupoClientesCorruptos");
-        Chk(pasilloEfecto,         "pasilloEfecto");
-        Chk(puertaSotanoL,          "puertaSotano");
-        Chk(notaPuerta,            "notaPuerta");
-        Chk(llaveObjeto,           "llaveObjeto");
-        Chk(vigilanteMirror,       "vigilanteMirror");
-        Chk(baseEnemy1,            "baseEnemy1 (nueva música tras Naniela)");
-        Chk(baseEnemy2,            "baseEnemy2 (nueva música tras Pilar)");
-        Chk(eventoPilarPasillo,      "eventoPilarPasillo");
+        Chk(textoSubtitulos, "textoSubtitulos (TextMeshProUGUI)");
+        Chk(fadeCanvasGroup, "fadeCanvasGroup (panel negro de fade)");
+        Chk(lucesNormales, "lucesNormales");
+        Chk(lucesServicio, "lucesServicio");
+        Chk(lucesPsicosis, "lucesPsicosis");
+        Chk(efectoParpadeo, "efectoParpadeo");
+        Chk(parpadeoBarCambio, "parpadeoBarCambio");
+        Chk(efectoPsicosis, "efectoPsicosis");
+        Chk(sacudidaCamara, "sacudidaCamara");
+        Chk(grupoClientesCorruptos, "grupoClientesCorruptos");
+        Chk(pasilloEfecto, "pasilloEfecto");
+        Chk(puertaSotanoL, "puertaSotano");
+        Chk(notaPuerta, "notaPuerta");
+        Chk(llaveObjeto, "llaveObjeto");
+        Chk(vigilanteMirror, "vigilanteMirror");
+        Chk(baseEnemy1, "baseEnemy1 (nueva música tras Naniela)");
+        Chk(baseEnemy2, "baseEnemy2 (nueva música tras Pilar)");
+        Chk(eventoPilarPasillo, "eventoPilarPasillo");
         if (ok) Debug.Log("[Act2Manager] ✓ Todos los campos están asignados.");
         if (Object.FindAnyObjectByType<Act1Manager>() != null)
             Debug.LogError("[Act2Manager] ACT1MANAGER está en la escena — eliminalo.");
@@ -1109,7 +1182,7 @@ private void TestFinNaniela()
         if (puertaSotanoL == null)
         {
             puertaSotanoL = FindAnyObjectByType<PuertaSotanoAct2>();
-            if (puertaSotanoL    != null) encontrados++;
+            if (puertaSotanoL != null) encontrados++;
         }
         if (notaPuerta == null)
         {
@@ -1140,9 +1213,9 @@ private void TestFinNaniela()
         Debug.Log($"[Act2Manager] Auto-setup: {encontrados} referencias conectadas. " +
                   "Revisá en rojo las que quedaron vacías y asignalas a mano.");
         // Marca el objeto como modificado para que Unity guarde los cambios
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         UnityEditor.EditorUtility.SetDirty(this);
-        #endif
+#endif
     }
     void BuscarAudioSources()
     {
@@ -1153,10 +1226,10 @@ private void TestFinNaniela()
         foreach (AudioSource fuente in fuentes)
         {
             string nombre = fuente.gameObject.name.ToLower();
-            if (ambientBar      == null && nombre.Contains("ambient"))  { ambientBar      = fuente; }
-            if (musicBar        == null && nombre.Contains("music"))     { musicBar        = fuente; }
+            if (ambientBar == null && nombre.Contains("ambient")) { ambientBar = fuente; }
+            if (musicBar == null && nombre.Contains("music")) { musicBar = fuente; }
             if (sonidoLlaveCrack == null && (nombre.Contains("crack") || nombre.Contains("llave"))) { sonidoLlaveCrack = fuente; }
-            if (sonidoEstatica  == null && nombre.Contains("static"))   { sonidoEstatica  = fuente; }
+            if (sonidoEstatica == null && nombre.Contains("static")) { sonidoEstatica = fuente; }
             if (sonidoGolpesSotano == null && (nombre.Contains("golpe") || nombre.Contains("knock"))) { sonidoGolpesSotano = fuente; }
         }
     }
