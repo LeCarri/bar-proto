@@ -839,9 +839,9 @@ public class Act2ManagerDemo : MonoBehaviour
     {
         estadoActual = Act2State.Cierre;
         // Sonido metálico de la llave rompiéndose
-        if (sonidoLlaveCrack != null) sonidoLlaveCrack.Play();
-        if (sacudidaCamara != null)
-            StartCoroutine(sacudidaCamara.Shake(0.5f, 10f));
+        //if (sonidoLlaveCrack != null) sonidoLlaveCrack.Play();
+        //if (sacudidaCamara != null)
+            //StartCoroutine(sacudidaCamara.Shake(0.5f, 10f));
         parpadeandoLuces2 = false;
         llaveTenida = false;
         Paranoia(50f);
@@ -863,7 +863,7 @@ public class Act2ManagerDemo : MonoBehaviour
         yield return new WaitForSeconds(2f);
         // Recuperación de paranoia
         Paranoia(-50f);
-        MostrarDialogo("Lucas: ¿Mi imaginación de nuevo?... No. La llave estaba acá.");
+        MostrarDialogo("Lucas: ¿ Que ? Juro que escuche a alguien detras de la puerta ");
         yield return new WaitForSeconds(4f);
         // La puerta del sótano se abre sola
         if (puertaSotanoL != null)
@@ -875,7 +875,7 @@ public class Act2ManagerDemo : MonoBehaviour
         else
             Debug.LogError("[Act2Manager] puertaSotano no asignado — la puerta no se abrirá. Asignalo en el Inspector.");
         yield return new WaitForSeconds(2f);
-        MostrarDialogo("Lucas: No. Esta noche no.");
+        MostrarDialogo("Lucas: ¿fue mi imaginacion? ni en pedo bajo hoy.");
         yield return new WaitForSeconds(1f);
         StartCoroutine(FundirANegro());
     }

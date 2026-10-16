@@ -13,6 +13,8 @@ public class PuertaSotanoAct2 : MonoBehaviour, IInteractable
     private bool abierta = false;
     private bool yaSeUso = false;
 
+    public CameraShake sacudidaCamara;
+
     [Header("Referencias del Candado y Puerta")]
     [Tooltip("El GameObject del candado o cadena en la puerta")]
     public GameObject candadoObjeto;
@@ -73,6 +75,9 @@ public class PuertaSotanoAct2 : MonoBehaviour, IInteractable
             Debug.LogError("[PuertaSotanoAct2] Act2ManagerDemo.Instance es NULL.");
             return;
         }
+
+        if (sacudidaCamara != null)
+            StartCoroutine(sacudidaCamara.Shake(0.5f, 10f));
 
         // Verificamos si el jugador ya posee la llave
         if (manager.llaveTenida)
