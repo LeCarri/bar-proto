@@ -1,4 +1,4 @@
-using UnityEngine;
+        using UnityEngine;
 using TMPro;
 using System.Collections;
 using UnityEngine.SceneManagement;
@@ -26,22 +26,27 @@ public class Act2ManagerDemo : MonoBehaviour
     }
     [Header("Estado Actual")]
     public Act2State estadoActual = Act2State.Inicio;
+
     [Header("UI y Diálogos")]
     public TextMeshProUGUI textoSubtitulos;
     public CanvasGroup canvasGroupDialogo; // Asegúrate de que el fondo tenga este componente
     public float velocidadEscritura = 0.04f;
     public float velocidadFade = 3f; // Nueva variable para controlar la suavidad
+    
     [Header("Sistema de Iluminación")]
     public GameObject lucesNormales;    // Luces normales del bar (amarillas)
     public GameObject lucesServicio;    // Luces de servicio (violetas)
     public GameObject lucesPsicosis;    // Luces de psicosis (rojas/verdes distorsionadas)
+    
     [Header("Efectos Visuales")]
     public EffectoParpadeo efectoParpadeo;
     public ParpadeoBarCambio parpadeoBarCambio;
     public EfectoPsicosis efectoPsicosis;
     public CameraShake sacudidaCamara;
+    
     [Header("Clientes Corruptos")]
     public GameObject grupoClientesCorruptos;
+    
     [Header("Servicio de cerveza opcional")]
     public ItemSO itemCerveza;
     public ItemSO itemVasoVacio;
@@ -49,17 +54,21 @@ public class Act2ManagerDemo : MonoBehaviour
     public ServicioCervezaVisual servicioCervezaVisual;
     [HideInInspector] public bool vasoEnCanilla = false;
     private bool sirviendoCerveza = false;
+    
     [Header("Secuencia del Pasillo")]
     public PasilloEfecto pasilloEfecto;
+    
     [Header("Sótano")]
     public PuertaSotanoAct2 puertaSotanoL;
     public PuertaSotanoAct2 puertaSotanoR;
     public NotaPuerta notaPuerta;
     public AudioSource sonidoGolpesSotano;
+    
     [Header("Baño")]
     public LlaveInteractuable llaveObjeto;
     public VigenteMirror vigilanteMirror;
     [HideInInspector] public bool llaveTenida = false;
+    
     [Header("Psicosis - referencias antiguas (solo para desactivar)")]
     [Tooltip("Sistema antiguo: se desactiva al empezar la escena, ya no inicia combate.")]
     public SombrasCombate sombrasCombate;
@@ -74,12 +83,14 @@ public class Act2ManagerDemo : MonoBehaviour
     private bool parpadeandoLuces = false;
     private bool parpadeandoLuces2 = false;
     private Coroutine corrutinaActiva;
+    
     [Header("Cierre del Acto")]
     public CanvasGroup fadeCanvasGroup;
     public AudioSource sonidoLlaveCrack;
     public AudioSource sonidoEstatica;
     [Tooltip("Trigger cerca de la puerta del sótano — se habilita al recoger la llave y dispara la secuencia de cierre")]
     public Collider triggerCierreSotano;
+    
     [Header("Audio Ambiental")]
     public AudioSource ambientBar;
     public AudioSource musicBar;
@@ -136,6 +147,7 @@ public class Act2ManagerDemo : MonoBehaviour
     [Tooltip("Velocidad con la que se desvanece el texto al cambiar de objetivo")]
     public float velocidadFadeObjetivo = 3f;
     private Coroutine corrutinaObjetivoTransicion;
+    
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -147,6 +159,7 @@ public class Act2ManagerDemo : MonoBehaviour
         if (Object.FindAnyObjectByType<Act1Manager>() != null)
             Debug.LogError("[Act2Manager] ¡ACT1MANAGER DETECTADO EN LA ESCENA! Eliminalo del hierarchy.");
     }
+    
     void Start()
     {
         // Si el texto de subtítulos no está asignado, lo crea automáticamente
@@ -200,20 +213,24 @@ public class Act2ManagerDemo : MonoBehaviour
         }
 
         estadoActual = Act2State.Inicio;
+
+        /*
         if (fadeCanvasGroup != null)
         {
-            // Forzamos que el objeto esté activo y sea negro al 100%
+            // Forzamos que el objeto esté activo y sea negro al 100%                   EL SCRIPT DE TÍTULO SE ENCARGA DE LA PANTALLA NEGRA.
             fadeCanvasGroup.gameObject.SetActive(true);
             fadeCanvasGroup.alpha = 1f;
             Debug.Log("Iniciando fundido de entrada...");
             StartCoroutine(FundirDesdeNegro());
         }
+        */
+
         CambiarIluminacion("Normal");
         if (grupoClientesCorruptos != null) grupoClientesCorruptos.SetActive(false);
         if (llaveObjeto != null) llaveObjeto.gameObject.SetActive(false);
         // FiguraNino antigua: no se usa nunca más (se apagó arriba).
         if (notaPuerta != null) notaPuerta.gameObject.SetActive(false);
-        StartCoroutine(SecuenciaInicio());
+        //StartCoroutine(SecuenciaInicio());
         ActualizarObjetivo("Preparate para el servicio...");
     }
     public void IniciarSecuenciaClienteCorrupto(ClienteCorrupto cliente)
@@ -341,6 +358,18 @@ public class Act2ManagerDemo : MonoBehaviour
         // Desactivamos el Raycast para que no bloquee el click del mouse al jugar
         fadeCanvasGroup.blocksRaycasts = false;
     }
+
+    public void IniciarSecuenciaNoche2()
+    {
+        if (debugIniciarPostJumpscare)
+            return;
+
+        StopCoroutine(nameof(SecuenciaInicio));
+        StartCoroutine(SecuenciaInicio());
+
+        Debug.Log("[Act2Manager] Introducción terminada. Comienza la Noche 2.");
+    }
+
     IEnumerator SecuenciaInicio()
     {
         yield return new WaitForSeconds(2f);
@@ -850,10 +879,17 @@ public class Act2ManagerDemo : MonoBehaviour
         yield return new WaitForSeconds(1f);
         StartCoroutine(FundirANegro());
     }
+    
     IEnumerator FundirANegro()
     {
         float duracionFade = 2.5f;
         float tiempoFade = 0;
+
+        // Nos aseguramos que el panel comience transparente.
+        fadeCanvasGroup.alpha = 0f;
+        fadeCanvasGroup.gameObject.SetActive(true);
+        fadeCanvasGroup.blocksRaycasts = true;
+
         while (tiempoFade < duracionFade)
         {
             tiempoFade += Time.deltaTime;
