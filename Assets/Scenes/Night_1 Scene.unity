@@ -85860,7 +85860,7 @@ Transform:
   m_GameObject: {fileID: 936239609}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.148, y: 1.691, z: 1.338}
+  m_LocalPosition: {x: -0.148, y: 1.691, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -85908,8 +85908,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1.3164107
-  m_Center: {x: 0.29621613, y: 0.22019497, z: -8.9849994e-10}
+  m_Radius: 2.4891202
+  m_Center: {x: 0.556502, y: 0.22019516, z: -0.000000008425106}
 --- !u!1001 &936963616
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -112106,10 +112106,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstNightManager
   estadoActual: 6
-  saltarLimpieza: 1
+  saltarLimpieza: 0
   iniciarDesdeLinterna: 0
   debugLinternaYaRecogida: 0
-  iniciarDesdeNanielaBotella: 0
+  iniciarDesdeNanielaBotella: 1
   luzLinternaJugador: {fileID: 1696137115}
   controladorLinterna: {fileID: 1303755577}
   sonidoFalloLinterna: {fileID: 1468673007}
@@ -176116,10 +176116,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 2.0170681
-  m_Height: 4.624288
+  m_Radius: 2.243758
+  m_Height: 5.924728
   m_Direction: 1
-  m_Center: {x: 0.0783786, y: 1.0693532, z: 0.030447738}
+  m_Center: {x: 0.5267201, y: 1.0693427, z: 0.7054764}
 --- !u!114 &1861035611
 MonoBehaviour:
   m_ObjectHideFlags: 0
