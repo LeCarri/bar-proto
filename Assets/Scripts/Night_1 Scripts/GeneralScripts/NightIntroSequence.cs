@@ -1,8 +1,8 @@
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
 
 public class NightIntroSequence : MonoBehaviour
 {
@@ -10,40 +10,78 @@ public class NightIntroSequence : MonoBehaviour
     [SerializeField] private Image blackOverlay;
     [SerializeField] private CanvasGroup titleGroup;
 
+    [Header("Texto máquina de escribir")]
+    [SerializeField] private TMP_Text textoNoche;
+    [SerializeField] private string palabra = "NOCHE";
+    [SerializeField] private float tiempoPorLetra = 0.14f;
+
+    [Header("Contador 1 a 2")]
+    [SerializeField] private GameObject numeroViewport;
+    [SerializeField] private RectTransform contador;
+    [SerializeField] private float alturaNumero = 120f;
+    [SerializeField] private float esperaAntesContador = 0.5f;
+    [SerializeField] private float duracionContador = 0.65f;
+    [SerializeField] private float demoraSonidoFinal = 0.3f;
+
     [Header("Tiempos")]
-    [SerializeField] private float titleFadeInDuration = 2f;
-    [SerializeField] private float titleHoldDuration = 2f;
-    [SerializeField] private float titleFadeOutDuration = 2f;
+    [SerializeField] private float titleHoldDuration = 1.5f;
+    [SerializeField] private float titleFadeOutDuration = 1.5f;
     [SerializeField] private float waitAfterTitle = 1f;
     [SerializeField] private float blackFadeOutDuration = 3f;
 
-    //[Header("Control del jugador")]
-    //[SerializeField] private PlayerController playerController;
+    [Header("Sonidos")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip sonidoEscritura;
+    [SerializeField] private AudioClip sonidoContador;
+    [SerializeField] private AudioClip sonidoFinal;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float volumenEscritura = 0.4f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float volumenContador = 0.7f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float volumenFinal = 0.8f;
 
     [Header("Inicio de Noche 2")]
     [SerializeField] private PlayerController playerController;
     [SerializeField] private Act2ManagerDemo act2Manager;
 
-
     private void Awake()
     {
-        // La pantalla comienza completamente negra.
+        // Pantalla completamente negra.
         if (blackOverlay != null)
         {
             Color color = blackOverlay.color;
             color.a = 1f;
             blackOverlay.color = color;
             blackOverlay.gameObject.SetActive(true);
+            blackOverlay.raycastTarget = true;
         }
 
-        // El título comienza oculto.
+        // Preparar título.
         if (titleGroup != null)
         {
-            titleGroup.alpha = 0f;
             titleGroup.gameObject.SetActive(true);
+            titleGroup.alpha = 0f;
+            titleGroup.blocksRaycasts = false;
         }
 
-        // Bloquear el movimiento durante la presentación.
+        // Preparar escritura.
+        if (textoNoche != null)
+        {
+            textoNoche.text = palabra;
+            textoNoche.maxVisibleCharacters = 0;
+        }
+
+        // Preparar contador.
+        if (numeroViewport != null)
+            numeroViewport.SetActive(false);
+
+        if (contador != null)
+            contador.anchoredPosition = Vector2.zero;
+
         SetMovementEnabled(false);
     }
 
@@ -54,42 +92,160 @@ public class NightIntroSequence : MonoBehaviour
 
     private IEnumerator PlaySequence()
     {
-        // 1. Aparece suavemente el título sobre la pantalla negra.
-        yield return FadeTitle(0f, 1f, titleFadeInDuration);
+        // 1. Mostrar el contenedor del título.
+        if (titleGroup != null)
+            titleGroup.alpha = 1f;
 
-        // 2. El título permanece visible.
+        // 2. Escribir NOCHE letra por letra.
+        yield return StartCoroutine(EscribirTitulo());
+
+        // 3. Mostrar inicialmente el número 1.
+        if (contador != null)
+            contador.anchoredPosition = Vector2.zero;
+
+        if (numeroViewport != null)
+            numeroViewport.SetActive(true);
+
+        yield return Wait(esperaAntesContador);
+
+        // 4. Cambiar el contador del 1 al 2.
+        yield return StartCoroutine(AnimarContador());
+
+        // 5. Mantener NOCHE 2 en pantalla.
         yield return Wait(titleHoldDuration);
 
-        // 3. El título desaparece suavemente.
-        // La pantalla permanece completamente negra.
-        yield return FadeTitle(1f, 0f, titleFadeOutDuration);
+        // 6. Desvanecer el título.
+        yield return FadeTitle(
+            1f,
+            0f,
+            titleFadeOutDuration
+        );
 
-        // 4. Espera un segundo con la pantalla todavía negra.
+        // 7. Permanecer en negro.
         yield return Wait(waitAfterTitle);
 
-        // 5. El negro desaparece y revela el escenario.
-        yield return FadeBlack(1f, 0f, blackFadeOutDuration);
+        // 8. Revelar el escenario.
+        yield return FadeBlack(
+            1f,
+            0f,
+            blackFadeOutDuration
+        );
 
-        // 6. Se habilita el control del jugador.
+        if (blackOverlay != null)
+            blackOverlay.raycastTarget = false;
+
+        // 9. Habilitar movimiento.
         SetMovementEnabled(true);
 
-        // 7. Comenzar el diálogo y los eventos de Noche 2.
+        // 10. Iniciar los eventos originales.
         if (act2Manager != null)
         {
             act2Manager.IniciarSecuenciaNoche2();
         }
         else
         {
-            Debug.LogError("[NightIntroSequence] Falta asignar Act2ManagerDemo.");
+            Debug.LogError(
+                "[NightIntroSequence] Falta Act2ManagerDemo."
+            );
         }
     }
 
-    private IEnumerator FadeTitle(float from, float to, float duration)
+    private IEnumerator EscribirTitulo()
+    {
+        if (textoNoche == null)
+            yield break;
+
+        textoNoche.text = palabra;
+        textoNoche.maxVisibleCharacters = 0;
+
+        for (int i = 0; i < palabra.Length; i++)
+        {
+            textoNoche.maxVisibleCharacters = i + 1;
+
+            if (!char.IsWhiteSpace(palabra[i]))
+                ReproducirSonido(
+                    sonidoEscritura,
+                    volumenEscritura
+                );
+
+            yield return new WaitForSecondsRealtime(
+                tiempoPorLetra
+            );
+        }
+    }
+
+    private IEnumerator AnimarContador()
+    {
+        if (contador == null)
+            yield break;
+
+        ReproducirSonido(
+            sonidoContador,
+            volumenContador
+        );
+
+        Vector2 inicio = Vector2.zero;
+        Vector2 final = new Vector2(0f, alturaNumero);
+
+        float tiempo = 0f;
+
+        if (duracionContador > 0f)
+        {
+            while (tiempo < duracionContador)
+            {
+                tiempo += Time.unscaledDeltaTime;
+
+                float t = Mathf.Clamp01(
+                    tiempo / duracionContador
+                );
+
+                // Desaceleración mecánica.
+                float suavizado =
+                    1f - Mathf.Pow(1f - t, 3f);
+
+                contador.anchoredPosition =
+                    Vector2.LerpUnclamped(
+                        inicio,
+                        final,
+                        suavizado
+                    );
+
+                yield return null;
+            }
+        }
+
+        contador.anchoredPosition = final;
+
+        // Esperar antes de reproducir el sonido final.
+        yield return new WaitForSecondsRealtime(demoraSonidoFinal);
+
+        // Reproducir impacto final.
+        ReproducirSonido(
+            sonidoFinal,
+            volumenFinal
+        );
+    }
+
+    private void ReproducirSonido(
+        AudioClip clip,
+        float volumen
+    )
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip, volumen);
+        }
+    }
+
+    private IEnumerator FadeTitle(
+        float from,
+        float to,
+        float duration
+    )
     {
         if (titleGroup == null)
             yield break;
 
-        // Forzar la transparencia inicial.
         titleGroup.alpha = from;
 
         if (duration <= 0f)
@@ -104,8 +260,12 @@ public class NightIntroSequence : MonoBehaviour
         {
             timer += Time.unscaledDeltaTime;
 
-            float progress = Mathf.Clamp01(timer / duration);
-            titleGroup.alpha = Mathf.Lerp(from, to, progress);
+            float progress = Mathf.Clamp01(
+                timer / duration
+            );
+
+            titleGroup.alpha =
+                Mathf.Lerp(from, to, progress);
 
             yield return null;
         }
@@ -113,7 +273,11 @@ public class NightIntroSequence : MonoBehaviour
         titleGroup.alpha = to;
     }
 
-    private IEnumerator FadeBlack(float from, float to, float duration)
+    private IEnumerator FadeBlack(
+        float from,
+        float to,
+        float duration
+    )
     {
         if (blackOverlay == null)
             yield break;
@@ -132,8 +296,13 @@ public class NightIntroSequence : MonoBehaviour
         {
             timer += Time.unscaledDeltaTime;
 
-            float progress = Mathf.Clamp01(timer / duration);
-            SetBlackAlpha(Mathf.Lerp(from, to, progress));
+            float progress = Mathf.Clamp01(
+                timer / duration
+            );
+
+            SetBlackAlpha(
+                Mathf.Lerp(from, to, progress)
+            );
 
             yield return null;
         }
@@ -161,7 +330,8 @@ public class NightIntroSequence : MonoBehaviour
     {
         if (playerController != null)
         {
-            playerController.controlesBloqueados = !enabledState;
+            playerController.controlesBloqueados =
+                !enabledState;
         }
     }
 }

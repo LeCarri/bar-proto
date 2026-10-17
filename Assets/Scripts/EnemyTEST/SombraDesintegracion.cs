@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class SombraDesintegracion : MonoBehaviour
@@ -46,27 +45,21 @@ public class SombraDesintegracion : MonoBehaviour
     [Tooltip("Tiempo sin recibir dano antes de cortar particulas.")]
     public float tiempoParaDetenerParticulas = 0.12f;
 
-    private MaterialPropertyBlock propertyBlock;
+    [Header("Audio de muerte - Enemy Kill")]
+    [Tooltip("Arrastra aqui el AudioSource Enemy Kill, con su clip asignado. Se reproducira una sola vez en 2D, aunque el enemigo se desactive.")]
+    public AudioSource audioEnemyKill;
 
+    private MaterialPropertyBlock propertyBlock;
     private float fragmentacionActual;
     private float fragmentacionObjetivo;
-
     private float ultimoGolpe = -100f;
-
-    // Impide reconstruirse despues de morir.
     private bool muriendo = false;
-
-    // =====================================
-    // AWAKE
-    // =====================================
 
     private void Awake()
     {
         propertyBlock = new MaterialPropertyBlock();
-
         fragmentacionActual = fragmentacionInicial;
         fragmentacionObjetivo = fragmentacionInicial;
-
         AplicarFragmentacion(fragmentacionInicial);
 
         if (particulasDesintegracion != null)
@@ -76,47 +69,29 @@ public class SombraDesintegracion : MonoBehaviour
                 ParticleSystemStopBehavior.StopEmittingAndClear
             );
         }
-    }
 
-    // =====================================
-    // UPDATE
-    // =====================================
+        // Este AudioSource sirve de referencia/configuracion; no debe sonar por si solo.
+        if (audioEnemyKill != null)
+            audioEnemyKill.playOnAwake = false;
+    }
 
     private void Update()
     {
-        float tiempoSinDanio =
-            Time.time - ultimoGolpe;
+        float tiempoSinDanio = Time.time - ultimoGolpe;
 
-        // Si sigue viva y Lucas dejo de iluminarla,
-        // comienza a reconstruirse visualmente.
-        if (!muriendo &&
-            tiempoSinDanio >= tiempoAntesReaparecer)
-        {
-            fragmentacionObjetivo =
-                fragmentacionInicial;
-        }
+        if (!muriendo && tiempoSinDanio >= tiempoAntesReaparecer)
+            fragmentacionObjetivo = fragmentacionInicial;
 
-        // Mientras recibe dano se fragmenta rapido.
-        // Cuando deja de recibirlo vuelve gradualmente.
         float velocidad = velocidadCambio;
-
-        if (!muriendo &&
-            tiempoSinDanio >= tiempoAntesReaparecer)
-        {
+        if (!muriendo && tiempoSinDanio >= tiempoAntesReaparecer)
             velocidad = velocidadReaparicion;
-        }
 
         fragmentacionActual = Mathf.MoveTowards(
             fragmentacionActual,
             fragmentacionObjetivo,
             Mathf.Max(0f, velocidad) * Time.deltaTime
         );
-
         AplicarFragmentacion(fragmentacionActual);
-
-        // =====================================
-        // PARTICULAS
-        // =====================================
 
         if (!muriendo &&
             particulasDesintegracion != null &&
@@ -129,10 +104,6 @@ public class SombraDesintegracion : MonoBehaviour
             );
         }
 
-        // =====================================
-        // AUDIO
-        // =====================================
-
         if (audioDesintegracion != null &&
             audioDesintegracion.isPlaying &&
             tiempoSinDanio > tiempoParaDetenerAudio)
@@ -141,59 +112,34 @@ public class SombraDesintegracion : MonoBehaviour
         }
     }
 
-    // =====================================
-    // RECIBIR DANO
-    // =====================================
-
-    public void ActualizarDesintegracion(
-        float vidaActual,
-        float vidaMaxima)
+    public void ActualizarDesintegracion(float vidaActual, float vidaMaxima)
     {
         if (muriendo || vidaMaxima <= 0f)
             return;
 
-        float porcentajeVida = Mathf.Clamp01(
-            vidaActual / vidaMaxima
-        );
-
-        float porcentajeDanio =
-            1f - porcentajeVida;
-
-        // Nunca permitir la fragmentacion total
-        // mientras el enemigo tenga vida.
+        float porcentajeVida = Mathf.Clamp01(vidaActual / vidaMaxima);
+        float porcentajeDanio = 1f - porcentajeVida;
         float limiteConVida = Mathf.Clamp(
             fragmentacionMaximaConVida,
             fragmentacionInicial,
             fragmentacionFinal
         );
-
         fragmentacionObjetivo = Mathf.Lerp(
             fragmentacionInicial,
             limiteConVida,
             porcentajeDanio
         );
-
         ultimoGolpe = Time.time;
 
-        // Particulas existentes
-        if (particulasDesintegracion != null &&
-            !particulasDesintegracion.isPlaying)
-        {
+        if (particulasDesintegracion != null && !particulasDesintegracion.isPlaying)
             particulasDesintegracion.Play();
-        }
 
-        // Audio existente
-        if (audioDesintegracion != null &&
-            !audioDesintegracion.isPlaying)
+        if (audioDesintegracion != null && !audioDesintegracion.isPlaying)
         {
             audioDesintegracion.loop = true;
             audioDesintegracion.Play();
         }
     }
-
-    // =====================================
-    // MUERTE DEFINITIVA
-    // =====================================
 
     public void ForzarDesintegracionCompleta()
     {
@@ -201,28 +147,20 @@ public class SombraDesintegracion : MonoBehaviour
             return;
 
         muriendo = true;
-
-        // La criatura ya no puede reconstruirse.
         fragmentacionObjetivo = fragmentacionFinal;
         fragmentacionActual = fragmentacionFinal;
-
         AplicarFragmentacion(fragmentacionActual);
 
         if (particulasDesintegracion != null)
-        {
             particulasDesintegracion.Play();
-        }
 
         DetenerAudioDesintegracion();
 
-        Debug.Log(
-            "[SombraDesintegracion] Desintegracion definitiva."
-        );
-    }
+        // NUEVO: reproduce el sonido de muerte fuera de la jerarquia del enemigo.
+        ReproducirEnemyKill();
 
-    // =====================================
-    // APLICAR SHADER
-    // =====================================
+        Debug.Log("[SombraDesintegracion] Desintegracion definitiva.", this);
+    }
 
     private void AplicarFragmentacion(float valor)
     {
@@ -235,19 +173,10 @@ public class SombraDesintegracion : MonoBehaviour
                 continue;
 
             rend.GetPropertyBlock(propertyBlock);
-
-            propertyBlock.SetFloat(
-                propiedadFragmentacion,
-                valor
-            );
-
+            propertyBlock.SetFloat(propiedadFragmentacion, valor);
             rend.SetPropertyBlock(propertyBlock);
         }
     }
-
-    // =====================================
-    // AUDIO
-    // =====================================
 
     public void DetenerAudioDesintegracion()
     {
@@ -256,6 +185,37 @@ public class SombraDesintegracion : MonoBehaviour
 
         audioDesintegracion.Stop();
         audioDesintegracion.loop = false;
+    }
+
+    private void ReproducirEnemyKill()
+    {
+        if (audioEnemyKill == null || audioEnemyKill.clip == null)
+        {
+            Debug.LogWarning(
+                "[SombraDesintegracion] Falta asignar Audio Enemy Kill o su AudioClip.",
+                this
+            );
+            return;
+        }
+
+        // No es hijo del enemigo: el clip puede terminar incluso si EnemyCore
+        // desactiva o destruye al enemigo inmediatamente al morir.
+        GameObject sonidoTemporal = new GameObject("Enemy Kill (audio temporal)");
+        AudioSource reproductor = sonidoTemporal.AddComponent<AudioSource>();
+        reproductor.playOnAwake = false;
+        reproductor.clip = audioEnemyKill.clip;
+        reproductor.volume = audioEnemyKill.volume;
+        reproductor.pitch = audioEnemyKill.pitch;
+        reproductor.outputAudioMixerGroup = audioEnemyKill.outputAudioMixerGroup;
+        reproductor.spatialBlend = 0f; // 2D: se escucha independientemente de la posicion.
+        reproductor.loop = false;
+        reproductor.Play();
+
+        float duracion = reproductor.clip.length /
+                         Mathf.Max(0.01f, Mathf.Abs(reproductor.pitch));
+        Destroy(sonidoTemporal, duracion + 0.2f);
+
+        Debug.Log("[SombraDesintegracion] Reproduciendo Enemy Kill en 2D.", this);
     }
 
     private void OnDisable()

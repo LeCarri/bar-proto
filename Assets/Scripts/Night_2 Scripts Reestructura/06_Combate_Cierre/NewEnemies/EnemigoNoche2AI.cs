@@ -29,13 +29,19 @@ public class EnemigoNoche2AI : MonoBehaviour
     [Tooltip("Activar solamente en el enemigo que comienza comiendo en el suelo.")]
     [SerializeField] private bool reproducirGetUp = false;
     [SerializeField] private string estadoGetUp = "GetUp";
-    [Tooltip("Duracion REAL del clip GetUp en segundos. El enemigo permanece inmovil hasta que termina.")]
+    [Tooltip("Duracion real del clip GetUp en segundos.")]
     [Min(0f)] [SerializeField] private float duracionGetUp = 1.5f;
     [Tooltip("Evita que el enemigo vuelva a su animacion de comer cuando alcanza a Lucas.")]
     [SerializeField] private bool mantenerRunAlLlegar = false;
 
     [Tooltip("Acercarse a Lucas, sin detenerse a varios metros para atacar.")]
     [Min(0f)] [SerializeField] private float distanciaFrenado = 0.1f;
+
+    [Header("Audio - Carrera")]
+    [Tooltip("Sonido de inicio de persecucion: se reproduce UNA sola vez justo al empezar Run, despues de GetUp si corresponde.")]
+    [SerializeField] private AudioSource audioInicioCarrera;
+    [Tooltip("Sonido de pasos: se repite mientras el enemigo corre.")]
+    [SerializeField] private AudioSource audioPasos;
 
     private NavMeshAgent agente;
     private Transform jugador;
@@ -54,6 +60,26 @@ public class EnemigoNoche2AI : MonoBehaviour
         agente = GetComponent<NavMeshAgent>();
         if (animatorEnemigo == null)
             animatorEnemigo = GetComponentInChildren<Animator>(true);
+
+        if (audioPasos != null)
+        {
+            audioPasos.playOnAwake = false;
+            audioPasos.loop = true;
+            audioPasos.Stop();
+        }
+
+        if (audioInicioCarrera != null)
+        {
+            audioInicioCarrera.playOnAwake = false;
+            audioInicioCarrera.loop = false;
+            audioInicioCarrera.Stop();
+        }
+    }
+
+    private void OnDisable()
+    {
+        DetenerPasos();
+        DetenerAudioInicioCarrera();
     }
 
     public void PrepararAntesDelBano()
@@ -94,6 +120,7 @@ public class EnemigoNoche2AI : MonoBehaviour
             animatorEnemigo.Play(estadoIdle, 0, 0f);
             animacionActual = estadoIdle;
         }
+
         Debug.Log("[EnemigoNoche2] Aparecio en Idle esperando el trigger.", this);
     }
 
@@ -114,7 +141,6 @@ public class EnemigoNoche2AI : MonoBehaviour
             yield return new WaitForSeconds(esperaAntesDePerseguir);
 
         // El segundo enemigo se incorpora del suelo ANTES de correr.
-        // El agente sigue detenido: solo se anima la malla, sin desplazar la raiz.
         if (reproducirGetUp && animatorEnemigo != null)
         {
             int hashGetUp = Animator.StringToHash(estadoGetUp);
@@ -128,26 +154,21 @@ public class EnemigoNoche2AI : MonoBehaviour
                 yield break;
             }
 
-            
-                animatorEnemigo.Play(estadoGetUp, 0, 0f);
-                animacionActual = estadoGetUp;
+            animatorEnemigo.Play(estadoGetUp, 0, 0f);
+            animacionActual = estadoGetUp;
+            Debug.Log("[EnemigoNoche2] Comenzo a levantarse.", this);
 
-                Debug.Log("[EnemigoNoche2] Comenzo a levantarse.", this);
+            yield return null;
 
-                // Esperar a que Unity actualice el Animator.
+            while (
+                animatorEnemigo.GetCurrentAnimatorStateInfo(0).IsName(estadoGetUp) &&
+                animatorEnemigo.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f
+            )
+            {
                 yield return null;
+            }
 
-                // Esperar hasta completar la animación GetUp.
-                while (
-                    animatorEnemigo.GetCurrentAnimatorStateInfo(0).IsName(estadoGetUp) &&
-                    animatorEnemigo.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f
-                )
-                {
-                    yield return null;
-                }
-
-                Debug.Log("[EnemigoNoche2] Termino de levantarse.", this);
-
+            Debug.Log("[EnemigoNoche2] Termino de levantarse.", this);
         }
 
         rutinaInicio = null;
@@ -165,12 +186,19 @@ public class EnemigoNoche2AI : MonoBehaviour
         agente.isStopped = false;
         proximaActualizacionDestino = 0f;
         ReproducirEstado(estadoRun);
-        Debug.Log("[EnemigoNoche2] Comenzo a perseguir a Lucas (dano por contacto).", this);
-        // Reproducir voces cuando comienza la persecución
-        if (Act2ManagerDemo.Instance != null)
+
+        // NUEVO: sonido unico de arranque, independiente del bucle de pasos.
+        if (audioInicioCarrera != null && audioInicioCarrera.gameObject.activeInHierarchy)
         {
-            Act2ManagerDemo.Instance.IniciarEnemyVoices();
+            audioInicioCarrera.loop = false;
+            audioInicioCarrera.Play();
         }
+
+        IniciarPasos();
+        Debug.Log("[EnemigoNoche2] Comenzo a perseguir a Lucas (dano por contacto).", this);
+
+        if (Act2ManagerDemo.Instance != null)
+            Act2ManagerDemo.Instance.IniciarEnemyVoices();
     }
 
     private void Update()
@@ -185,13 +213,17 @@ public class EnemigoNoche2AI : MonoBehaviour
             agente.SetDestination(jugador.position);
         }
 
-        // Si el agente llego hasta el jugador, puede quedarse quieto.
         // El sensor hijo sigue detectando contacto y aplicando dano.
         bool llego = !agente.pathPending &&
                      agente.hasPath &&
                      agente.remainingDistance <= distanciaFrenado + 0.15f;
-        // El enemigo del suelo no debe volver a echarse a comer al alcanzar a Lucas.
+
         ReproducirEstado(llego && !mantenerRunAlLlegar ? estadoIdle : estadoRun);
+
+        if (llego)
+            DetenerPasos();
+        else
+            IniciarPasos();
     }
 
     public void DetenerIA()
@@ -206,6 +238,9 @@ public class EnemigoNoche2AI : MonoBehaviour
         persiguiendo = false;
         persecucionSolicitada = false;
         jugador = null;
+
+        DetenerPasos();
+        DetenerAudioInicioCarrera();
 
         if (agente != null && agente.enabled && agente.isOnNavMesh)
         {
@@ -227,5 +262,26 @@ public class EnemigoNoche2AI : MonoBehaviour
 
         animatorEnemigo.CrossFadeInFixedTime(nombreEstado, transicionAnimaciones);
         animacionActual = nombreEstado;
+    }
+
+    private void IniciarPasos()
+    {
+        if (audioPasos != null && audioPasos.gameObject.activeInHierarchy && !audioPasos.isPlaying)
+        {
+            audioPasos.loop = true;
+            audioPasos.Play();
+        }
+    }
+
+    private void DetenerPasos()
+    {
+        if (audioPasos != null && audioPasos.isPlaying)
+            audioPasos.Stop();
+    }
+
+    private void DetenerAudioInicioCarrera()
+    {
+        if (audioInicioCarrera != null && audioInicioCarrera.isPlaying)
+            audioInicioCarrera.Stop();
     }
 }

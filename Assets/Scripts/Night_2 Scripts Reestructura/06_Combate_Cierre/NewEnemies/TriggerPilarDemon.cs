@@ -27,7 +27,7 @@ public class TriggerPilarDemon : MonoBehaviour
     [SerializeField] private Camera camaraJugador;
     [SerializeField] private int indicePCRenderer = 1;
 
-    [Header("Llanto anterior")]
+    [Header("Llanto anterior y Pilar sentada")]
     [SerializeField] private EventoPilarPasillo eventoPilarPasillo;
 
     private bool activado = false;
@@ -46,8 +46,6 @@ public class TriggerPilarDemon : MonoBehaviour
             volumePilar.enabled = true;
             volumePilar.weight = 0f;
         }
-
-        // No hay Camera Shake ni sonidos al inicio.
     }
 
     private void OnTriggerEnter(Collider otro)
@@ -71,9 +69,11 @@ public class TriggerPilarDemon : MonoBehaviour
 
         activado = true;
 
-        // Detener llanto de Pilar sentada.
-        eventoPilarPasillo.DetenerLlanto3D();
+        // Recién ACA desaparece Pilar sentada y se detiene el llanto.
+        // OcultarPilarSentada() ya llama a DetenerLlanto3D().
+        eventoPilarPasillo.OcultarPilarSentada();
 
+        // La Pilar normal que corrio por el pasillo tambien queda desactivada.
         if (pilarNormal != null)
             pilarNormal.SetActive(false);
 

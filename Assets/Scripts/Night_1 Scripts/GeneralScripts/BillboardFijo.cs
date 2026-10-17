@@ -19,3 +19,4 @@ public class BillboardFijo : MonoBehaviour
         transform.rotation = camaraJugador.rotation;
     }
 }
+    

@@ -136,7 +136,7 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
                 !Act1Manager.Instance.tieneTrapo)
             {
                 Act1Manager.Instance.MostrarDialogo(
-                    "Necesito el trapo para limpiar la mesa."
+                    "Necesito el trapo para limpiar la mesa. Lo dejé en el depósito."
                 );
                 return;
             }
@@ -144,7 +144,7 @@ public class ZonaLimpiezaHold : MonoBehaviour, IInteractable
                 !Act1Manager.Instance.tieneEscoba)
             {
                 Act1Manager.Instance.MostrarDialogo(
-                    "Necesito la mopa para limpiar esto."
+                    "Necesito la mopa para limpiar esto. Está en el depósito."
                 );
                 return;
             }

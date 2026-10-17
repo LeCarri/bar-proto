@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,26 +6,24 @@ using UnityEngine.SceneManagement;
 
 public class SkipIntroController : MonoBehaviour
 {
-    [Header("Indicacion Saltar")]
+    [Header("Indicación para saltar")]
     [SerializeField] private CanvasGroup skipPrompt;
-    [SerializeField] private Image progressRing;
-    [SerializeField] private float promptFadeDuration = 1f;
-    [SerializeField] private float holdDuration = 5f;
+    [SerializeField] private float promptFadeDuration = 0.5f;
 
     [Header("Fade a negro")]
     [SerializeField] private Image skipFadeImage;
-    [SerializeField] private float fadeDuration = 4f;
+    [SerializeField] private float fadeDuration = 1.5f;
 
     [Header("Escena")]
     [SerializeField] private string sceneToLoad = "Night_1 Scene";
 
-    private float holdTimer;
-    private bool promptVisible;
-    private bool isLoading;
+    private bool promptVisible = false;
+    private bool isLoading = false;
     private Coroutine promptCoroutine;
 
     private void Awake()
     {
+        // Ocultar inicialmente la indicación.
         if (skipPrompt != null)
         {
             skipPrompt.alpha = 0f;
@@ -32,9 +31,7 @@ public class SkipIntroController : MonoBehaviour
             skipPrompt.blocksRaycasts = false;
         }
 
-        if (progressRing != null)
-            progressRing.fillAmount = 0f;
-
+        // Preparar el fondo negro transparente.
         if (skipFadeImage != null)
         {
             Color c = skipFadeImage.color;
@@ -44,31 +41,24 @@ public class SkipIntroController : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        // Mostrar automáticamente la opción de saltar.
+        ShowSkipPrompt();
+    }
+
     private void Update()
     {
         if (!promptVisible || isLoading)
             return;
 
-        if (Input.GetKey(KeyCode.E))
+        // UNA SOLA PULSACIÓN DE E.
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            holdTimer += Time.unscaledDeltaTime;
-
-            if (progressRing != null)
-                progressRing.fillAmount = Mathf.Clamp01(holdTimer / holdDuration);
-
-            if (holdTimer >= holdDuration)
-                StartCoroutine(FadeAndLoad());
-        }
-        else
-        {
-            holdTimer = 0f;
-
-            if (progressRing != null)
-                progressRing.fillAmount = 0f;
+            StartCoroutine(FadeAndLoad());
         }
     }
 
-    // Llamar desde un Signal de Timeline
     public void ShowSkipPrompt()
     {
         if (isLoading || promptVisible)
@@ -76,28 +66,36 @@ public class SkipIntroController : MonoBehaviour
 
         promptVisible = true;
 
-        if (promptCoroutine != null)
-            StopCoroutine(promptCoroutine);
+        if (skipPrompt != null)
+        {
+            skipPrompt.gameObject.SetActive(true);
 
-        promptCoroutine = StartCoroutine(FadeInPrompt());
+            if (promptCoroutine != null)
+                StopCoroutine(promptCoroutine);
+
+            promptCoroutine = StartCoroutine(FadeInPrompt());
+        }
     }
 
     private IEnumerator FadeInPrompt()
     {
-        if (skipPrompt == null)
+        float timer = 0f;
+
+        if (promptFadeDuration <= 0f)
         {
-            Debug.LogError("SkipIntroController: falta asignar Skip Prompt.");
+            skipPrompt.alpha = 1f;
+            promptCoroutine = null;
             yield break;
         }
-
-        skipPrompt.alpha = 0f;
-
-        float timer = 0f;
 
         while (timer < promptFadeDuration)
         {
             timer += Time.unscaledDeltaTime;
-            skipPrompt.alpha = Mathf.Clamp01(timer / promptFadeDuration);
+
+            skipPrompt.alpha = Mathf.Clamp01(
+                timer / promptFadeDuration
+            );
+
             yield return null;
         }
 
@@ -110,15 +108,30 @@ public class SkipIntroController : MonoBehaviour
         isLoading = true;
         promptVisible = false;
 
+        // Detener la animación del aviso.
+        if (promptCoroutine != null)
+        {
+            StopCoroutine(promptCoroutine);
+            promptCoroutine = null;
+        }
+
+        if (skipPrompt != null)
+            skipPrompt.alpha = 0f;
+
         if (skipFadeImage == null)
         {
-            Debug.LogError("SkipIntroController: falta asignar Skip Fade Image.");
-            isLoading = false;
+            Debug.LogWarning(
+                "[SkipIntro] No hay imagen para el fade."
+            );
+
+            CargarNoche1();
             yield break;
         }
 
+        // Activar fondo negro.
         skipFadeImage.gameObject.SetActive(true);
         skipFadeImage.transform.SetAsLastSibling();
+        skipFadeImage.raycastTarget = true;
 
         Color c = skipFadeImage.color;
         c.a = 0f;
@@ -126,19 +139,40 @@ public class SkipIntroController : MonoBehaviour
 
         float timer = 0f;
 
-        while (timer < fadeDuration)
+        // Fundido de pantalla.
+        if (fadeDuration > 0f)
         {
-            timer += Time.unscaledDeltaTime;
-            c.a = Mathf.Clamp01(timer / fadeDuration);
-            skipFadeImage.color = c;
-            yield return null;
+            while (timer < fadeDuration)
+            {
+                timer += Time.unscaledDeltaTime;
+
+                c.a = Mathf.Clamp01(
+                    timer / fadeDuration
+                );
+
+                skipFadeImage.color = c;
+
+                yield return null;
+            }
         }
 
+        // Pantalla completamente negra.
         c.a = 1f;
         skipFadeImage.color = c;
 
-        // Esperar un frame para mostrar el negro completo
         yield return null;
+
+        // Cargar directamente la Noche 1.
+        CargarNoche1();
+    }
+
+    private void CargarNoche1()
+    {
+        Time.timeScale = 1f;
+
+        Debug.Log(
+            "[SkipIntro] Introducción saltada. Cargando Noche 1."
+        );
 
         SceneManager.LoadScene(sceneToLoad);
     }

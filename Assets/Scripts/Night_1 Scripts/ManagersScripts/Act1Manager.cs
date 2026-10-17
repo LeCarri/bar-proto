@@ -79,6 +79,9 @@ public class Act1Manager : MonoBehaviour
 
     public TextMeshProUGUI textoObjetivo;
 
+    [Header("Nueva UI de objetivos")]
+    [SerializeField] private ObjetivosUI objetivosUI;
+
     public float fadeSpeed = 3f;
 
     private Coroutine currentTransition;
@@ -529,7 +532,9 @@ public class Act1Manager : MonoBehaviour
 
 
 
-        ActualizarObjetivo("Atiende a los clientes en el salón");
+        // En la nueva UI, IniciarServicioClientes() muestra la tarjeta actual.
+        // Si no configuraste la nueva UI, preservamos el texto tradicional.
+        if (objetivosUI == null) ActualizarObjetivo("Atiende a los clientes en el salón");
 
         if (ambientBar != null && !ambientBar.isPlaying)
 
@@ -584,34 +589,42 @@ public class Act1Manager : MonoBehaviour
         ActualizarProgresoObjetivo();
 
 
-
-        if (fadeCanvasGroup != null) StartCoroutine(FadeInInicial());
+        if (fadeCanvasGroup != null)
+        {
+            StartCoroutine(FadeInInicial());
+        }
+        else
+        {
+            ActualizarProgresoObjetivo();
+        }
 
     }
+
 
 
 
     IEnumerator FadeInInicial()
-
     {
-
-        float t = 0;
+        float t = 0f;
 
         while (t < 1.5f)
-
         {
-
             t += Time.deltaTime;
 
-            fadeCanvasGroup.alpha = Mathf.Lerp(1, 0, t / 1.5f);
+            fadeCanvasGroup.alpha =
+                Mathf.Lerp(1f, 0f, t / 1.5f);
 
             yield return null;
-
         }
 
+        fadeCanvasGroup.alpha = 0f;
         fadeCanvasGroup.gameObject.SetActive(false);
 
+        // Ahora que se ve el escenario,
+        // desplegamos el panel desde arriba.
+        ActualizarProgresoObjetivo();
     }
+
 
 
 
@@ -691,44 +704,54 @@ public class Act1Manager : MonoBehaviour
 
 
 
-   public void ActualizarProgresoObjetivo()
-{
-    if (estadoActual == ActoState.Limpieza)
+    public void ActualizarProgresoObjetivo()
     {
-        // 1. Verificamos individualmente si cada tarea está completa
-        bool sillasCompletas = sillasAcomodadas >= totalSillas;
-        bool mesasCompletas = mesasLimpiadas >= totalMesasParaLimpiar;
-        bool barrerCompleto = zonasBarridas >= totalZonasParaBarrer;
-
-        // 2. Armamos el texto de cada ítem con su tachado correspondiente
-        string textoSillas = $"Sillas ({sillasAcomodadas}/{totalSillas})";
-        if (sillasCompletas) textoSillas = $"<s>{textoSillas}</s>";
-
-        string textoMesas = $"Mesas ({mesasLimpiadas}/{totalMesasParaLimpiar})";
-        if (mesasCompletas) textoMesas = $"<s>{textoMesas}</s>";
-
-        string textoBarrer = $"Barrer ({zonasBarridas}/{totalZonasParaBarrer})";
-        if (barrerCompleto) textoBarrer = $"<s>{textoBarrer}</s>";
-
-        // 3. Estructura limpia con el título destacado
-        string textoProgreso = $"<b>Prepara el bar:</b>\n" +
-                                "\n"+
-                               $"  • {textoSillas}\n" +
-                               $"  • {textoMesas}\n" +
-                               $"  • {textoBarrer}";
-
-        // 4. Actualizamos el componente de texto
-        if (textoObjetivo != null)
+        if (estadoActual == ActoState.Limpieza)
         {
-            textoObjetivo.text = textoProgreso;
-            
-            // Mantenemos la opacidad al 100%
-            Color color = textoObjetivo.color;
-            color.a = 1f;
-            textoObjetivo.color = color;
+            // El nuevo panel controla la presentacion; el Manager conserva las tareas.
+            if (objetivosUI != null)
+            {
+                objetivosUI.ActualizarChecklist(
+                    sillasAcomodadas, totalSillas,
+                    mesasLimpiadas, totalMesasParaLimpiar,
+                    zonasBarridas, totalZonasParaBarrer);
+                return;
+            }
+
+            // 1. Verificamos individualmente si cada tarea está completa
+            bool sillasCompletas = sillasAcomodadas >= totalSillas;
+            bool mesasCompletas = mesasLimpiadas >= totalMesasParaLimpiar;
+            bool barrerCompleto = zonasBarridas >= totalZonasParaBarrer;
+
+            // 2. Armamos el texto de cada ítem con su tachado correspondiente
+            string textoSillas = $"Sillas ({sillasAcomodadas}/{totalSillas})";
+            if (sillasCompletas) textoSillas = $"<s>{textoSillas}</s>";
+
+            string textoMesas = $"Mesas ({mesasLimpiadas}/{totalMesasParaLimpiar})";
+            if (mesasCompletas) textoMesas = $"<s>{textoMesas}</s>";
+
+            string textoBarrer = $"Barrer ({zonasBarridas}/{totalZonasParaBarrer})";
+            if (barrerCompleto) textoBarrer = $"<s>{textoBarrer}</s>";
+
+            // 3. Estructura limpia con el título destacado
+            string textoProgreso = $"<b>Prepara el bar:</b>\n" +
+                                    "\n" +
+                                   $"  • {textoSillas}\n" +
+                                   $"  • {textoMesas}\n" +
+                                   $"  • {textoBarrer}";
+
+            // 4. Actualizamos el componente de texto
+            if (textoObjetivo != null)
+            {
+                textoObjetivo.text = textoProgreso;
+
+                // Mantenemos la opacidad al 100%
+                Color color = textoObjetivo.color;
+                color.a = 1f;
+                textoObjetivo.color = color;
+            }
         }
     }
-}
 
 
 
@@ -796,7 +819,9 @@ public class Act1Manager : MonoBehaviour
 
         MostrarDialogo("Lucas: ¿Clientes?... ¡Muy bien, a trabajar!");
 
-        ActualizarObjetivo("Atiende a los clientes en el salón");
+        // En la nueva UI, IniciarServicioClientes() muestra la tarjeta actual.
+        // Si no configuraste la nueva UI, preservamos el texto tradicional.
+        if (objetivosUI == null) ActualizarObjetivo("Atiende a los clientes en el salón");
 
 
 
@@ -842,7 +867,13 @@ public class Act1Manager : MonoBehaviour
 
         HabilitarClienteActual();
 
-
+        if (objetivosUI != null && clientesEnOrden != null && clientesEnOrden.Length > 0)
+        {
+            ClienteInteractuable primero = clientesEnOrden[0];
+            objetivosUI.IniciarClientes(
+                primero != null ? primero.nombreCliente : "Cliente",
+                0, clientesEnOrden.Length);
+        }
 
         if (ParanoiaSystem.Instance != null)
 
@@ -879,6 +910,13 @@ public class Act1Manager : MonoBehaviour
         {
 
             HabilitarClienteActual();
+            if (objetivosUI != null)
+            {
+                ClienteInteractuable siguiente = clientesEnOrden[indiceClienteActual];
+                objetivosUI.SiguienteCliente(
+                    siguiente != null ? siguiente.nombreCliente : "Cliente",
+                    indiceClienteActual, clientesEnOrden.Length);
+            }
 
         }
 
@@ -887,6 +925,8 @@ public class Act1Manager : MonoBehaviour
         {
 
             Debug.Log("[Act1Manager] Todos los clientes fueron atendidos.");
+            if (objetivosUI != null)
+                objetivosUI.FinalizarClientes(clientesEnOrden.Length);
 
         }
 
@@ -1029,6 +1069,8 @@ public class Act1Manager : MonoBehaviour
     public void IniciarSecuenciaQuiebre()
 
     {
+
+        if (objetivosUI != null) objetivosUI.Ocultar();
 
         Debug.Log("[Act1Manager] INICIANDO SECUENCIA DE QUIEBRE - CAMBIO EN EL ÚLTIMO PARPADEO");
 
@@ -1412,6 +1454,8 @@ public class Act1Manager : MonoBehaviour
 
     public void AlRecogerBotellaEspecial()
     {
+        // Durante el apagón/jumpscare no tapamos la pantalla con objetivos.
+        if (objetivosUI != null) objetivosUI.Ocultar();
 
         // Bloquear ambas hojas durante los combates
         BloquearPuertasFisicas(true);
@@ -1779,6 +1823,17 @@ public class Act1Manager : MonoBehaviour
 
     // ==========================================
 
+    // CONTROL NARRATIVO DE VISIBILIDAD DE OBJETIVOS
+
+    // ==========================================
+
+    public void OcultarPanelObjetivos()
+    {
+        if (objetivosUI != null) objetivosUI.Ocultar();
+    }
+
+    // ==========================================
+
     // UTILIDADES GENERALES
 
     // ==========================================
@@ -1839,62 +1894,69 @@ public class Act1Manager : MonoBehaviour
 
 
 
-   public void ActualizarObjetivo(string nuevoObjetivo)
-{
-    if (textoObjetivo == null) return;
-
-    if (currentTransition != null)
+    public void ActualizarObjetivo(string nuevoObjetivo)
     {
-        StopCoroutine(currentTransition);
-    }
-    currentTransition = StartCoroutine(TransitionRoutine(nuevoObjetivo));
-}
+        if (objetivosUI != null)
+        {
+            objetivosUI.MostrarObjetivoSimple(nuevoObjetivo);
+            return;
+        }
 
-private System.Collections.IEnumerator TransitionRoutine(string nuevoObjetivo)
-{
-    // 1. Tachar el texto anterior
-    if (!string.IsNullOrEmpty(textoObjetivo.text))
-    {
-        string textoOriginal = textoObjetivo.text;
-        textoObjetivo.text = "<s>" + textoOriginal + "</s>";
-        yield return new WaitForSeconds(0.6f); 
+        // Compatibilidad con el sistema antiguo si no asignaste ObjetivosUI.
+        if (textoObjetivo == null) return;
+
+        if (currentTransition != null)
+        {
+            StopCoroutine(currentTransition);
+        }
+        currentTransition = StartCoroutine(TransitionRoutine(nuevoObjetivo));
     }
 
-    // 2. FADE OUT
-    float alpha = 1f;
-    while (alpha > 0f)
+    private System.Collections.IEnumerator TransitionRoutine(string nuevoObjetivo)
     {
-        alpha -= Time.deltaTime * fadeSpeed;
-        SetTextAlpha(alpha);
-        yield return null;
+        // 1. Tachar el texto anterior
+        if (!string.IsNullOrEmpty(textoObjetivo.text))
+        {
+            string textoOriginal = textoObjetivo.text;
+            textoObjetivo.text = "<s>" + textoOriginal + "</s>";
+            yield return new WaitForSeconds(0.6f);
+        }
+
+        // 2. FADE OUT
+        float alpha = 1f;
+        while (alpha > 0f)
+        {
+            alpha -= Time.deltaTime * fadeSpeed;
+            SetTextAlpha(alpha);
+            yield return null;
+        }
+        SetTextAlpha(0f);
+
+        // 3. CAMBIAR EL TEXTO
+        textoObjetivo.text = "- " + nuevoObjetivo;
+
+        // 4. FADE IN
+        alpha = 0f;
+        while (alpha < 1f)
+        {
+            alpha += Time.deltaTime * fadeSpeed;
+            SetTextAlpha(alpha);
+            yield return null;
+        }
+        SetTextAlpha(1f);
+
+        currentTransition = null;
     }
-    SetTextAlpha(0f);
 
-    // 3. CAMBIAR EL TEXTO
-    textoObjetivo.text = "- " + nuevoObjetivo;
-
-    // 4. FADE IN
-    alpha = 0f;
-    while (alpha < 1f)
+    private void SetTextAlpha(float alpha)
     {
-        alpha += Time.deltaTime * fadeSpeed;
-        SetTextAlpha(alpha);
-        yield return null;
+        if (textoObjetivo != null)
+        {
+            Color color = textoObjetivo.color;
+            color.a = alpha;
+            textoObjetivo.color = color;
+        }
     }
-    SetTextAlpha(1f);
-
-    currentTransition = null;
-}
-
-private void SetTextAlpha(float alpha)
-{
-    if (textoObjetivo != null)
-    {
-        Color color = textoObjetivo.color;
-        color.a = alpha;
-        textoObjetivo.color = color;
-    }
-}
 
 
 
