@@ -65,25 +65,35 @@ public class CinematicDialogue : MonoBehaviour
     }
 
 
+
     IEnumerator TypeText(string text)
     {
-        dialogueText.text = "";
+        dialogueText.text = text;
+        dialogueText.maxVisibleCharacters = 0;
         SetAlpha(1f);
 
-        typingAudio.Play();
+        // Procesar el texto completo, incluyendo etiquetas de color.
+        dialogueText.ForceMeshUpdate();
 
-        foreach (char letter in text)
+        int totalCaracteres = dialogueText.textInfo.characterCount;
+
+        if (typingAudio != null)
+            typingAudio.Play();
+
+        // Mostrar los caracteres de uno en uno.
+        for (int i = 0; i < totalCaracteres; i++)
         {
-            dialogueText.text += letter;
+            dialogueText.maxVisibleCharacters = i + 1;
             yield return new WaitForSeconds(typingSpeed);
         }
 
-        typingAudio.Stop();
+        if (typingAudio != null)
+            typingAudio.Stop();
 
-        //LA FRASE SE MUESTRA DURANTE x SEGUNDOS
+        // Mantener la frase visible.
         yield return new WaitForSeconds(displayTime);
 
-        //LUEGO DESAPARECE
+        // Desvanecer el texto.
         float timer = 0f;
 
         while (timer < fadeOutTime)
@@ -92,13 +102,15 @@ public class CinematicDialogue : MonoBehaviour
 
             float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutTime);
             SetAlpha(alpha);
-        
+
             yield return null;
         }
 
         SetAlpha(0f);
         dialogueText.text = "";
+        dialogueText.maxVisibleCharacters = int.MaxValue;
     }
+
 
     void SetAlpha(float alpha)
     {
@@ -108,7 +120,7 @@ public class CinematicDialogue : MonoBehaviour
     }
 
 
-    
+
 
 
 
