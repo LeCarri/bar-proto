@@ -18,6 +18,15 @@ public class FlashesCuerposSotano : MonoBehaviour
     [SerializeField] private float duracionFlash = 0.12f;
     [SerializeField] private float intervaloFlash = 0.18f;
 
+    [Header("Apariencia")]
+    [Range(0f, 1f)]
+    [SerializeField] private float opacidadImagenes = 0.6f;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioFlashes;
+
+    private float volumenAnterior;
+
     private bool activado;
 
     private void Start()
@@ -43,6 +52,17 @@ public class FlashesCuerposSotano : MonoBehaviour
 
     private IEnumerator SecuenciaFlashes()
     {
+
+        // Silenciar el resto del juego
+        AudioListener.pause = true;
+
+        // Permitir que el audio de los flashes se reproduzca
+        if (audioFlashes != null)
+        {
+            audioFlashes.ignoreListenerPause = true;
+            audioFlashes.Play();
+        }
+
         // Guardar el estado actual de los controles.
         bool movimientoEstabaActivo =
             movimientoLucas != null && movimientoLucas.enabled;
@@ -69,12 +89,14 @@ public class FlashesCuerposSotano : MonoBehaviour
         {
             foreach (Sprite imagen in imagenesCuerpos)
             {
-                if (imagen == null)
-                    continue;
-
                 if (imagenCuerpo != null)
                 {
                     imagenCuerpo.sprite = imagen;
+
+                    Color color = imagenCuerpo.color;
+                    color.a = opacidadImagenes;
+                    imagenCuerpo.color = color;
+
                     imagenCuerpo.enabled = true;
                 }
 
@@ -89,6 +111,9 @@ public class FlashesCuerposSotano : MonoBehaviour
                     intervaloFlash
                 );
             }
+
+            // Restaurar el audio del juego
+            AudioListener.pause = false;
         }
 
         // Ocultar las imágenes y el panel.

@@ -65,6 +65,8 @@ public class FinalEndingSequence : MonoBehaviour
     [SerializeField] private AudioClip doorKnocksClip;
     [SerializeField] private AudioClip gunshotClip;
 
+    [SerializeField] private AudioSource audioPasosLucas;
+
     [Header("Panel final tipo intro")]
     [Tooltip("Arrastrá acá el IntroPanel que ya tiene el script IntroScreen.")]
     [SerializeField] private GameObject finalIntroPanel;
@@ -250,6 +252,10 @@ public class FinalEndingSequence : MonoBehaviour
 
         if (playerFlashlightObject != null)
             playerFlashlightObject.SetActive(false);
+
+        // Detener el sonido de los pasos de Lucas
+        if (audioPasosLucas != null)
+            audioPasosLucas.Stop();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;

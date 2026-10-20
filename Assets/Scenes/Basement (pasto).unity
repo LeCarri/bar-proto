@@ -27654,6 +27654,7 @@ GameObject:
   - component: {fileID: 50593864}
   - component: {fileID: 50593865}
   - component: {fileID: 50593866}
+  - component: {fileID: 50593867}
   m_Layer: 0
   m_Name: TriggerFlashesCuerpo
   m_TagString: Untagged
@@ -27716,10 +27717,109 @@ MonoBehaviour:
   imagenCuerpo: {fileID: 1293794198}
   imagenesCuerpos:
   - {fileID: 2100090059, guid: 2959385a862b81a48935a7d52a2c48ac, type: 3}
-  - {fileID: -1119580403, guid: bd7e24ecee7c85a41807a7a51e3bb5d5, type: 3}
   - {fileID: -1577143791, guid: 0e79d0f30f0a2674e96400fc4c7f2b79, type: 3}
-  duracionFlash: 1
-  intervaloFlash: 0.5
+  - {fileID: -1119580403, guid: bd7e24ecee7c85a41807a7a51e3bb5d5, type: 3}
+  duracionFlash: 1.2
+  intervaloFlash: 0.8
+  opacidadImagenes: 0.4
+  audioFlashes: {fileID: 50593867}
+--- !u!82 &50593867
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 50593863}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 2e7192d6ef1f1374c8866d92cc1b81b9, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1001 &52485083
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -59911,12 +60011,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -59944,7 +60044,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 41
   m_TargetDisplay: 0
 --- !u!224 &290935507
 RectTransform:
@@ -66945,7 +67045,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1143547208}
   - {fileID: 1114797802}
   - {fileID: 1774138356}
   - {fileID: 1084601921}
@@ -73673,15 +73772,15 @@ MonoBehaviour:
   playerTag: Player
   player: {fileID: 1448966005}
   playerMovementScript: {fileID: 1699276440}
-  playerLookScript: {fileID: 0}
-  playerCamera: {fileID: 0}
+  playerLookScript: {fileID: 1326480493}
+  playerCamera: {fileID: 1268295663}
   modeloPersonaje: {fileID: 1746947783}
   hudsToDisable:
-  - {fileID: 0}
+  - {fileID: 997508681}
   - {fileID: 1774138355}
-  playerFlashlightObject: {fileID: 0}
-  playerInteractionScript: {fileID: 0}
-  sotanoManagerScript: {fileID: 0}
+  playerFlashlightObject: {fileID: 8401213}
+  playerInteractionScript: {fileID: 8401215}
+  sotanoManagerScript: {fileID: 8401215}
   finalCameraObject: {fileID: 1024924297}
   finalCamera: {fileID: 1024924300}
   finalCameraTransform: {fileID: 1024924298}
@@ -73708,6 +73807,7 @@ MonoBehaviour:
   finalMusicAudioSource: {fileID: 1283902957}
   doorKnocksClip: {fileID: 8300000, guid: 674d07e11233f433f9def4929bba6f67, type: 3}
   gunshotClip: {fileID: 8300000, guid: 3056dec34b0c94b9397f613a5d823ef3, type: 3}
+  audioPasosLucas: {fileID: 1699276437}
   finalIntroPanel: {fileID: 2093815321}
   forceLoadHomeAfterDelay: 0
   forceLoadHomeDelay: 8
@@ -87550,12 +87650,12 @@ Transform:
   m_GameObject: {fileID: 1143547207}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -72.133644, y: -30.80273, z: -107.42233}
+  m_LocalPosition: {x: 34.43564, y: -0.9082012, z: -11.62468}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 77971133}
-  m_Father: {fileID: 563012733}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &1143547209
 AudioSource:
@@ -90455,10 +90555,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1901365243}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1293794198
 MonoBehaviour:
@@ -131141,7 +131241,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -146396,6 +146496,7 @@ SceneRoots:
   - {fileID: 203844589}
   - {fileID: 1448966006}
   - {fileID: 502095570}
+  - {fileID: 1143547208}
   - {fileID: 563012733}
   - {fileID: 541899599}
   - {fileID: 46859844}
