@@ -13,7 +13,7 @@ public class UIConitnueHandler : MonoBehaviour
 
     [SerializeField]
     [InspectorName("Texto alternativo")]
-    [Tooltip("El texto que se verá en el botón si ya hay una partida progresada.")]
+    [Tooltip("El texto que se verï¿½ en el botï¿½n si ya hay una partida progresada.")]
     private string altText;
 
     private void Awake()
@@ -26,13 +26,13 @@ public class UIConitnueHandler : MonoBehaviour
 
     void Start()
     {
-        if (textObj != null && SaveManager.Instance != null && SaveManager.Instance.GetSavedAct() > 1)
+        if (textObj != null && SaveManager.Instance != null && SaveManager.Instance.GetSavedAct() > 2)
             textObj.text = altText;
     }
 
     public void UpdateText() 
     {
-        if (textObj != null && SaveManager.Instance != null && SaveManager.Instance.GetSavedAct() > 1)
+        if (textObj != null && SaveManager.Instance != null && SaveManager.Instance.GetSavedAct() > 2)
             textObj.text = altText;
         else
             textObj.text = "Comenzar";

@@ -96,7 +96,7 @@ public class SaveManager : MonoBehaviour
     public void WipeData()
     {
         save = new SaveData();
-        save.currentAct = 1;
+        save.currentAct = 2;
 
         WriteSave();
 
@@ -104,5 +104,12 @@ public class SaveManager : MonoBehaviour
 
         if (UIConitnueHandler.Instance != null)
             UIConitnueHandler.Instance.UpdateText();
+    }
+    public void ResetearProgresoParaNuevoJuego()
+    {
+        save = new SaveData();
+        save.currentAct = 1; // O el índice de tu escena inicial real
+        WriteSave();
+        Debug.Log("Progreso reseteado para la siguiente partida.");
     }
 }

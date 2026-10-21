@@ -159,7 +159,7 @@ public class IntroScreen : MonoBehaviour
         }
         else
         {
-            SceneManager.LoadScene(nextSceneName);
+            SceneManager.LoadScene("Exterior");
         }
     }
 }

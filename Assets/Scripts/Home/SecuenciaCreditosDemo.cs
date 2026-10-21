@@ -73,6 +73,12 @@ public class SecuenciaCreditosDemo : MonoBehaviour
 
     private IEnumerator Start()
     {
+        // Reseteamos el guardado al terminar el juego para la EVA
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.ResetearProgresoParaNuevoJuego();
+        }
+
         if (panelCierreNarrativo == null ||
             panelFinDemo == null ||
             panelInvitacion == null)
