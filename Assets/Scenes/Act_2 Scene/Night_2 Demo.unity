@@ -19695,6 +19695,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3626873605930513238, guid: d5043bca273c5df448b209a3abebd5ca, type: 3}
   m_PrefabInstance: {fileID: 165018442}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &165456413 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4945760131593473963, guid: 270146fa91a90cd4d8cd1ccc0b1cee99, type: 3}
+  m_PrefabInstance: {fileID: 474916486}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &167825656
 Mesh:
   m_ObjectHideFlags: 0
@@ -55396,13 +55401,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4945760131593473963, guid: 270146fa91a90cd4d8cd1ccc0b1cee99, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 474916488}
   m_SourcePrefab: {fileID: 100100000, guid: 270146fa91a90cd4d8cd1ccc0b1cee99, type: 3}
 --- !u!4 &474916487 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4686304648779302368, guid: 270146fa91a90cd4d8cd1ccc0b1cee99, type: 3}
   m_PrefabInstance: {fileID: 474916486}
   m_PrefabAsset: {fileID: 0}
+--- !u!65 &474916488
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 165456413}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 188.34648, y: 63.580074, z: 199.22331}
+  m_Center: {x: -49.037483, y: -32.29, z: 99.11134}
 --- !u!43 &475102300
 Mesh:
   m_ObjectHideFlags: 0
@@ -122259,7 +122288,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 737282896809855407, guid: 6ba6f6dba499c40209062e95bb368944, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 821889260766175022, guid: 6ba6f6dba499c40209062e95bb368944, type: 3}
       propertyPath: m_TargetGraphic
