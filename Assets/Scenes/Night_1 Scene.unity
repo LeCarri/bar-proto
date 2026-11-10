@@ -11208,6 +11208,7 @@ Transform:
   - {fileID: 1141573928}
   - {fileID: 207666454}
   - {fileID: 1861035606}
+  - {fileID: 297250621}
   m_Father: {fileID: 733338249}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &162388089
@@ -21114,6 +21115,101 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 296944829}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &297250620
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 297250621}
+  - component: {fileID: 297250624}
+  - component: {fileID: 297250623}
+  - component: {fileID: 297250622}
+  m_Layer: 0
+  m_Name: SensorPuertaBloqueada
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &297250621
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297250620}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 52.61, y: 0, z: -0.29}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 162388088}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &297250622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297250620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 022319c08e19b45b187ff165a9684831, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AvisoPuertaBloqueada
+  jugador: {fileID: 960428126}
+--- !u!54 &297250623
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297250620}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &297250624
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297250620}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 11.188156, y: 7.9312797, z: 1.5427284}
+  m_Center: {x: -0.12768555, y: 3.4656398, z: -0.80898094}
 --- !u!1 &297393185
 GameObject:
   m_ObjectHideFlags: 0
@@ -22349,7 +22445,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HerramientaLimpiezaActo1
   textoAccion: Tomar elementos de limpieza
-  mensajeAlTomar: "Bien... ser\xE1 mejor limpiar todo esto antes de empezar."
+  indicadoresLimpieza:
+  - {fileID: 430187077}
+  mensajeAlTomar: Bien... ya tengo los elementos de limpieza.
 --- !u!65 &307185339
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -56899,8 +56997,8 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 613422570}
   m_LocalRotation: {x: 0.010677933, y: -0.16317256, z: 0.081771046, w: 0.98314506}
-  m_LocalPosition: {x: 0, y: 0, z: 0.127}
-  m_LocalScale: {x: 0.00012517328, y: 0.00029999163, z: 0.0010311366}
+  m_LocalPosition: {x: 0, y: 0, z: 0.015176943}
+  m_LocalScale: {x: 0.00012517328, y: 0.00029999163, z: 0.0010311365}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1571434444}
@@ -56908,7 +57006,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -0.056}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -0.089, y: 0.962}
+  m_AnchoredPosition: {x: -0.12251282, y: 0.8954334}
   m_SizeDelta: {x: 850, y: 850}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &613422572
@@ -68149,7 +68247,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &712414147
 RectTransform:
   m_ObjectHideFlags: 0
@@ -73695,7 +73793,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -35, y: -35}
-  m_SizeDelta: {x: 560, y: 330}
+  m_SizeDelta: {x: 560, y: 320}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &777199380
 MonoBehaviour:
@@ -81963,6 +82061,10 @@ PrefabInstance:
     - target: {fileID: -6689036041284674117, guid: 3df295da41bea2644ab59436ecf3fb06, type: 3}
       propertyPath: m_Layer
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -6689036041284674117, guid: 3df295da41bea2644ab59436ecf3fb06, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -5651773926016031770, guid: 3df295da41bea2644ab59436ecf3fb06, type: 3}
       propertyPath: m_Layer
@@ -115649,7 +115751,7 @@ MonoBehaviour:
   saltarLimpieza: 0
   iniciarDesdeLinterna: 0
   debugLinternaYaRecogida: 0
-  iniciarDesdeNanielaBotella: 1
+  iniciarDesdeNanielaBotella: 0
   luzLinternaJugador: {fileID: 1696137115}
   controladorLinterna: {fileID: 1303755577}
   sonidoFalloLinterna: {fileID: 1468673007}
@@ -115713,9 +115815,13 @@ MonoBehaviour:
   nanielaGameObject: {fileID: 871767406}
   luzTaniela: {fileID: 602502694}
   zumbidoAmbiente: {fileID: 0}
-  botellaEspecial: {fileID: 0}
+  botellaEspecial: {fileID: 223956407}
   puertaDeposito: {fileID: 0}
   sonidoCierrePuerta: {fileID: 0}
+  jugador: {fileID: 960428126}
+  puntoRadio: {fileID: 227645186}
+  distanciaRadio: 3.5
+  tiempoRecordatorioRadio: 15
   sonidoApagonBotella: {fileID: 1672714461}
   primeraSombra: {fileID: 0}
   sombrasSalon:
@@ -115729,9 +115835,10 @@ MonoBehaviour:
   vasoDejadoEnBarra: 0
   fadeCanvasGroup: {fileID: 32680803}
   sombraFugazCocina: {fileID: 162388090}
-  bloqueadoresPuertasCombate: {fileID: 0}
+  bloqueadoresPuertasCombate: {fileID: 297250620}
   indicadorCervezas: {fileID: 0}
-  indicadorDeposito: {fileID: 0}
+  indicadorDeposito: {fileID: 820601846}
+  luzBotellaEspecial: {fileID: 1220450680}
   itemCerveza: {fileID: 11400000, guid: d088918bb353a4e839d239be1eb42366, type: 2}
   itemWhisky: {fileID: 11400000, guid: aa5705b2aee4c7e4f9003278958bddcf, type: 2}
   itemWhiskySangre: {fileID: 0}
@@ -124375,7 +124482,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1303755576
 Transform:
   m_ObjectHideFlags: 0
@@ -149907,8 +150014,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -653, y: -450}
-  m_SizeDelta: {x: 850, y: 850}
+  m_AnchoredPosition: {x: -10, y: 0}
+  m_SizeDelta: {x: 703.1, y: 1052.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1571434445
 MonoBehaviour:
@@ -177803,7 +177910,7 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 5089957897246961473, guid: b2669dc8fea304fd1850ff05f1eb940e, type: 3}
-      insertIndex: 1
+      insertIndex: 0
       addedObject: {fileID: 613422571}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5614010791115699707, guid: b2669dc8fea304fd1850ff05f1eb940e, type: 3}

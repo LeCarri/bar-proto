@@ -258,6 +258,17 @@ public class Act1Manager : MonoBehaviour
 
     public AudioSource sonidoCierrePuerta;
 
+    [Header("Pistas narrativas - Radio")]
+    [SerializeField] private Transform jugador;
+    [SerializeField] private Transform puntoRadio;
+    [SerializeField] private float distanciaRadio = 3.5f;
+    [SerializeField] private float tiempoRecordatorioRadio = 15f;
+
+    private bool pistaRadioIniciada = false;
+    private bool pistaRadioFinalizada = false;
+    private Coroutine rutinaPistasRadio;
+    private bool avisoPuertaMostrado = false;
+
 
 
     [Header("FX - Apagón al recoger botella")]
@@ -310,6 +321,8 @@ public class Act1Manager : MonoBehaviour
     public GameObject indicadorCervezas;
 
     public GameObject indicadorDeposito;
+
+    public GameObject luzBotellaEspecial;
 
     public ItemSO itemCerveza;
 
@@ -1031,13 +1044,12 @@ public class Act1Manager : MonoBehaviour
 
 
     public void MensajeCelularLeido()
-
     {
-
-        MostrarDialogo("Lucas: Me acuerdo cuando se preocupaba de verdad...");
+        MostrarDialogo(
+            "Lucas: Me acuerdo cuando se preocupaba de verdad..."
+        );
 
         Debug.Log("[Act1Manager] Mensaje leído. Avanzando narrativa.");
-
     }
 
 
@@ -1071,6 +1083,11 @@ public class Act1Manager : MonoBehaviour
     {
 
         if (objetivosUI != null) objetivosUI.Ocultar();
+        // Ocultar indicador de la botella especial.
+        if (indicadorDeposito != null)
+        {
+            indicadorDeposito.SetActive(false);
+        }   
 
         Debug.Log("[Act1Manager] INICIANDO SECUENCIA DE QUIEBRE - CAMBIO EN EL ÚLTIMO PARPADEO");
 
@@ -1314,9 +1331,9 @@ public class Act1Manager : MonoBehaviour
 
 
 
-        MostrarDialogo("Lucas: Seguro saltó la térmica de nuevo... Tengo que revisar los tapones en el sótano...");
+        MostrarDialogo("Lucas: Qué raro... Nunca se había cortado así.");
 
-        ActualizarObjetivo("Revisa los tapones en el sótano");
+        OcultarPanelObjetivos();
 
 
 
@@ -1490,6 +1507,7 @@ public class Act1Manager : MonoBehaviour
             );
         }
 
+
         // SONIDO DEL APAGÓN
         if (sonidoApagonBotella != null)
         {
@@ -1511,7 +1529,94 @@ public class Act1Manager : MonoBehaviour
         StartCoroutine(SecuenciaOscuridadYLinterna());
     }
 
+    // Se llama una sola vez, cuando ZonaHuida enciende la radio.
+    public void IniciarPistasRadio()
+    {
+        if (pistaRadioIniciada || pistaRadioFinalizada) return;
 
+        pistaRadioIniciada = true;
+        rutinaPistasRadio = StartCoroutine(SecuenciaPistasRadio());
+    }
+
+    // Evita que los dialogos se disparen cuando el jugador llega
+    // al encuentro con la radio o cuando ya empieza la criatura.
+    public void CancelarPistasRadio()
+    {
+        pistaRadioFinalizada = true;
+
+        if (rutinaPistasRadio != null)
+        {
+            StopCoroutine(rutinaPistasRadio);
+            rutinaPistasRadio = null;
+        }
+    }
+
+    private IEnumerator SecuenciaPistasRadio()
+    {
+        // Primero dejamos que la radio llame la atencion por si sola.
+        yield return new WaitForSeconds(2f);
+
+        if (pistaRadioFinalizada || EstaCercaDeRadio())
+        {
+            rutinaPistasRadio = null;
+            yield break;
+        }
+
+        MostrarDialogo("Lucas: ¿La radio?... ¿Quién la prendió?");
+
+        float tiempo = 0f;
+        while (tiempo < tiempoRecordatorioRadio)
+        {
+            if (pistaRadioFinalizada ||
+                EstaCercaDeRadio() ||
+                primeraCriaturaRegistrada ||
+                estadoActual == ActoState.Combate ||
+                estadoActual == ActoState.Cierre)
+            {
+                rutinaPistasRadio = null;
+                yield break;
+            }
+
+            tiempo += Time.deltaTime;
+            yield return null;
+        }
+
+        if (!pistaRadioFinalizada &&
+            !EstaCercaDeRadio() &&
+            !primeraCriaturaRegistrada &&
+            estadoActual != ActoState.Combate &&
+            estadoActual != ActoState.Cierre)
+        {
+            MostrarDialogo("Lucas: Esa radio sigue sonando... ¿De dónde viene?");
+        }
+
+        rutinaPistasRadio = null;
+    }
+
+    private bool EstaCercaDeRadio()
+    {
+        if (jugador == null || puntoRadio == null)
+            return false;
+
+        return Vector3.Distance(jugador.position, puntoRadio.position)
+            <= distanciaRadio;
+    }
+
+    // Se llama cuando intenta pasar por una puerta bloqueada.
+    public void IntentarAbrirPuertaBloqueada()
+    {
+        if (avisoPuertaMostrado) return;
+
+        if (bloqueadoresPuertasCombate == null ||
+            !bloqueadoresPuertasCombate.activeInHierarchy)
+            return;
+
+        avisoPuertaMostrado = true;
+
+        MostrarDialogo(
+            "Lucas: ¿Qué...? No se mueve. La puerta está trabada."
+        );
+    }
 
     IEnumerator SecuenciaOscuridadYLinterna()
 

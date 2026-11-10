@@ -5,11 +5,16 @@ public class HerramientaLimpiezaActo1 : MonoBehaviour, IInteractable
     [Header("Configuración de UI")]
     [SerializeField] private string textoAccion = "Tomar elementos de limpieza";
 
+    [Header("Indicadores Visuales")]
+    [SerializeField] private GameObject[] indicadoresLimpieza;
+
     [Header("Lore / Narrativa")]
     [TextArea(2, 4)]
-    [SerializeField] private string mensajeAlTomar = "Bien... será mejor limpiar todo esto antes de empezar.";
+    [SerializeField] private string mensajeAlTomar =
+        "Bien... será mejor limpiar todo esto antes de empezar.";
 
     public bool CanInteract() => true;
+
     public string GetDescription() => textoAccion;
 
     public void Interact()
@@ -18,15 +23,22 @@ public class HerramientaLimpiezaActo1 : MonoBehaviour, IInteractable
 
         if (Act1Manager.Instance != null)
         {
-            // Activamos las variables en tu Act1Manager
+            // Registrar herramientas recogidas
             Act1Manager.Instance.tieneEscoba = true;
             Act1Manager.Instance.tieneTrapo = true;
 
-            // Mostramos el subtítulo en pantalla
+            // Mostrar diálogo
             Act1Manager.Instance.MostrarDialogo(mensajeAlTomar);
         }
 
-        // Ocultamos el objeto de la escena
+        // Ocultar indicadores visuales
+        foreach (GameObject indicador in indicadoresLimpieza)
+        {
+            if (indicador != null)
+                indicador.SetActive(false);
+        }
+
+        // Ocultar el objeto interactuable
         gameObject.SetActive(false);
     }
 }

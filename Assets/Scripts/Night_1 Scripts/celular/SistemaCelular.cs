@@ -89,23 +89,40 @@ public class SistemaCelular : MonoBehaviour
         celularAbierto = true;
         tieneNotificacionPendiente = false;
 
-        // --- CORTAR EL AUDIO DE LA NOTIFICACIÓN DEL MANAGER AL ATENDER ---
-        if (Act1Manager.Instance != null && Act1Manager.Instance.sonidoVibracionCelular != null)
+        // Detener vibración
+        if (Act1Manager.Instance != null &&
+            Act1Manager.Instance.sonidoVibracionCelular != null)
         {
             Act1Manager.Instance.sonidoVibracionCelular.Stop();
         }
 
-        if (notificacionHUD != null) notificacionHUD.SetActive(false);
-        
-        // Activamos de golpe el modelo 3D y el Canvas de la pantalla
-        if (objetoCelularEnMano != null) objetoCelularEnMano.SetActive(true);
-        if (panelTelefonoUI != null) panelTelefonoUI.SetActive(true);
+        if (notificacionHUD != null)
+            notificacionHUD.SetActive(false);
 
-        // Asignamos los textos en la pantalla
-        if (textoRemitente != null) textoRemitente.text = remitenteActual;
-        if (textoMensaje != null) textoMensaje.text = mensajeActual;
+        // Mostrar celular en la mano
+        if (objetoCelularEnMano != null)
+            objetoCelularEnMano.SetActive(true);
 
-        if (sonidoAbrir != null) sonidoAbrir.Play();
+        if (panelTelefonoUI != null)
+            panelTelefonoUI.SetActive(true);
+
+        // Actualizar mensajes
+        if (textoRemitente != null)
+            textoRemitente.text = remitenteActual;
+
+        if (textoMensaje != null)
+            textoMensaje.text = mensajeActual;
+
+        if (sonidoAbrir != null)
+            sonidoAbrir.Play();
+
+        // NUEVO: indicar cómo guardar el teléfono
+        if (Act1Manager.Instance != null)
+        {
+            Act1Manager.Instance.MostrarDialogo(
+                "Presiona [T] para guardar el teléfono."
+            );
+        }
     }
 
     public void CerrarCelular()

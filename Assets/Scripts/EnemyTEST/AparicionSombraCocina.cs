@@ -675,6 +675,14 @@ public class AparicionSombraCocina : MonoBehaviour
         radioLlamando = true;
         EncenderRadio();
 
+        // El dialogo acompana a la radio real de ZonaHuida,
+        // nunca al simple hecho de recoger la botella.
+        if (audioRadio != null && audioRadio.isPlaying &&
+            Act1Manager.Instance != null)
+        {
+            Act1Manager.Instance.IniciarPistasRadio();
+        }
+
         Debug.Log("[AparicionSombra] Jugador intenta alejarse. Radio encendida.");
     }
 
@@ -698,7 +706,9 @@ public class AparicionSombraCocina : MonoBehaviour
 
             zonaEncuentroActivada = true;
 
-
+            // Ya encontro el camino: no insistir con la radio.
+            if (Act1Manager.Instance != null)
+                Act1Manager.Instance.CancelarPistasRadio();
 
             if (rutinaRadio != null)
 
@@ -1071,6 +1081,11 @@ public class AparicionSombraCocina : MonoBehaviour
 
 
         revelada = true;
+
+        // Seguridad: ningun recordatorio debe interrumpir el jumpscare.
+        if (Act1Manager.Instance != null)
+            Act1Manager.Instance.CancelarPistasRadio();
+
         ControlDistorsionMental.Instance?.EstablecerCombate(true);
 
         esperandoMirada = false;
